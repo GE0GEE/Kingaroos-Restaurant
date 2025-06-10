@@ -89,23 +89,20 @@ export default function Menu() {
                         item.featured ? "ring-2 ring-aussie-orange" : ""
                       }`}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-                        {/* Image Section */}
-                        <div className="md:col-span-1">
-                          <div className="w-full h-48 md:h-full">
+                      <div className="flex flex-col md:flex-row gap-4">
+                        {/* Compact Image Section */}
+                        <div className="flex-shrink-0">
+                          <div className="w-full md:w-32 h-24 md:h-32">
                             {item.image && item.image !== "/placeholder.svg" ? (
                               <img
                                 src={item.image}
                                 alt={item.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover rounded-md border border-sand-300"
                               />
                             ) : (
-                              <div className="w-full h-full bg-sand-200 flex items-center justify-center">
-                                <div className="text-center space-y-2">
-                                  <Heart className="h-8 w-8 text-brown-400 mx-auto" />
-                                  <p className="font-body text-brown-500 text-sm">
-                                    {item.name}
-                                  </p>
+                              <div className="w-full h-full bg-sand-200 flex items-center justify-center rounded-md border border-sand-300">
+                                <div className="text-center">
+                                  <Heart className="h-6 w-6 text-brown-400 mx-auto" />
                                 </div>
                               </div>
                             )}
@@ -113,7 +110,7 @@ export default function Menu() {
                         </div>
 
                         {/* Content Section */}
-                        <CardContent className="md:col-span-2 p-6 flex flex-col justify-center">
+                        <CardContent className="flex-1 p-6 flex flex-col justify-center">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <div className="flex items-center space-x-3 mb-3">
