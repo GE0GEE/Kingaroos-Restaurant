@@ -92,7 +92,7 @@ export default function DogRescue() {
             Dogs We're Helping
           </h1>
           <div className="max-w-3xl mx-auto">
-            <Card className="bg-cream-50 border-aussie-orange border-2 shadow-lg">
+            <Card className="bg-cream-50 border-sand-200 shadow-lg">
               <CardContent className="p-8">
                 <div className="flex items-center justify-center space-x-3 mb-4">
                   <Heart className="h-8 w-8 text-aussie-orange" />
@@ -267,7 +267,7 @@ export default function DogRescue() {
                   <h3 className="font-heading text-xl font-bold text-brown-800 text-center">
                     After Recovery
                   </h3>
-                  <Card className="border-aussie-orange border-2">
+                  <Card className="border-sand-200">
                     <CardContent className="p-4">
                       <div className="w-full h-64 bg-sand-200 rounded-lg flex items-center justify-center mb-4">
                         <div className="text-center space-y-2">
@@ -286,7 +286,7 @@ export default function DogRescue() {
               </div>
 
               {/* Rescue Story */}
-              <Card className="bg-cream-50 border-aussie-orange border-2">
+              <Card className="bg-cream-50 border-sand-200">
                 <CardContent className="p-6">
                   <h3 className="font-heading text-xl font-bold text-brown-800 mb-4 flex items-center">
                     <Heart className="h-6 w-6 text-aussie-orange mr-2" />
@@ -314,7 +314,7 @@ export default function DogRescue() {
             difference!
           </p>
           <div className="space-y-6">
-            <Card className="bg-cream-50 border-aussie-orange border-2 max-w-2xl mx-auto">
+            <Card className="bg-cream-50 border-sand-200 max-w-2xl mx-auto">
               <CardContent className="p-6">
                 <div className="flex items-center justify-center space-x-3 mb-4">
                   <MessageCircle className="h-6 w-6 text-aussie-orange" />
