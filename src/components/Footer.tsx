@@ -60,30 +60,31 @@ export function Footer() {
                 className="font-heading text-2xl font-bold cursor-pointer hover:text-aussie-orange transition-colors"
                 onClick={handleAdminClick}
               >
-                KINGAROOS
+                {siteContent.siteTexts.siteName}
               </span>
             </div>
             <p className="font-body text-cream-200 max-w-xs">
-              Great Food. Good Vibes. Helping Paws. Every meal helps rescue a
-              dog in need.
+              {siteContent.siteTexts.footerTagline}
             </p>
           </div>
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="font-heading text-lg font-semibold">Contact Us</h3>
+            <h3 className="font-heading text-lg font-semibold">
+              {siteContent.siteTexts.footerContactTitle}
+            </h3>
             <div className="space-y-2 font-body text-cream-200">
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-aussie-orange" />
-                <span>123 Outback Lane, Sydney, NSW 2000</span>
+                <span>{siteContent.siteTexts.homeAddress}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-aussie-orange" />
-                <span>(02) 1234 5678</span>
+                <span>{siteContent.siteTexts.homePhone}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-aussie-orange" />
-                <span>hello@kingaroos.com.au</span>
+                <span>{siteContent.siteTexts.homeEmail}</span>
               </div>
             </div>
           </div>
@@ -91,12 +92,12 @@ export function Footer() {
           {/* Hours & Social */}
           <div className="space-y-4">
             <h3 className="font-heading text-lg font-semibold">
-              Hours & Social
+              {siteContent.siteTexts.footerHoursSocialTitle}
             </h3>
             <div className="space-y-2 font-body text-cream-200">
-              <div>Mon-Thu: 11am - 9pm</div>
-              <div>Fri-Sat: 11am - 10pm</div>
-              <div>Sunday: 10am - 8pm</div>
+              <div>{siteContent.siteTexts.footerMondayThursday}</div>
+              <div>{siteContent.siteTexts.footerFridaySaturday}</div>
+              <div>{siteContent.siteTexts.footerSunday}</div>
             </div>
             <div className="flex space-x-4 pt-2">
               <Facebook className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
@@ -107,7 +108,7 @@ export function Footer() {
 
         <div className="border-t border-brown-700 mt-8 pt-8 text-center">
           <p className="font-body text-cream-300">
-            © 2024 KINGAROOS. All rights reserved.
+            {siteContent.siteTexts.footerCopyright}
             <br />
           </p>
         </div>
@@ -118,13 +119,13 @@ export function Footer() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-brown-800">
-              Admin Login
+              {siteContent.siteTexts.adminLoginTitle}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="password" className="text-brown-800">
-                Password
+                {siteContent.siteTexts.adminPasswordLabel}
               </Label>
               <Input
                 id="password"
@@ -133,7 +134,7 @@ export function Footer() {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="mt-1"
-                placeholder="Enter admin password"
+                placeholder={siteContent.siteTexts.adminPasswordPlaceholder}
                 autoFocus
               />
               {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
@@ -143,14 +144,14 @@ export function Footer() {
                 onClick={handleLogin}
                 className="flex-1 bg-aussie-orange hover:bg-aussie-burnt-red"
               >
-                Login
+                {siteContent.siteTexts.adminLoginButton}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowLoginDialog(false)}
                 className="flex-1"
               >
-                Cancel
+                {siteContent.siteTexts.adminCancelButton}
               </Button>
             </div>
           </div>

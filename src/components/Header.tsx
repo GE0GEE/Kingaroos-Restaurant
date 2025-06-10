@@ -3,20 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Menu", href: "/menu" },
-  { name: "Events", href: "/events" },
-  { name: "Promotions", href: "/promotions" },
-  { name: "About", href: "/about" },
-  { name: "Dog Rescue", href: "/dog-rescue" },
-  { name: "Contact", href: "/contact" },
-];
+import { useAdmin } from "@/contexts/AdminContext";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { siteContent } = useAdmin();
+
+  const navigation = [
+    { name: siteContent.siteTexts.headerNavHome, href: "/" },
+    { name: siteContent.siteTexts.headerNavMenu, href: "/menu" },
+    { name: siteContent.siteTexts.headerNavEvents, href: "/events" },
+    { name: siteContent.siteTexts.headerNavPromotions, href: "/promotions" },
+    { name: siteContent.siteTexts.headerNavAbout, href: "/about" },
+    { name: siteContent.siteTexts.headerNavDogRescue, href: "/dog-rescue" },
+    { name: siteContent.siteTexts.headerNavContact, href: "/contact" },
+  ];
 
   return (
     <header className="bg-cream-50 shadow-sm sticky top-0 z-50">
@@ -24,9 +26,17 @@ export function Header() {
         <div className="flex h-16 justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <Heart className="h-8 w-8 text-aussie-orange" />
+            {siteContent.logoImage ? (
+              <img
+                src={siteContent.logoImage}
+                alt="KINGAROOS Logo"
+                className="h-8 w-8 object-cover rounded"
+              />
+            ) : (
+              <Heart className="h-8 w-8 text-aussie-orange" />
+            )}
             <span className="font-heading text-2xl font-bold text-brown-800">
-              KINGAROOS
+              {siteContent.siteTexts.siteName}
             </span>
           </Link>
 

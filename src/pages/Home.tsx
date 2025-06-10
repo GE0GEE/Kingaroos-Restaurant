@@ -76,14 +76,14 @@ export default function Home() {
               size="lg"
               className="bg-aussie-orange hover:bg-aussie-burnt-red text-white font-body font-semibold"
             >
-              View Menu
+              {siteContent.siteTexts.homeViewMenuButton}
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-brown-800 font-body font-semibold"
             >
-              Learn More
+              {siteContent.siteTexts.homeLearnMoreButton}
             </Button>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function Home() {
       <section className="py-16 bg-sand-100">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
-            What Makes Us Special
+            {siteContent.siteTexts.homeHighlightsTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow">
@@ -163,11 +163,10 @@ export default function Home() {
                   <Heart className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">
-                  🐶 Dog-Friendly
+                  {siteContent.siteTexts.dogFriendlyTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  Bring your furry friends! We welcome well-behaved dogs with
-                  open arms, water bowls, and even special treats.
+                  {siteContent.siteTexts.dogFriendlyText}
                 </p>
               </CardContent>
             </Card>
@@ -178,11 +177,10 @@ export default function Home() {
                   <UtensilsCrossed className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">
-                  🥩 Aussie-Inspired Food
+                  {siteContent.siteTexts.aussieFoodTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  From hearty meat pies to fresh barramundi, our menu celebrates
-                  the bold flavors and comfort food traditions of Australia.
+                  {siteContent.siteTexts.aussieFoodText}
                 </p>
               </CardContent>
             </Card>
@@ -193,11 +191,10 @@ export default function Home() {
                   <Users className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">
-                  ❤️ Every Meal Helps a Rescue
+                  {siteContent.siteTexts.rescueHelpTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  A portion of every purchase goes directly to local dog rescue
-                  organizations, helping give abandoned dogs a second chance.
+                  {siteContent.siteTexts.rescueHelpText}
                 </p>
               </CardContent>
             </Card>
@@ -209,7 +206,7 @@ export default function Home() {
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
-            Visit Us Today
+            {siteContent.siteTexts.homeVisitTitle}
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Hours & Contact */}
@@ -219,7 +216,7 @@ export default function Home() {
                   <div className="flex items-center space-x-4 mb-6">
                     <Clock className="h-8 w-8 text-aussie-orange" />
                     <h3 className="font-heading text-2xl font-bold text-brown-800">
-                      Opening Hours
+                      {siteContent.siteTexts.homeHoursTitle}
                     </h3>
                   </div>
                   <div className="space-y-3 font-body text-brown-600">
@@ -244,16 +241,19 @@ export default function Home() {
                   <div className="flex items-center space-x-4 mb-6">
                     <MapPin className="h-8 w-8 text-aussie-orange" />
                     <h3 className="font-heading text-2xl font-bold text-brown-800">
-                      Location
+                      {siteContent.siteTexts.homeLocationTitle}
                     </h3>
                   </div>
                   <div className="space-y-2 font-body text-brown-600">
-                    <p className="font-semibold">123 Outback Lane</p>
-                    <p>Sydney, NSW 2000</p>
-                    <p className="text-aussie-orange font-semibold">
-                      (02) 1234 5678
+                    <p className="font-semibold">
+                      {siteContent.siteTexts.homeAddress}
                     </p>
-                    <p className="text-aussie-orange">hello@kingaroos.com.au</p>
+                    <p className="text-aussie-orange font-semibold">
+                      {siteContent.siteTexts.homePhone}
+                    </p>
+                    <p className="text-aussie-orange">
+                      {siteContent.siteTexts.homeEmail}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
