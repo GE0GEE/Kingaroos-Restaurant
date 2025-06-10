@@ -9,15 +9,28 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { siteContent } = useAdmin();
+  
+  // Create fallback values for navigation text if they don't exist
+  const headerNavTexts = {
+    headerNavHome: "Home",
+    headerNavMenu: "Menu",
+    headerNavEvents: "Events",
+    headerNavPromotions: "Promotions",
+    headerNavAbout: "About",
+    headerNavDogRescue: "Rescue",
+    headerNavContact: "Contact",
+    siteName: "KINGAROOS",
+    ...siteContent.siteTexts,
+  };
 
   const navigation = [
-    { name: siteContent.siteTexts.headerNavHome, href: "/" },
-    { name: siteContent.siteTexts.headerNavMenu, href: "/menu" },
-    { name: siteContent.siteTexts.headerNavEvents, href: "/events" },
-    { name: siteContent.siteTexts.headerNavPromotions, href: "/promotions" },
-    { name: siteContent.siteTexts.headerNavAbout, href: "/about" },
-    { name: siteContent.siteTexts.headerNavDogRescue, href: "/dog-rescue" },
-    { name: siteContent.siteTexts.headerNavContact, href: "/contact" },
+    { name: headerNavTexts.headerNavHome, href: "/" },
+    { name: headerNavTexts.headerNavMenu, href: "/menu" },
+    { name: headerNavTexts.headerNavEvents, href: "/events" },
+    { name: headerNavTexts.headerNavPromotions, href: "/promotions" },
+    { name: headerNavTexts.headerNavAbout, href: "/about" },
+    { name: headerNavTexts.headerNavDogRescue, href: "/dog-rescue" },
+    { name: headerNavTexts.headerNavContact, href: "/contact" },
   ];
 
   return (
@@ -36,7 +49,7 @@ export function Header() {
               <Heart className="h-8 w-8 text-aussie-orange" />
             )}
             <span className="font-heading text-2xl font-bold text-brown-800">
-              {siteContent.siteTexts.siteName}
+              {headerNavTexts.siteName}
             </span>
           </Link>
 
