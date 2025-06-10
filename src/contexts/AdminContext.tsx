@@ -267,7 +267,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+  import.meta.env.VITE_API_URL || "https://kingaroos-backend.onrender.com/api/content";
 
 const ADMIN_PASSWORD = "kingarooadmin";
 
