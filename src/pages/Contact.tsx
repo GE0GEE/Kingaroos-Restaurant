@@ -1,6 +1,5 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { GoogleMap } from "@/components/GoogleMap";
 import {
   MapPin,
   Clock,
@@ -154,14 +153,19 @@ export default function Contact() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <GoogleMap
-                    lat={siteContent.siteTexts.contactMapLatitude}
-                    lng={siteContent.siteTexts.contactMapLongitude}
-                    zoom={16}
-                    height="384px"
-                    restaurantName={siteContent.siteTexts.contactLocationName}
-                    address={`${siteContent.siteTexts.contactLocationAddress}, ${siteContent.siteTexts.contactLocationCity}`}
-                  />
+                  <div className="w-full h-96">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="rounded-b-lg"
+                      title={`Map showing location of ${siteContent.siteTexts.contactLocationName}`}
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
