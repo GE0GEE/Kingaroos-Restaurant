@@ -199,6 +199,25 @@ export interface SiteContent {
     contactCantWaitText: string;
     contactSeeYouText: string;
 
+    // Contact Page - Additional Fields for hardcoded content
+    contactDogPolicy1: string;
+    contactDogPolicy2: string;
+    contactDogPolicy3: string;
+    contactDogPolicy4: string;
+    contactReservations1: string;
+    contactReservations2: string;
+    contactReservations3: string;
+    contactReservations4: string;
+    contactParkingAccess1: string;
+    contactParkingAccess2: string;
+    contactParkingAccess3: string;
+    contactParkingAccess4: string;
+    contactPayment1: string;
+    contactPayment2: string;
+    contactPayment3: string;
+    contactPayment4: string;
+    contactInstagramHandle: string;
+
     // Footer
     footerTagline: string;
     footerContactTitle: string;
