@@ -785,7 +785,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const content = await response.json();
-        setSiteContent(content);
+        // Ensure all required fields from defaultSiteContent are present
+        const mergedContent = {
+          ...defaultSiteContent,
+          ...content,
+          siteTexts: {
+            ...defaultSiteContent.siteTexts,
+            ...(content.siteTexts || {})
+          }
+        };
+        setSiteContent(mergedContent);
         setIsServerConnected(true);
         console.log("✅ Connected to server");
       } else {
@@ -803,7 +812,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       if (saved) {
         try {
           const parsedContent = JSON.parse(saved);
-          setSiteContent(parsedContent);
+          // Ensure defaultSiteContent fields are merged with localStorage content
+          const mergedContent = {
+            ...defaultSiteContent,
+            ...parsedContent,
+            siteTexts: {
+              ...defaultSiteContent.siteTexts,
+              ...(parsedContent.siteTexts || {})
+            }
+          };
+          setSiteContent(mergedContent);
           console.log("📱 Loaded content from localStorage");
         } catch (parseError) {
           console.error("Failed to parse localStorage content:", parseError);
