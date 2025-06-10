@@ -44,7 +44,7 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 to={item.href}
                 className={cn(
                   "font-body text-sm font-medium transition-colors hover:text-aussie-orange",
@@ -79,7 +79,7 @@ export function Header() {
             <div className="px-2 pt-2 pb-3 space-y-1 bg-cream-100 rounded-lg mt-2">
               {navigation.map((item) => (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
                   className={cn(
                     "block px-3 py-2 rounded-md text-base font-medium transition-colors",
@@ -94,6 +94,7 @@ export function Header() {
               ))}
             </div>
           </div>
+        )}
         )}
       </nav>
     </header>
