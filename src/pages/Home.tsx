@@ -1,14 +1,72 @@
+import { useState, useEffect } from "react";
 import { Heart, Users, UtensilsCrossed, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
 
+const heroImages = [
+  {
+    url: "/placeholder.svg",
+    alt: "Restaurant exterior with outdoor seating and happy customers with dogs",
+    gradient: "from-sand-300/80 to-brown-300/80",
+  },
+  {
+    url: "/placeholder.svg",
+    alt: "Delicious Australian food spread on wooden table",
+    gradient: "from-aussie-orange/70 to-brown-400/80",
+  },
+  {
+    url: "/placeholder.svg",
+    alt: "Happy rescue dogs playing in restaurant garden area",
+    gradient: "from-aussie-eucalyptus/60 to-sand-400/80",
+  },
+];
+
 export default function Home() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1,
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Layout>
-      {/* Hero Banner */}
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-br from-sand-300 to-brown-300">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Hero Banner with Rotating Background Images */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Images */}
+        {heroImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {/* Background Image Placeholder */}
+            <div
+              className="absolute inset-0 bg-sand-200"
+              style={{
+                backgroundImage: `url(${image.url})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
+            {/* Gradient Overlay */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${image.gradient}`}
+            />
+            {/* Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-black/20" />
+          </div>
+        ))}
+
+        {/* Hero Content */}
         <div className="relative z-10 text-center text-white max-w-4xl px-4">
           <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
             KINGAROOS
@@ -30,6 +88,24 @@ export default function Home() {
             >
               Learn More
             </Button>
+          </div>
+        </div>
+
+        {/* Image Indicators */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="flex space-x-2">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex
+                    ? "bg-white"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                onClick={() => setCurrentImageIndex(index)}
+                aria-label={`View image ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </section>
