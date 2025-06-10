@@ -1,0 +1,892 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Layout } from "@/components/Layout";
+import { useAdmin } from "@/contexts/AdminContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Trash2, Edit, Plus, Save, LogOut, Upload } from "lucide-react";
+import type { Dog, MenuItem, Event, Promotion } from "@/contexts/AdminContext";
+
+export default function Admin() {
+  const navigate = useNavigate();
+  const {
+    logout,
+    siteContent,
+    updateSiteContent,
+    addDog,
+    updateDog,
+    deleteDog,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    addPromotion,
+    updatePromotion,
+    deletePromotion,
+  } = useAdmin();
+
+  const [editingTexts, setEditingTexts] = useState(siteContent.siteTexts);
+  const [editingDog, setEditingDog] = useState<Partial<Dog> | null>(null);
+  const [editingMenuItem, setEditingMenuItem] =
+    useState<Partial<MenuItem> | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Partial<Event> | null>(null);
+  const [editingPromotion, setEditingPromotion] =
+    useState<Partial<Promotion> | null>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const handleSaveTexts = () => {
+    updateSiteContent({ siteTexts: editingTexts });
+    alert("Site texts updated successfully!");
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        updateSiteContent({ logoImage: result });
+        alert("Logo updated successfully!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleHeroImageUpload = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        const newHeroImages = [...siteContent.heroImages];
+        newHeroImages[index] = { ...newHeroImages[index], url: result };
+        updateSiteContent({ heroImages: newHeroImages });
+        alert(`Hero image ${index + 1} updated successfully!`);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="min-h-screen bg-cream-50 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="font-heading text-4xl font-bold text-brown-800">
+              KINGAROOS Admin Panel
+            </h1>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="text-brown-600"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+
+          <Tabs defaultValue="texts" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="texts">Site Texts</TabsTrigger>
+              <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsTrigger value="dogs">Dogs</TabsTrigger>
+              <TabsTrigger value="menu">Menu</TabsTrigger>
+              <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="promotions">Promotions</TabsTrigger>
+            </TabsList>
+
+            {/* Site Texts Tab */}
+            <TabsContent value="texts">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit Site Texts</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {Object.entries(editingTexts).map(([key, value]) => (
+                      <div key={key} className="space-y-2">
+                        <Label className="text-brown-800 font-semibold">
+                          {key
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (str) => str.toUpperCase())}
+                        </Label>
+                        {key.includes("Text") ? (
+                          <Textarea
+                            value={value}
+                            onChange={(e) =>
+                              setEditingTexts((prev) => ({
+                                ...prev,
+                                [key]: e.target.value,
+                              }))
+                            }
+                            className="min-h-[100px]"
+                          />
+                        ) : (
+                          <Input
+                            value={value}
+                            onChange={(e) =>
+                              setEditingTexts((prev) => ({
+                                ...prev,
+                                [key]: e.target.value,
+                              }))
+                            }
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    onClick={handleSaveTexts}
+                    className="bg-aussie-orange hover:bg-aussie-burnt-red"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save All Texts
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Images Tab */}
+            <TabsContent value="images">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Logo Image</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="flex-1"
+                        />
+                        <Button variant="outline">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload Logo
+                        </Button>
+                      </div>
+                      {siteContent.logoImage && (
+                        <img
+                          src={siteContent.logoImage}
+                          alt="Logo"
+                          className="w-32 h-32 object-cover rounded-lg border"
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Hero Images</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {siteContent.heroImages.map((image, index) => (
+                        <div key={index} className="space-y-4">
+                          <Label className="text-brown-800 font-semibold">
+                            Hero Image {index + 1}
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleHeroImageUpload(index, e)}
+                          />
+                          <div className="w-full h-32 bg-sand-200 rounded-lg flex items-center justify-center">
+                            <span className="text-brown-600 text-sm">
+                              {image.alt}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Dogs Tab */}
+            <TabsContent value="dogs">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Manage Dogs</CardTitle>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Dog
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add New Dog</DialogTitle>
+                      </DialogHeader>
+                      <DogForm
+                        dog={{}}
+                        onSubmit={(dog) => {
+                          addDog(dog as Omit<Dog, "id">);
+                          setEditingDog(null);
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {siteContent.dogs.map((dog) => (
+                      <Card key={dog.id} className="border-sand-200">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="font-heading text-lg font-bold text-brown-800">
+                                {dog.name}
+                              </h3>
+                              <p className="text-brown-600">{dog.breed}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Edit {dog.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <DogForm
+                                    dog={dog}
+                                    onSubmit={(updates) => {
+                                      updateDog(dog.id, updates);
+                                      setEditingDog(null);
+                                    }}
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteDog(dog.id)}
+                                className="text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-brown-600 text-sm">
+                            {dog.personality}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Menu Tab */}
+            <TabsContent value="menu">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Manage Menu Items</CardTitle>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Menu Item
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Menu Item</DialogTitle>
+                      </DialogHeader>
+                      <MenuItemForm
+                        item={{}}
+                        onSubmit={(item) => {
+                          addMenuItem(item as Omit<MenuItem, "id">);
+                          setEditingMenuItem(null);
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {["starters", "mains", "desserts", "drinks"].map(
+                      (category) => (
+                        <div key={category}>
+                          <h3 className="font-heading text-xl font-bold text-brown-800 mb-4 capitalize">
+                            {category}
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {siteContent.menuItems
+                              .filter((item) => item.category === category)
+                              .map((item) => (
+                                <Card key={item.id} className="border-sand-200">
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold text-brown-800">
+                                          {item.name}
+                                        </h4>
+                                        <p className="text-brown-600 text-sm">
+                                          {item.description}
+                                        </p>
+                                        <p className="font-bold text-aussie-orange">
+                                          {item.price}
+                                        </p>
+                                      </div>
+                                      <div className="flex space-x-2">
+                                        <Dialog>
+                                          <DialogTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                              <Edit className="h-4 w-4" />
+                                            </Button>
+                                          </DialogTrigger>
+                                          <DialogContent>
+                                            <DialogHeader>
+                                              <DialogTitle>
+                                                Edit {item.name}
+                                              </DialogTitle>
+                                            </DialogHeader>
+                                            <MenuItemForm
+                                              item={item}
+                                              onSubmit={(updates) => {
+                                                updateMenuItem(
+                                                  item.id,
+                                                  updates,
+                                                );
+                                                setEditingMenuItem(null);
+                                              }}
+                                            />
+                                          </DialogContent>
+                                        </Dialog>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() =>
+                                            deleteMenuItem(item.id)
+                                          }
+                                          className="text-red-600 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Events Tab */}
+            <TabsContent value="events">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Manage Events</CardTitle>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Event
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Event</DialogTitle>
+                      </DialogHeader>
+                      <EventForm
+                        event={{}}
+                        onSubmit={(event) => {
+                          addEvent(event as Omit<Event, "id">);
+                          setEditingEvent(null);
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {siteContent.events.map((event) => (
+                      <Card key={event.id} className="border-sand-200">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="font-heading text-lg font-bold text-brown-800">
+                                {event.title}
+                              </h3>
+                              <p className="text-brown-600">
+                                {event.date} - {event.time}
+                              </p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      Edit {event.title}
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <EventForm
+                                    event={event}
+                                    onSubmit={(updates) => {
+                                      updateEvent(event.id, updates);
+                                      setEditingEvent(null);
+                                    }}
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteEvent(event.id)}
+                                className="text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-brown-600 text-sm">
+                            {event.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Promotions Tab */}
+            <TabsContent value="promotions">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Manage Promotions</CardTitle>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Promotion
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Promotion</DialogTitle>
+                      </DialogHeader>
+                      <PromotionForm
+                        promotion={{}}
+                        onSubmit={(promotion) => {
+                          addPromotion(promotion as Omit<Promotion, "id">);
+                          setEditingPromotion(null);
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {siteContent.promotions.map((promo) => (
+                      <Card key={promo.id} className="border-sand-200">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="font-heading text-lg font-bold text-brown-800">
+                                {promo.title}
+                              </h3>
+                              <p className="text-brown-600">{promo.subtitle}</p>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      Edit {promo.title}
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <PromotionForm
+                                    promotion={promo}
+                                    onSubmit={(updates) => {
+                                      updatePromotion(promo.id, updates);
+                                      setEditingPromotion(null);
+                                    }}
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deletePromotion(promo.id)}
+                                className="text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-brown-600 text-sm">
+                            {promo.details}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </Layout>
+  );
+}
+
+// Form Components
+function DogForm({
+  dog,
+  onSubmit,
+}: {
+  dog: Partial<Dog>;
+  onSubmit: (dog: Partial<Dog>) => void;
+}) {
+  const [formData, setFormData] = useState(dog);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Name</Label>
+          <Input
+            value={formData.name || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Breed</Label>
+          <Input
+            value={formData.breed || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, breed: e.target.value }))
+            }
+          />
+        </div>
+      </div>
+      <div>
+        <Label>Age</Label>
+        <Input
+          value={formData.age || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, age: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Personality</Label>
+        <Textarea
+          value={formData.personality || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, personality: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Rescue Story</Label>
+        <Textarea
+          value={formData.rescueStory || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, rescueStory: e.target.value }))
+          }
+        />
+      </div>
+      <Button onClick={() => onSubmit(formData)} className="w-full">
+        Save Dog
+      </Button>
+    </div>
+  );
+}
+
+function MenuItemForm({
+  item,
+  onSubmit,
+}: {
+  item: Partial<MenuItem>;
+  onSubmit: (item: Partial<MenuItem>) => void;
+}) {
+  const [formData, setFormData] = useState(item);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Name</Label>
+        <Input
+          value={formData.name || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, name: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          }
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Price</Label>
+          <Input
+            value={formData.price || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, price: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Category</Label>
+          <Select
+            value={formData.category || ""}
+            onValueChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                category: value as MenuItem["category"],
+              }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="starters">Starters</SelectItem>
+              <SelectItem value="mains">Mains</SelectItem>
+              <SelectItem value="desserts">Desserts</SelectItem>
+              <SelectItem value="drinks">Drinks</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <Button onClick={() => onSubmit(formData)} className="w-full">
+        Save Menu Item
+      </Button>
+    </div>
+  );
+}
+
+function EventForm({
+  event,
+  onSubmit,
+}: {
+  event: Partial<Event>;
+  onSubmit: (event: Partial<Event>) => void;
+}) {
+  const [formData, setFormData] = useState(event);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Title</Label>
+        <Input
+          value={formData.title || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, title: e.target.value }))
+          }
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Date</Label>
+          <Input
+            value={formData.date || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, date: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Time</Label>
+          <Input
+            value={formData.time || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, time: e.target.value }))
+            }
+          />
+        </div>
+      </div>
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          }
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Type</Label>
+          <Select
+            value={formData.type || ""}
+            onValueChange={(value) =>
+              setFormData((prev) => ({ ...prev, type: value as Event["type"] }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="music">Music</SelectItem>
+              <SelectItem value="dogs">Dogs</SelectItem>
+              <SelectItem value="family">Family</SelectItem>
+              <SelectItem value="special">Special</SelectItem>
+              <SelectItem value="food">Food</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Category</Label>
+          <Select
+            value={formData.category || ""}
+            onValueChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                category: value as Event["category"],
+              }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="thisWeek">This Week</SelectItem>
+              <SelectItem value="comingSoon">Coming Soon</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <Button onClick={() => onSubmit(formData)} className="w-full">
+        Save Event
+      </Button>
+    </div>
+  );
+}
+
+function PromotionForm({
+  promotion,
+  onSubmit,
+}: {
+  promotion: Partial<Promotion>;
+  onSubmit: (promotion: Partial<Promotion>) => void;
+}) {
+  const [formData, setFormData] = useState(promotion);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Title</Label>
+        <Input
+          value={formData.title || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, title: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Subtitle</Label>
+        <Input
+          value={formData.subtitle || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, subtitle: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Details</Label>
+        <Input
+          value={formData.details || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, details: e.target.value }))
+          }
+        />
+      </div>
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description || ""}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, description: e.target.value }))
+          }
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Badge</Label>
+          <Input
+            value={formData.badge || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, badge: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Color</Label>
+          <Input
+            value={formData.color || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, color: e.target.value }))
+            }
+          />
+        </div>
+      </div>
+      <Button onClick={() => onSubmit(formData)} className="w-full">
+        Save Promotion
+      </Button>
+    </div>
+  );
+}

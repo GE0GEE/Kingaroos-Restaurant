@@ -1,6 +1,45 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail, Facebook, Instagram } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAdmin } from "@/contexts/AdminContext";
 
 export function Footer() {
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const { login, siteContent } = useAdmin();
+  const navigate = useNavigate();
+
+  const handleAdminClick = () => {
+    setShowLoginDialog(true);
+    setError("");
+    setPassword("");
+  };
+
+  const handleLogin = () => {
+    if (login(password)) {
+      setShowLoginDialog(false);
+      navigate("/admin");
+    } else {
+      setError("Invalid password");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
+  };
+
   return (
     <footer className="bg-brown-800 text-cream-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -8,8 +47,21 @@ export function Footer() {
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Heart className="h-8 w-8 text-aussie-orange" />
-              <span className="font-heading text-2xl font-bold">KINGAROOS</span>
+              {siteContent.logoImage ? (
+                <img
+                  src={siteContent.logoImage}
+                  alt="KINGAROOS Logo"
+                  className="h-8 w-8 object-cover rounded"
+                />
+              ) : (
+                <Heart className="h-8 w-8 text-aussie-orange" />
+              )}
+              <span
+                className="font-heading text-2xl font-bold cursor-pointer hover:text-aussie-orange transition-colors"
+                onClick={handleAdminClick}
+              >
+                KINGAROOS
+              </span>
             </div>
             <p className="font-body text-cream-200 max-w-xs">
               Great Food. Good Vibes. Helping Paws. Every meal helps rescue a
@@ -60,6 +112,50 @@ export function Footer() {
           </p>
         </div>
       </div>
+
+      {/* Admin Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl text-brown-800">
+              Admin Login
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="password" className="text-brown-800">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="mt-1"
+                placeholder="Enter admin password"
+                autoFocus
+              />
+              {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                onClick={handleLogin}
+                className="flex-1 bg-aussie-orange hover:bg-aussie-burnt-red"
+              >
+                Login
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowLoginDialog(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }
