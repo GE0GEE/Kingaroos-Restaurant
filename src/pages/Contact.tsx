@@ -9,19 +9,34 @@ import {
   Instagram,
   Navigation,
 } from "lucide-react";
+import { useAdmin } from "@/contexts/AdminContext";
 
 export default function Contact() {
+  const { siteContent, loading } = useAdmin();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <MapPin className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading contact info...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* Header */}
       <section className="bg-gradient-to-r from-brown-200 to-sand-200 py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-4">
-            Get In Touch
+            {siteContent.siteTexts.contactTitle}
           </h1>
           <p className="font-body text-xl text-brown-600 max-w-2xl mx-auto">
-            Come visit us, give us a call, or connect with us online. We'd love
-            to hear from you and welcome you to the KINGAROOS family!
+            {siteContent.siteTexts.contactSubtitle}
           </p>
         </div>
       </section>
@@ -37,23 +52,23 @@ export default function Contact() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-3 font-heading text-2xl text-brown-800">
                     <MapPin className="h-7 w-7 text-aussie-orange" />
-                    <span>Location</span>
+                    <span>{siteContent.siteTexts.contactLocationTitle}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="font-body text-brown-600">
                     <p className="font-semibold text-lg">
-                      KINGAROOS Restaurant
+                      {siteContent.siteTexts.contactLocationName}
                     </p>
-                    <p>123 Outback Lane</p>
-                    <p>Sydney, NSW 2000</p>
-                    <p>Australia</p>
+                    <p>{siteContent.siteTexts.contactLocationAddress}</p>
+                    <p>{siteContent.siteTexts.contactLocationCity}</p>
+                    <p>{siteContent.siteTexts.contactLocationCountry}</p>
                   </div>
                   <div className="pt-3">
                     <div className="flex items-center space-x-2 text-aussie-orange">
                       <Navigation className="h-4 w-4" />
                       <span className="font-body text-sm">
-                        Easy parking available on-site
+                        {siteContent.siteTexts.contactParkingText}
                       </span>
                     </div>
                   </div>
@@ -65,26 +80,26 @@ export default function Contact() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-3 font-heading text-2xl text-brown-800">
                     <Clock className="h-7 w-7 text-aussie-orange" />
-                    <span>Opening Hours</span>
+                    <span>{siteContent.siteTexts.contactHoursTitle}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 font-body text-brown-600">
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
-                      <span>Monday - Thursday</span>
+                      <span>{siteContent.siteTexts.contactMondayThursday}</span>
                       <span className="font-semibold">11:00 AM - 9:00 PM</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
-                      <span>Friday - Saturday</span>
+                      <span>{siteContent.siteTexts.contactFridaySaturday}</span>
                       <span className="font-semibold">11:00 AM - 10:00 PM</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
-                      <span>Sunday</span>
+                      <span>{siteContent.siteTexts.contactSunday}</span>
                       <span className="font-semibold">10:00 AM - 8:00 PM</span>
                     </div>
                     <div className="pt-3">
                       <p className="text-sm text-aussie-orange">
-                        Kitchen closes 30 minutes before closing time
+                        {siteContent.siteTexts.contactKitchenClosesText}
                       </p>
                     </div>
                   </div>
@@ -96,7 +111,7 @@ export default function Contact() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-3 font-heading text-2xl text-brown-800">
                     <Phone className="h-7 w-7 text-aussie-orange" />
-                    <span>Contact Details</span>
+                    <span>{siteContent.siteTexts.contactDetailsTitle}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -104,18 +119,22 @@ export default function Contact() {
                     <div className="flex items-center space-x-3">
                       <Phone className="h-5 w-5 text-aussie-orange" />
                       <div>
-                        <p className="font-semibold">(02) 1234 5678</p>
+                        <p className="font-semibold">
+                          {siteContent.siteTexts.homePhone}
+                        </p>
                         <p className="text-sm">
-                          Call for reservations or inquiries
+                          {siteContent.siteTexts.contactPhoneDescription}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <Mail className="h-5 w-5 text-aussie-orange" />
                       <div>
-                        <p className="font-semibold">hello@kingaroos.com.au</p>
+                        <p className="font-semibold">
+                          {siteContent.siteTexts.homeEmail}
+                        </p>
                         <p className="text-sm">
-                          General inquiries and feedback
+                          {siteContent.siteTexts.contactEmailDescription}
                         </p>
                       </div>
                     </div>
@@ -130,7 +149,7 @@ export default function Contact() {
               <Card className="border-sand-200 shadow-lg">
                 <CardHeader>
                   <CardTitle className="font-heading text-2xl text-brown-800">
-                    Find Us Here
+                    {siteContent.siteTexts.contactFindUsTitle}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -155,13 +174,12 @@ export default function Contact() {
               <Card className="border-sand-200 shadow-lg">
                 <CardHeader>
                   <CardTitle className="font-heading text-2xl text-brown-800">
-                    Follow Our Journey
+                    {siteContent.siteTexts.contactFollowTitle}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <p className="font-body text-brown-600">
-                    Stay connected with us on social media for the latest
-                    updates, rescue dog stories, and behind-the-scenes moments!
+                    {siteContent.siteTexts.contactFollowText}
                   </p>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
@@ -171,7 +189,7 @@ export default function Contact() {
                           @KingaroosRestaurant
                         </p>
                         <p className="font-body text-brown-600 text-sm">
-                          Daily updates and community stories
+                          {siteContent.siteTexts.contactFacebookDescription}
                         </p>
                       </div>
                     </div>
@@ -182,7 +200,7 @@ export default function Contact() {
                           @kingaroos_sydney
                         </p>
                         <p className="font-body text-brown-600 text-sm">
-                          Food photos and rescue dog features
+                          {siteContent.siteTexts.contactInstagramDescription}
                         </p>
                       </div>
                     </div>
@@ -198,13 +216,13 @@ export default function Contact() {
       <section className="py-16 bg-cream-100">
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="font-heading text-3xl font-bold text-center text-brown-800 mb-8">
-            Good to Know
+            {siteContent.siteTexts.contactGoodToKnowTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <Card className="border-sand-200 shadow-sm">
               <CardContent className="p-6">
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  🐶 Bringing Your Dog?
+                  {siteContent.siteTexts.contactDogPolicyTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
                   <p>• Dogs must be well-behaved and leashed</p>
@@ -218,7 +236,7 @@ export default function Contact() {
             <Card className="border-sand-200 shadow-sm">
               <CardContent className="p-6">
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  📞 Reservations
+                  {siteContent.siteTexts.contactReservationsTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
                   <p>• Recommended for dinner and weekends</p>
@@ -232,7 +250,7 @@ export default function Contact() {
             <Card className="border-sand-200 shadow-sm">
               <CardContent className="p-6">
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  🚗 Parking & Access
+                  {siteContent.siteTexts.contactParkingAccessTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
                   <p>• Free on-site parking available</p>
@@ -246,7 +264,7 @@ export default function Contact() {
             <Card className="border-sand-200 shadow-sm">
               <CardContent className="p-6">
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  💳 Payment & Policies
+                  {siteContent.siteTexts.contactPaymentTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
                   <p>• Cash and all major cards accepted</p>
@@ -264,20 +282,18 @@ export default function Contact() {
       <section className="bg-aussie-orange py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-white mb-6">
-            We Can't Wait to Meet You!
+            {siteContent.siteTexts.contactCantWaitTitle}
           </h2>
           <p className="font-body text-xl text-cream-100 mb-8">
-            Whether you're dining solo, bringing the family, or coming with your
-            furry friend, we're here to make your experience memorable. Every
-            visit helps a rescue dog too!
+            {siteContent.siteTexts.contactCantWaitText}
           </p>
           <div className="space-y-4 text-cream-100">
             <p className="font-body text-lg font-semibold">
-              📞 (02) 1234 5678 | 📍 123 Outback Lane, Sydney
+              📞 {siteContent.siteTexts.homePhone} | 📍{" "}
+              {siteContent.siteTexts.homeAddress}
             </p>
             <p className="font-body">
-              See you soon at KINGAROOS - where great food meets helping paws!
-              🐾
+              {siteContent.siteTexts.contactSeeYouText}
             </p>
           </div>
         </div>

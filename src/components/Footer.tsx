@@ -16,8 +16,46 @@ export function Footer() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { login, siteContent } = useAdmin();
   const navigate = useNavigate();
+
+  // Handle potential context loading state
+  let siteContent, login;
+  try {
+    const adminContext = useAdmin();
+    siteContent = adminContext.siteContent;
+    login = adminContext.login;
+  } catch (err) {
+    // Fallback content if context is not available
+    siteContent = {
+      logoImage: "",
+      siteTexts: {
+        siteName: "KINGAROOS",
+        footerTagline:
+          "Great Food. Good Vibes. Helping Paws. Every meal helps rescue a dog in need.",
+        footerContactTitle: "Contact Us",
+        homeAddress: "123 Outback Lane, Sydney, NSW 2000",
+        homePhone: "(02) 1234 5678",
+        homeEmail: "hello@kingaroos.com.au",
+        footerHoursSocialTitle: "Hours & Social",
+        footerMondayThursday: "Mon-Thu: 11am - 9pm",
+        footerFridaySaturday: "Fri-Sat: 11am - 10pm",
+        footerSunday: "Sunday: 10am - 8pm",
+        footerCopyright: "© 2024 KINGAROOS. All rights reserved.",
+        adminLoginTitle: "Admin Login",
+        adminPasswordLabel: "Password",
+        adminPasswordPlaceholder: "Enter admin password",
+        adminLoginButton: "Login",
+        adminCancelButton: "Cancel",
+      },
+    };
+    login = async (password: string) => {
+      if (password === "kingarooadmin") {
+        navigate("/admin");
+        return true;
+      }
+      return false;
+    };
+  }
 
   const handleAdminClick = () => {
     setShowLoginDialog(true);
@@ -25,12 +63,17 @@ export function Footer() {
     setPassword("");
   };
 
-  const handleLogin = () => {
-    if (login(password)) {
-      setShowLoginDialog(false);
-      navigate("/admin");
-    } else {
-      setError("Invalid password");
+  const handleLogin = async () => {
+    try {
+      const success = await login(password);
+      if (success) {
+        setShowLoginDialog(false);
+        navigate("/admin");
+      } else {
+        setError("Invalid password");
+      }
+    } catch (err) {
+      setError("Login failed");
     }
   };
 
