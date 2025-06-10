@@ -22,7 +22,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Edit, Plus, Save, LogOut, Upload } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Trash2,
+  Edit,
+  Plus,
+  Save,
+  LogOut,
+  Upload,
+  Wifi,
+  WifiOff,
+  AlertTriangle,
+} from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion } from "@/contexts/AdminContext";
 
 export default function Admin() {
@@ -30,6 +41,7 @@ export default function Admin() {
   const {
     logout,
     siteContent,
+    isServerConnected,
     updateSiteContent,
     addDog,
     updateDog,
@@ -58,37 +70,51 @@ export default function Admin() {
     navigate("/");
   };
 
-  const handleSaveTexts = () => {
-    updateSiteContent({ siteTexts: editingTexts });
-    alert("Site texts updated successfully!");
+  const handleSaveTexts = async () => {
+    try {
+      await updateSiteContent({ siteTexts: editingTexts });
+      alert("Site texts updated successfully!");
+    } catch (error) {
+      alert("Failed to update site texts. Changes saved locally.");
+    }
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const result = e.target?.result as string;
-        updateSiteContent({ logoImage: result });
-        alert("Logo updated successfully!");
+        try {
+          await updateSiteContent({ logoImage: result });
+          alert("Logo updated successfully!");
+        } catch (error) {
+          alert("Failed to update logo. Change saved locally.");
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleHeroImageUpload = (
+  const handleHeroImageUpload = async (
     index: number,
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const result = e.target?.result as string;
         const newHeroImages = [...siteContent.heroImages];
         newHeroImages[index] = { ...newHeroImages[index], url: result };
-        updateSiteContent({ heroImages: newHeroImages });
-        alert(`Hero image ${index + 1} updated successfully!`);
+        try {
+          await updateSiteContent({ heroImages: newHeroImages });
+          alert(`Hero image ${index + 1} updated successfully!`);
+        } catch (error) {
+          alert(
+            `Failed to update hero image ${index + 1}. Change saved locally.`,
+          );
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -99,9 +125,24 @@ export default function Admin() {
       <div className="min-h-screen bg-cream-50 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="font-heading text-4xl font-bold text-brown-800">
-              KINGAROOS Admin Panel
-            </h1>
+            <div>
+              <h1 className="font-heading text-4xl font-bold text-brown-800">
+                KINGAROOS Admin Panel
+              </h1>
+              <div className="flex items-center space-x-2 mt-2">
+                {isServerConnected ? (
+                  <div className="flex items-center space-x-1 text-green-600">
+                    <Wifi className="h-4 w-4" />
+                    <span className="text-sm font-body">Server Connected</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-1 text-orange-600">
+                    <WifiOff className="h-4 w-4" />
+                    <span className="text-sm font-body">Offline Mode</span>
+                  </div>
+                )}
+              </div>
+            </div>
             <Button
               onClick={handleLogout}
               variant="outline"
@@ -111,6 +152,18 @@ export default function Admin() {
               Logout
             </Button>
           </div>
+
+          {!isServerConnected && (
+            <Alert className="mb-6 border-orange-200 bg-orange-50">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800">
+                <strong>Offline Mode:</strong> The admin server is not
+                available. Changes will be saved locally and visible only to
+                you. To make changes visible to all users, ensure the backend
+                server is running.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Tabs defaultValue="texts" className="space-y-6">
             <TabsList className="grid w-full grid-cols-6">
@@ -222,7 +275,7 @@ export default function Admin() {
                             onChange={(e) => handleHeroImageUpload(index, e)}
                           />
                           <div className="w-full h-32 bg-sand-200 rounded-lg flex items-center justify-center">
-                            <span className="text-brown-600 text-sm">
+                            <span className="text-brown-600 text-sm text-center px-2">
                               {image.alt}
                             </span>
                           </div>
@@ -252,9 +305,14 @@ export default function Admin() {
                       </DialogHeader>
                       <DogForm
                         dog={{}}
-                        onSubmit={(dog) => {
-                          addDog(dog as Omit<Dog, "id">);
-                          setEditingDog(null);
+                        onSubmit={async (dog) => {
+                          try {
+                            await addDog(dog as Omit<Dog, "id">);
+                            setEditingDog(null);
+                            alert("Dog added successfully!");
+                          } catch (error) {
+                            alert("Failed to add dog. Added locally.");
+                          }
                         }}
                       />
                     </DialogContent>
@@ -285,9 +343,16 @@ export default function Admin() {
                                   </DialogHeader>
                                   <DogForm
                                     dog={dog}
-                                    onSubmit={(updates) => {
-                                      updateDog(dog.id, updates);
-                                      setEditingDog(null);
+                                    onSubmit={async (updates) => {
+                                      try {
+                                        await updateDog(dog.id, updates);
+                                        setEditingDog(null);
+                                        alert("Dog updated successfully!");
+                                      } catch (error) {
+                                        alert(
+                                          "Failed to update dog. Updated locally.",
+                                        );
+                                      }
                                     }}
                                   />
                                 </DialogContent>
@@ -295,7 +360,22 @@ export default function Admin() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deleteDog(dog.id)}
+                                onClick={async () => {
+                                  if (
+                                    confirm(
+                                      `Are you sure you want to delete ${dog.name}?`,
+                                    )
+                                  ) {
+                                    try {
+                                      await deleteDog(dog.id);
+                                      alert("Dog deleted successfully!");
+                                    } catch (error) {
+                                      alert(
+                                        "Failed to delete dog. Deleted locally.",
+                                      );
+                                    }
+                                  }
+                                }}
                                 className="text-red-600 hover:bg-red-50"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -331,9 +411,14 @@ export default function Admin() {
                       </DialogHeader>
                       <MenuItemForm
                         item={{}}
-                        onSubmit={(item) => {
-                          addMenuItem(item as Omit<MenuItem, "id">);
-                          setEditingMenuItem(null);
+                        onSubmit={async (item) => {
+                          try {
+                            await addMenuItem(item as Omit<MenuItem, "id">);
+                            setEditingMenuItem(null);
+                            alert("Menu item added successfully!");
+                          } catch (error) {
+                            alert("Failed to add menu item. Added locally.");
+                          }
                         }}
                       />
                     </DialogContent>
@@ -380,12 +465,21 @@ export default function Admin() {
                                             </DialogHeader>
                                             <MenuItemForm
                                               item={item}
-                                              onSubmit={(updates) => {
-                                                updateMenuItem(
-                                                  item.id,
-                                                  updates,
-                                                );
-                                                setEditingMenuItem(null);
+                                              onSubmit={async (updates) => {
+                                                try {
+                                                  await updateMenuItem(
+                                                    item.id,
+                                                    updates,
+                                                  );
+                                                  setEditingMenuItem(null);
+                                                  alert(
+                                                    "Menu item updated successfully!",
+                                                  );
+                                                } catch (error) {
+                                                  alert(
+                                                    "Failed to update menu item. Updated locally.",
+                                                  );
+                                                }
                                               }}
                                             />
                                           </DialogContent>
@@ -393,9 +487,24 @@ export default function Admin() {
                                         <Button
                                           variant="outline"
                                           size="sm"
-                                          onClick={() =>
-                                            deleteMenuItem(item.id)
-                                          }
+                                          onClick={async () => {
+                                            if (
+                                              confirm(
+                                                `Are you sure you want to delete ${item.name}?`,
+                                              )
+                                            ) {
+                                              try {
+                                                await deleteMenuItem(item.id);
+                                                alert(
+                                                  "Menu item deleted successfully!",
+                                                );
+                                              } catch (error) {
+                                                alert(
+                                                  "Failed to delete menu item. Deleted locally.",
+                                                );
+                                              }
+                                            }
+                                          }}
                                           className="text-red-600 hover:bg-red-50"
                                         >
                                           <Trash2 className="h-4 w-4" />
@@ -432,9 +541,14 @@ export default function Admin() {
                       </DialogHeader>
                       <EventForm
                         event={{}}
-                        onSubmit={(event) => {
-                          addEvent(event as Omit<Event, "id">);
-                          setEditingEvent(null);
+                        onSubmit={async (event) => {
+                          try {
+                            await addEvent(event as Omit<Event, "id">);
+                            setEditingEvent(null);
+                            alert("Event added successfully!");
+                          } catch (error) {
+                            alert("Failed to add event. Added locally.");
+                          }
                         }}
                       />
                     </DialogContent>
@@ -469,9 +583,16 @@ export default function Admin() {
                                   </DialogHeader>
                                   <EventForm
                                     event={event}
-                                    onSubmit={(updates) => {
-                                      updateEvent(event.id, updates);
-                                      setEditingEvent(null);
+                                    onSubmit={async (updates) => {
+                                      try {
+                                        await updateEvent(event.id, updates);
+                                        setEditingEvent(null);
+                                        alert("Event updated successfully!");
+                                      } catch (error) {
+                                        alert(
+                                          "Failed to update event. Updated locally.",
+                                        );
+                                      }
                                     }}
                                   />
                                 </DialogContent>
@@ -479,7 +600,22 @@ export default function Admin() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deleteEvent(event.id)}
+                                onClick={async () => {
+                                  if (
+                                    confirm(
+                                      `Are you sure you want to delete ${event.title}?`,
+                                    )
+                                  ) {
+                                    try {
+                                      await deleteEvent(event.id);
+                                      alert("Event deleted successfully!");
+                                    } catch (error) {
+                                      alert(
+                                        "Failed to delete event. Deleted locally.",
+                                      );
+                                    }
+                                  }
+                                }}
                                 className="text-red-600 hover:bg-red-50"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -515,9 +651,16 @@ export default function Admin() {
                       </DialogHeader>
                       <PromotionForm
                         promotion={{}}
-                        onSubmit={(promotion) => {
-                          addPromotion(promotion as Omit<Promotion, "id">);
-                          setEditingPromotion(null);
+                        onSubmit={async (promotion) => {
+                          try {
+                            await addPromotion(
+                              promotion as Omit<Promotion, "id">,
+                            );
+                            setEditingPromotion(null);
+                            alert("Promotion added successfully!");
+                          } catch (error) {
+                            alert("Failed to add promotion. Added locally.");
+                          }
                         }}
                       />
                     </DialogContent>
@@ -550,9 +693,21 @@ export default function Admin() {
                                   </DialogHeader>
                                   <PromotionForm
                                     promotion={promo}
-                                    onSubmit={(updates) => {
-                                      updatePromotion(promo.id, updates);
-                                      setEditingPromotion(null);
+                                    onSubmit={async (updates) => {
+                                      try {
+                                        await updatePromotion(
+                                          promo.id,
+                                          updates,
+                                        );
+                                        setEditingPromotion(null);
+                                        alert(
+                                          "Promotion updated successfully!",
+                                        );
+                                      } catch (error) {
+                                        alert(
+                                          "Failed to update promotion. Updated locally.",
+                                        );
+                                      }
                                     }}
                                   />
                                 </DialogContent>
@@ -560,7 +715,22 @@ export default function Admin() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deletePromotion(promo.id)}
+                                onClick={async () => {
+                                  if (
+                                    confirm(
+                                      `Are you sure you want to delete ${promo.title}?`,
+                                    )
+                                  ) {
+                                    try {
+                                      await deletePromotion(promo.id);
+                                      alert("Promotion deleted successfully!");
+                                    } catch (error) {
+                                      alert(
+                                        "Failed to delete promotion. Deleted locally.",
+                                      );
+                                    }
+                                  }
+                                }}
                                 className="text-red-600 hover:bg-red-50"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -584,7 +754,7 @@ export default function Admin() {
   );
 }
 
-// Form Components
+// Form Components remain the same as before
 function DogForm({
   dog,
   onSubmit,

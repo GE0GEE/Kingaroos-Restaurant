@@ -84,6 +84,7 @@ interface AdminContextType {
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
+  isServerConnected: boolean;
   updateSiteContent: (content: Partial<SiteContent>) => Promise<void>;
   addDog: (dog: Omit<Dog, "id">) => Promise<void>;
   updateDog: (id: string, dog: Partial<Dog>) => Promise<void>;
@@ -103,6 +104,8 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+
+const ADMIN_PASSWORD = "kingarooadmin";
 
 const defaultSiteContent: SiteContent = {
   logoImage: "",
@@ -150,57 +153,185 @@ const defaultSiteContent: SiteContent = {
     contactSubtitle:
       "Come visit us, give us a call, or connect with us online. We'd love to hear from you and welcome you to the KINGAROOS family!",
   },
-  dogs: [],
-  menuItems: [],
-  events: [],
-  promotions: [],
+  dogs: [
+    {
+      id: "1",
+      name: "Bandit",
+      breed: "Border Collie Mix",
+      age: "3 years old",
+      personality:
+        "Energetic and loves playing fetch. Great with kids and other dogs.",
+      beforeImage: "/placeholder.svg",
+      afterImage: "/placeholder.svg",
+      rescueStory:
+        "Found wandering the streets, scared and malnourished. Now a confident, happy dog ready for adventure!",
+    },
+    {
+      id: "2",
+      name: "Rosie",
+      breed: "Golden Retriever Mix",
+      age: "5 years old",
+      personality:
+        "Gentle soul who loves cuddles and long walks. Perfect family dog.",
+      beforeImage: "/placeholder.svg",
+      afterImage: "/placeholder.svg",
+      rescueStory:
+        "Abandoned at a shelter, she was shy and withdrawn. Today she's full of love and ready to be someone's best friend!",
+    },
+  ],
+  menuItems: [
+    {
+      id: "1",
+      name: "Aussie Damper Bread",
+      description:
+        "Traditional bush bread served warm with native pepper butter",
+      price: "$12",
+      featured: true,
+      category: "starters",
+    },
+    {
+      id: "2",
+      name: "The Outback Burger",
+      description:
+        "Grass-fed beef, beetroot, egg, and our secret sauce on damper bun",
+      price: "$28",
+      featured: true,
+      category: "mains",
+    },
+  ],
+  events: [
+    {
+      id: "1",
+      title: "Live Acoustic Friday",
+      date: "Friday, Dec 8",
+      time: "7:00 PM - 9:00 PM",
+      description: "Local musicians perform acoustic sets while you dine",
+      type: "music",
+      category: "thisWeek",
+    },
+  ],
+  promotions: [
+    {
+      id: "1",
+      title: "Happy Hour Special",
+      subtitle: "Monday, Wednesday & Friday",
+      details: "20% off all drinks from 2-5 PM",
+      description: "Unwind with discounted drinks and great vibes",
+      badge: "Weekly Deal",
+      color: "from-aussie-orange to-aussie-burnt-red",
+    },
+  ],
 };
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isServerConnected, setIsServerConnected] = useState(false);
   const [siteContent, setSiteContent] =
     useState<SiteContent>(defaultSiteContent);
 
-  // Fetch content from server on mount
+  // Check server connectivity and load content
   useEffect(() => {
-    fetchContent();
+    initializeContent();
   }, []);
 
-  const fetchContent = async () => {
+  const initializeContent = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/content`);
+
+      // Try to fetch from server first
+      const response = await fetch(`${API_BASE_URL}/content`, {
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      });
+
       if (response.ok) {
         const content = await response.json();
         setSiteContent(content);
+        setIsServerConnected(true);
+        console.log("✅ Connected to server");
+      } else {
+        throw new Error(`Server responded with ${response.status}`);
       }
     } catch (error) {
-      console.error("Failed to fetch content:", error);
+      console.warn(
+        "⚠️ Server not available, using localStorage fallback:",
+        error,
+      );
+      setIsServerConnected(false);
+
+      // Fallback to localStorage
+      const saved = localStorage.getItem("kingaroos-admin-content");
+      if (saved) {
+        try {
+          const parsedContent = JSON.parse(saved);
+          setSiteContent(parsedContent);
+          console.log("📱 Loaded content from localStorage");
+        } catch (parseError) {
+          console.error("Failed to parse localStorage content:", parseError);
+          setSiteContent(defaultSiteContent);
+        }
+      } else {
+        setSiteContent(defaultSiteContent);
+        console.log("🔄 Using default content");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (password: string): Promise<boolean> => {
+  const saveToLocalStorage = (content: SiteContent) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password }),
-      });
-
-      if (response.ok) {
-        setIsLoggedIn(true);
-        return true;
-      }
-      return false;
+      localStorage.setItem("kingaroos-admin-content", JSON.stringify(content));
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error("Failed to save to localStorage:", error);
+    }
+  };
+
+  const apiCall = async (url: string, options: RequestInit = {}) => {
+    if (!isServerConnected) {
+      throw new Error("Server not available");
+    }
+
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      signal: AbortSignal.timeout(10000), // 10 second timeout
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status}`);
+    }
+
+    return response.json();
+  };
+
+  const login = async (password: string): Promise<boolean> => {
+    // Always check password locally first
+    if (password !== ADMIN_PASSWORD) {
       return false;
     }
+
+    // If server is available, validate with server
+    if (isServerConnected) {
+      try {
+        await apiCall("/admin/login", {
+          method: "POST",
+          body: JSON.stringify({ password }),
+        });
+        setIsLoggedIn(true);
+        return true;
+      } catch (error) {
+        console.error("Server login failed, using local validation:", error);
+        setIsServerConnected(false);
+      }
+    }
+
+    // Fallback to local validation
+    setIsLoggedIn(true);
+    return true;
   };
 
   const logout = () => {
@@ -208,222 +339,335 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   };
 
   const updateSiteContent = async (updates: Partial<SiteContent>) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/content`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
+    const newContent = { ...siteContent, ...updates };
 
-      if (response.ok) {
-        const updatedContent = await response.json();
+    if (isServerConnected) {
+      try {
+        const updatedContent = await apiCall("/content", {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
         setSiteContent(updatedContent);
+        saveToLocalStorage(updatedContent);
+        return;
+      } catch (error) {
+        console.error("Server update failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to update content:", error);
     }
+
+    // Fallback to localStorage
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const addDog = async (dog: Omit<Dog, "id">) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/dogs`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dog),
-      });
+    const newDog = { ...dog, id: Date.now().toString() };
 
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall("/dogs", {
+          method: "POST",
+          body: JSON.stringify(dog),
+        });
+        await initializeContent(); // Refresh from server
+        return;
+      } catch (error) {
+        console.error("Server add dog failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to add dog:", error);
     }
+
+    // Fallback to localStorage
+    const newContent = {
+      ...siteContent,
+      dogs: [...siteContent.dogs, newDog],
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const updateDog = async (id: string, updates: Partial<Dog>) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/dogs/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/dogs/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+        await initializeContent(); // Refresh from server
+        return;
+      } catch (error) {
+        console.error("Server update dog failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to update dog:", error);
     }
+
+    // Fallback to localStorage
+    const newContent = {
+      ...siteContent,
+      dogs: siteContent.dogs.map((dog) =>
+        dog.id === id ? { ...dog, ...updates } : dog,
+      ),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const deleteDog = async (id: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/dogs/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/dogs/${id}`, {
+          method: "DELETE",
+        });
+        await initializeContent(); // Refresh from server
+        return;
+      } catch (error) {
+        console.error("Server delete dog failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to delete dog:", error);
     }
+
+    // Fallback to localStorage
+    const newContent = {
+      ...siteContent,
+      dogs: siteContent.dogs.filter((dog) => dog.id !== id),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const addMenuItem = async (item: Omit<MenuItem, "id">) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/menu-items`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(item),
-      });
+    const newItem = { ...item, id: Date.now().toString() };
 
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall("/menu-items", {
+          method: "POST",
+          body: JSON.stringify(item),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server add menu item failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to add menu item:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      menuItems: [...siteContent.menuItems, newItem],
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const updateMenuItem = async (id: string, updates: Partial<MenuItem>) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/menu-items/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server update menu item failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to update menu item:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      menuItems: siteContent.menuItems.map((item) =>
+        item.id === id ? { ...item, ...updates } : item,
+      ),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const deleteMenuItem = async (id: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/menu-items/${id}`, {
+          method: "DELETE",
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server delete menu item failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to delete menu item:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      menuItems: siteContent.menuItems.filter((item) => item.id !== id),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const addEvent = async (event: Omit<Event, "id">) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/events`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(event),
-      });
+    const newEvent = { ...event, id: Date.now().toString() };
 
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall("/events", {
+          method: "POST",
+          body: JSON.stringify(event),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error("Server add event failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to add event:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      events: [...siteContent.events, newEvent],
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const updateEvent = async (id: string, updates: Partial<Event>) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/events/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error("Server update event failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to update event:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      events: siteContent.events.map((event) =>
+        event.id === id ? { ...event, ...updates } : event,
+      ),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const deleteEvent = async (id: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/events/${id}`, {
+          method: "DELETE",
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error("Server delete event failed, using localStorage:", error);
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to delete event:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      events: siteContent.events.filter((event) => event.id !== id),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const addPromotion = async (promo: Omit<Promotion, "id">) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/promotions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(promo),
-      });
+    const newPromo = { ...promo, id: Date.now().toString() };
 
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall("/promotions", {
+          method: "POST",
+          body: JSON.stringify(promo),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server add promotion failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to add promotion:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      promotions: [...siteContent.promotions, newPromo],
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const updatePromotion = async (id: string, updates: Partial<Promotion>) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/promotions/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/promotions/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server update promotion failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to update promotion:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      promotions: siteContent.promotions.map((promo) =>
+        promo.id === id ? { ...promo, ...updates } : promo,
+      ),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   const deletePromotion = async (id: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/promotions/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        await fetchContent(); // Refresh content
+    if (isServerConnected) {
+      try {
+        await apiCall(`/promotions/${id}`, {
+          method: "DELETE",
+        });
+        await initializeContent();
+        return;
+      } catch (error) {
+        console.error(
+          "Server delete promotion failed, using localStorage:",
+          error,
+        );
+        setIsServerConnected(false);
       }
-    } catch (error) {
-      console.error("Failed to delete promotion:", error);
     }
+
+    const newContent = {
+      ...siteContent,
+      promotions: siteContent.promotions.filter((promo) => promo.id !== id),
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
   };
 
   return (
@@ -434,6 +678,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         logout,
         siteContent,
         loading,
+        isServerConnected,
         updateSiteContent,
         addDog,
         updateDog,
