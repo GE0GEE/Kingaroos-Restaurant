@@ -55,7 +55,35 @@ export default function DogRescue() {
         </div>
       </section>
 
-
+      {/* Impact Stats */}
+      <section className="py-12 bg-cream-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="font-heading text-4xl font-bold text-aussie-orange">
+                {siteContent.dogs.length + 89}
+              </div>
+              <div className="font-body text-brown-600">
+                Dogs Helped This Year
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="font-heading text-4xl font-bold text-aussie-orange">
+                89
+              </div>
+              <div className="font-body text-brown-600">Dogs Found Homes</div>
+            </div>
+            <div className="space-y-2">
+              <div className="font-heading text-4xl font-bold text-aussie-orange">
+                $42,500
+              </div>
+              <div className="font-body text-brown-600">
+                Raised for Rescue Care
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Dog Gallery */}
       <section className="py-16 px-4">
@@ -85,25 +113,12 @@ export default function DogRescue() {
                 >
                   <CardContent className="p-0">
                     <div className="relative">
-                      <div className="w-full h-64 bg-sand-200 rounded-t-lg overflow-hidden">
-                        {dog.afterImage && dog.afterImage !== "/placeholder.svg" ? (
-                          <img 
-                            src={dog.afterImage} 
-                            alt={`${dog.name} after recovery`} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center space-y-2">
-                              <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
-                              <p className="font-body text-brown-600 text-sm">
-                                Click to see {dog.name}'s story
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                          <p className="text-white font-semibold text-sm">Click to view {dog.name}'s transformation</p>
+                      <div className="w-full h-64 bg-sand-200 rounded-t-lg flex items-center justify-center">
+                        <div className="text-center space-y-2">
+                          <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
+                          <p className="font-body text-brown-600 text-sm">
+                            Click to see {dog.name}'s story
+                          </p>
                         </div>
                       </div>
                     </div>

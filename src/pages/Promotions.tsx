@@ -123,33 +123,52 @@ export default function Promotions() {
         </div>
       </section>
 
-
+      {/* Terms & Conditions */}
+      <section className="py-12 bg-sand-100">
+        <div className="max-w-4xl mx-auto px-4">
+          <h3 className="font-heading text-2xl font-bold text-center text-brown-800 mb-8">
+            Terms & Conditions
+          </h3>
+          <Card className="border-sand-200 shadow-sm">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 font-body text-brown-600 text-sm">
+                <div className="space-y-2">
+                  <p>• Promotions cannot be combined with other offers</p>
+                  <p>• Dog discount requires well-behaved, leashed pets</p>
+                  <p>• Happy hour applies to alcoholic beverages only</p>
+                  <p>• Kids eat free applies to children 12 and under</p>
+                </div>
+                <div className="space-y-2">
+                  <p>• Birthday club requires valid ID on visit</p>
+                  <p>• Early bird special excludes weekends and holidays</p>
+                  <p>• Seasonal promotions subject to availability</p>
+                  <p>• Management reserves the right to modify promotions</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
       {/* Call to Action */}
       <section className="bg-gradient-to-r from-aussie-orange to-aussie-burnt-red py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-white mb-6">
-            {siteContent.siteTexts.promotionsReadyToSaveTitle}
+            Ready to Save & Make a Difference?
           </h2>
           <p className="font-body text-xl text-cream-100 mb-8">
-            {siteContent.siteTexts.promotionsReadyToSaveText}
+            Visit us today to take advantage of these great deals while helping
+            rescue dogs find their forever homes. Every meal matters!
           </p>
-          <div className="space-y-6 text-cream-100">
+          <div className="space-y-4 text-cream-100">
             <p className="font-body text-lg">
-              📞 {siteContent.siteTexts.promotionsCallAheadText}
+              📞 Call ahead for reservations:{" "}
+              <span className="font-semibold">(02) 1234 5678</span>
             </p>
-            <p className="font-body">📍 {siteContent.siteTexts.promotionsAddressText}</p>
+            <p className="font-body">📍 123 Outback Lane, Sydney, NSW 2000</p>
             <p className="font-body text-sm">
-              {siteContent.siteTexts.promotionsFollowText}
+              Follow us on social media for flash sales and surprise promotions!
             </p>
-            <div className="flex justify-center space-x-4 pt-2">
-              <button onClick={() => window.location.href = 'tel:+61212345678'} className="bg-white text-aussie-orange hover:bg-cream-100 px-6 py-3 rounded-md font-semibold transition-colors duration-200">
-                Call Now
-              </button>
-              <button onClick={() => window.open('https://maps.google.com/?q=123+Outback+Lane,+Sydney,+NSW+2000', '_blank')} className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-3 rounded-md font-semibold transition-colors duration-200">
-                Get Directions
-              </button>
-            </div>
           </div>
         </div>
       </section>
