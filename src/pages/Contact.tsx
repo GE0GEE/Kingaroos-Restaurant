@@ -225,10 +225,10 @@ export default function Contact() {
                   {siteContent.siteTexts.contactDogPolicyTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
-                  <p>• Dogs must be well-behaved and leashed</p>
-                  <p>• We provide water bowls and dog treats</p>
-                  <p>• Outdoor seating area is dog-friendly</p>
-                  <p>• Please clean up after your pet</p>
+                  <p>• {siteContent.siteTexts.contactDogPolicy1}</p>
+                  <p>• {siteContent.siteTexts.contactDogPolicy2}</p>
+                  <p>• {siteContent.siteTexts.contactDogPolicy3}</p>
+                  <p>• {siteContent.siteTexts.contactDogPolicy4}</p>
                 </div>
               </CardContent>
             </Card>
