@@ -55,7 +55,8 @@ export function Footer() {
 
         <div className="border-t border-brown-700 mt-8 pt-8 text-center">
           <p className="font-body text-cream-300">
-            © 2024 KINGAROOS. All rights reserved. Made with ❤️ for dogs.
+            © 2024 KINGAROOS. All rights reserved.
+            <br />
           </p>
         </div>
       </div>
