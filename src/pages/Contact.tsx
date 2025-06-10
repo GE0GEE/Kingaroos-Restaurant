@@ -155,8 +155,8 @@ export default function Contact() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <GoogleMap
-                    lat={9.247222}
-                    lng={123.296944}
+                    lat={siteContent.siteTexts.contactMapLatitude}
+                    lng={siteContent.siteTexts.contactMapLongitude}
                     zoom={16}
                     height="384px"
                     restaurantName={siteContent.siteTexts.contactLocationName}

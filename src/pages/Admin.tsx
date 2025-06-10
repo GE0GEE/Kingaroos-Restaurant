@@ -301,6 +301,8 @@ export default function Admin() {
       "contactCantWaitTitle",
       "contactCantWaitText",
       "contactSeeYouText",
+      "contactMapLatitude",
+      "contactMapLongitude",
     ],
     Footer: [
       "footerTagline",

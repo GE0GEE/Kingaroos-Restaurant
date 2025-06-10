@@ -217,6 +217,8 @@ export interface SiteContent {
     contactPayment3: string;
     contactPayment4: string;
     contactInstagramHandle: string;
+    contactMapLatitude: number;
+    contactMapLongitude: number;
 
     // Footer
     footerTagline: string;
@@ -486,6 +488,8 @@ const defaultSiteContent: SiteContent = {
     contactPayment3: "Split bills welcome",
     contactPayment4: "10% service charge for groups of 8+",
     contactInstagramHandle: "@kingaroos_sydney",
+    contactMapLatitude: 9.247222,
+    contactMapLongitude: 123.296944,
 
     // Footer
     footerTagline:
