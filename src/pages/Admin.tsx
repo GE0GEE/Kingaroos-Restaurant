@@ -368,9 +368,10 @@ export default function Admin() {
           )}
 
           <Tabs defaultValue="texts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="dogs">Dogs</TabsTrigger>
               <TabsTrigger value="menu">Menu</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
@@ -466,6 +467,91 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
+            {/* Settings Tab */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Site Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Theme Toggle */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-brown-800">Theme Settings</h3>
+                    <div className="flex items-center space-x-4">
+                      <Label htmlFor="theme-toggle">Theme</Label>
+                      <Select 
+                        value={siteContent.theme} 
+                        onValueChange={(value) => {
+                          updateSiteContent({ theme: value as 'light' | 'dark' });
+                        }}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Social Media Links */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-brown-800">Social Media Links</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="facebook-link">Facebook URL</Label>
+                        <Input 
+                          id="facebook-link"
+                          value={siteContent.socialLinks.facebook} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, facebook: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://facebook.com/yourpage"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="instagram-link">Instagram URL</Label>
+                        <Input 
+                          id="instagram-link"
+                          value={siteContent.socialLinks.instagram} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, instagram: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://instagram.com/yourhandle"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="twitter-link">Twitter URL</Label>
+                        <Input 
+                          id="twitter-link"
+                          value={siteContent.socialLinks.twitter} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, twitter: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://twitter.com/yourhandle"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4">
+                    <Button 
+                      onClick={() => alert("Settings saved successfully!")} 
+                      className="bg-aussie-orange hover:bg-aussie-burnt-red"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
             {/* Images Tab */}
             <TabsContent value="images">
               <div className="space-y-6">

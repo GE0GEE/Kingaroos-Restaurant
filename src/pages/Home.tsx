@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, Users, UtensilsCrossed, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { useAdmin } from "@/contexts/AdminContext";
 
 export default function Home() {
   const { siteContent, loading } = useAdmin();
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
@@ -56,10 +58,10 @@ export default function Home() {
             />
             {/* Balanced Gradient Overlay */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-50`}
+              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-30`}
             />
             {/* Balanced Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-black/15" />
+            <div className="absolute inset-0 bg-black/10" />
           </div>
         ))}
 
@@ -75,6 +77,7 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-aussie-orange hover:bg-aussie-burnt-red text-white font-body font-semibold"
+              onClick={() => navigate('/menu')}
             >
               {siteContent.siteTexts.homeViewMenuButton}
             </Button>
@@ -82,6 +85,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-brown-800 font-body font-semibold"
+              onClick={() => navigate('/about')}
             >
               {siteContent.siteTexts.homeLearnMoreButton}
             </Button>
