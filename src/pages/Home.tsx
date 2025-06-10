@@ -54,12 +54,12 @@ export default function Home() {
                 backgroundRepeat: "no-repeat",
               }}
             />
-            {/* Gradient Overlay */}
+            {/* Light Gradient Overlay */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${image.gradient}`}
+              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-30`}
             />
-            {/* Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-black/20" />
+            {/* Very Light Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-black/10" />
           </div>
         ))}
 
@@ -262,14 +262,18 @@ export default function Home() {
             {/* Map */}
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-0">
-                <div className="w-full h-96 bg-sand-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <MapPin className="h-12 w-12 text-aussie-orange mx-auto" />
-                    <p className="font-body text-brown-600">Google Maps</p>
-                    <p className="font-body text-sm text-brown-500">
-                      Interactive map would be embedded here
-                    </p>
-                  </div>
+                <div className="w-full h-96">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="rounded-lg"
+                    title="KINGAROOS Restaurant Location Map"
+                  />
                 </div>
               </CardContent>
             </Card>
