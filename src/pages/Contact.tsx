@@ -197,7 +197,7 @@ export default function Contact() {
                       <Instagram className="h-6 w-6 text-aussie-orange" />
                       <div>
                         <p className="font-body font-semibold text-brown-800">
-                          @kingaroos_sydney
+                          {siteContent.siteTexts.contactInstagramHandle}
                         </p>
                         <p className="font-body text-brown-600 text-sm">
                           {siteContent.siteTexts.contactInstagramDescription}
@@ -239,10 +239,10 @@ export default function Contact() {
                   {siteContent.siteTexts.contactReservationsTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
-                  <p>• Recommended for dinner and weekends</p>
-                  <p>• Call ahead for large groups (6+ people)</p>
-                  <p>• Walk-ins welcome based on availability</p>
-                  <p>• Special events may require booking</p>
+                  <p>• {siteContent.siteTexts.contactReservations1}</p>
+                  <p>• {siteContent.siteTexts.contactReservations2}</p>
+                  <p>• {siteContent.siteTexts.contactReservations3}</p>
+                  <p>• {siteContent.siteTexts.contactReservations4}</p>
                 </div>
               </CardContent>
             </Card>
@@ -253,10 +253,10 @@ export default function Contact() {
                   {siteContent.siteTexts.contactParkingAccessTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
-                  <p>• Free on-site parking available</p>
-                  <p>• Wheelchair accessible entrance</p>
-                  <p>• Public transport: Bus stop 2 blocks away</p>
-                  <p>• Bicycle parking available</p>
+                  <p>• {siteContent.siteTexts.contactParkingAccess1}</p>
+                  <p>• {siteContent.siteTexts.contactParkingAccess2}</p>
+                  <p>• {siteContent.siteTexts.contactParkingAccess3}</p>
+                  <p>• {siteContent.siteTexts.contactParkingAccess4}</p>
                 </div>
               </CardContent>
             </Card>
@@ -267,10 +267,10 @@ export default function Contact() {
                   {siteContent.siteTexts.contactPaymentTitle}
                 </h3>
                 <div className="space-y-2 font-body text-brown-600 text-sm">
-                  <p>• Cash and all major cards accepted</p>
-                  <p>• No BYO alcohol policy</p>
-                  <p>• Split bills welcome</p>
-                  <p>• 10% service charge for groups of 8+</p>
+                  <p>• {siteContent.siteTexts.contactPayment1}</p>
+                  <p>• {siteContent.siteTexts.contactPayment2}</p>
+                  <p>• {siteContent.siteTexts.contactPayment3}</p>
+                  <p>• {siteContent.siteTexts.contactPayment4}</p>
                 </div>
               </CardContent>
             </Card>
