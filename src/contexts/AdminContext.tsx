@@ -22,6 +22,7 @@ export interface MenuItem {
   name: string;
   description: string;
   price: string;
+  image: string;
   featured?: boolean;
   category: "starters" | "mains" | "desserts" | "drinks";
 }
@@ -178,6 +179,29 @@ const defaultSiteContent: SiteContent = {
       rescueStory:
         "Abandoned at a shelter, she was shy and withdrawn. Today she's full of love and ready to be someone's best friend!",
     },
+    {
+      id: "3",
+      name: "Max",
+      breed: "Australian Cattle Dog",
+      age: "2 years old",
+      personality:
+        "Smart and loyal. Needs an active family who loves adventures.",
+      beforeImage: "/placeholder.svg",
+      afterImage: "/placeholder.svg",
+      rescueStory:
+        "Came to us as an injured puppy. After months of care and training, he's now a strong, healthy young dog!",
+    },
+    {
+      id: "4",
+      name: "Luna",
+      breed: "Labrador Mix",
+      age: "4 years old",
+      personality: "Sweet and calm, loves children and is great with cats too.",
+      beforeImage: "/placeholder.svg",
+      afterImage: "/placeholder.svg",
+      rescueStory:
+        "Rescued from neglect, she was fearful of humans. Now she's the sweetest, most trusting companion you could ask for!",
+    },
   ],
   menuItems: [
     {
@@ -186,17 +210,87 @@ const defaultSiteContent: SiteContent = {
       description:
         "Traditional bush bread served warm with native pepper butter",
       price: "$12",
+      image: "/placeholder.svg",
       featured: true,
       category: "starters",
     },
     {
       id: "2",
+      name: "Kangaroo Carpaccio",
+      description: "Thinly sliced kangaroo with native herbs and lemon myrtle",
+      price: "$18",
+      image: "/placeholder.svg",
+      category: "starters",
+    },
+    {
+      id: "3",
+      name: "Salt & Pepper Calamari",
+      description: "Fresh local calamari with bush tomato aioli",
+      price: "$16",
+      image: "/placeholder.svg",
+      category: "starters",
+    },
+    {
+      id: "4",
       name: "The Outback Burger",
       description:
         "Grass-fed beef, beetroot, egg, and our secret sauce on damper bun",
       price: "$28",
+      image: "/placeholder.svg",
       featured: true,
       category: "mains",
+    },
+    {
+      id: "5",
+      name: "Barramundi & Chips",
+      description:
+        "Beer-battered barramundi with hand-cut chips and mushy peas",
+      price: "$32",
+      image: "/placeholder.svg",
+      category: "mains",
+    },
+    {
+      id: "6",
+      name: "Slow-Cooked Lamb",
+      description:
+        "Rosemary lamb shoulder with roasted vegetables and mint jus",
+      price: "$36",
+      image: "/placeholder.svg",
+      category: "mains",
+    },
+    {
+      id: "7",
+      name: "Lamington Trifle",
+      description: "Layers of sponge, cream, and berry compote with coconut",
+      price: "$14",
+      image: "/placeholder.svg",
+      category: "desserts",
+    },
+    {
+      id: "8",
+      name: "Pavlova Stack",
+      description: "Mini pavlovas with native fruits and cream",
+      price: "$16",
+      image: "/placeholder.svg",
+      featured: true,
+      category: "desserts",
+    },
+    {
+      id: "9",
+      name: "Flat White",
+      description: "Premium Australian coffee blend",
+      price: "$5",
+      image: "/placeholder.svg",
+      category: "drinks",
+    },
+    {
+      id: "10",
+      name: "Lemon Myrtle Spritz",
+      description: "Refreshing native citrus cocktail",
+      price: "$14",
+      image: "/placeholder.svg",
+      featured: true,
+      category: "drinks",
     },
   ],
   events: [
@@ -209,6 +303,52 @@ const defaultSiteContent: SiteContent = {
       type: "music",
       category: "thisWeek",
     },
+    {
+      id: "2",
+      title: "Puppy Playdate",
+      date: "Saturday, Dec 9",
+      time: "10:00 AM - 12:00 PM",
+      description:
+        "Bring your pups for a social morning with other dog families",
+      type: "dogs",
+      category: "thisWeek",
+    },
+    {
+      id: "3",
+      title: "Sunday Brunch & Trivia",
+      date: "Sunday, Dec 10",
+      time: "11:00 AM - 2:00 PM",
+      description: "Family-friendly trivia with prizes and bottomless coffee",
+      type: "family",
+      category: "thisWeek",
+    },
+    {
+      id: "4",
+      title: "Christmas Carol Singalong",
+      date: "Friday, Dec 15",
+      time: "6:00 PM - 8:00 PM",
+      description: "Join us for festive carols and holiday cheer",
+      type: "music",
+      category: "comingSoon",
+    },
+    {
+      id: "5",
+      title: "Rescue Dog Meet & Greet",
+      date: "Saturday, Dec 16",
+      time: "1:00 PM - 4:00 PM",
+      description: "Meet adoptable dogs from our partner rescue organizations",
+      type: "dogs",
+      category: "comingSoon",
+    },
+    {
+      id: "6",
+      title: "New Year's Family Feast",
+      date: "Sunday, Dec 31",
+      time: "5:00 PM - 9:00 PM",
+      description: "Celebrate the new year with a special family-style dinner",
+      type: "special",
+      category: "comingSoon",
+    },
   ],
   promotions: [
     {
@@ -219,6 +359,51 @@ const defaultSiteContent: SiteContent = {
       description: "Unwind with discounted drinks and great vibes",
       badge: "Weekly Deal",
       color: "from-aussie-orange to-aussie-burnt-red",
+    },
+    {
+      id: "2",
+      title: "Every Meal Helps Rescue a Dog!",
+      subtitle: "With Every Purchase",
+      details: "$2 from every main dish goes to dog rescue",
+      description: "Dine with purpose and make a difference",
+      badge: "Always Active",
+      color: "from-aussie-eucalyptus to-green-600",
+    },
+    {
+      id: "3",
+      title: "Bring Your Pooch Discount",
+      subtitle: "Dog-Friendly Dining",
+      details: "10% off when you bring your well-behaved dog",
+      description: "We love our four-legged customers!",
+      badge: "Dog Special",
+      color: "from-brown-600 to-brown-800",
+    },
+    {
+      id: "4",
+      title: "Family Feast Sunday",
+      subtitle: "Every Sunday",
+      details: "Kids eat free with adult main dish purchase",
+      description: "Perfect for family outings and bonding time",
+      badge: "Family Deal",
+      color: "from-sand-500 to-brown-500",
+    },
+    {
+      id: "5",
+      title: "Birthday Club",
+      subtitle: "Join Our Community",
+      details: "Free dessert on your birthday month",
+      description: "Sign up in-store to join our birthday club",
+      badge: "Loyalty Program",
+      color: "from-aussie-burnt-red to-red-700",
+    },
+    {
+      id: "6",
+      title: "Early Bird Special",
+      subtitle: "Before 6 PM Weekdays",
+      details: "15% off all main dishes",
+      description: "Beat the rush and save on dinner",
+      badge: "Weekday Deal",
+      color: "from-brown-500 to-aussie-orange",
     },
   ],
 };

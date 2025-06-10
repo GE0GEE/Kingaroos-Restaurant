@@ -2,68 +2,24 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Music, Users, Heart, Coffee } from "lucide-react";
+import { useAdmin } from "@/contexts/AdminContext";
 
-const thisWeekEvents = [
-  {
-    title: "Live Acoustic Friday",
-    date: "Friday, Dec 8",
-    time: "7:00 PM - 9:00 PM",
-    description: "Local musicians perform acoustic sets while you dine",
-    icon: Music,
-    type: "music",
-  },
-  {
-    title: "Puppy Playdate",
-    date: "Saturday, Dec 9",
-    time: "10:00 AM - 12:00 PM",
-    description: "Bring your pups for a social morning with other dog families",
-    icon: Heart,
-    type: "dogs",
-  },
-  {
-    title: "Sunday Brunch & Trivia",
-    date: "Sunday, Dec 10",
-    time: "11:00 AM - 2:00 PM",
-    description: "Family-friendly trivia with prizes and bottomless coffee",
-    icon: Coffee,
-    type: "family",
-  },
-];
-
-const comingSoonEvents = [
-  {
-    title: "Christmas Carol Singalong",
-    date: "Friday, Dec 15",
-    time: "6:00 PM - 8:00 PM",
-    description: "Join us for festive carols and holiday cheer",
-    icon: Music,
-    type: "special",
-  },
-  {
-    title: "Rescue Dog Meet & Greet",
-    date: "Saturday, Dec 16",
-    time: "1:00 PM - 4:00 PM",
-    description: "Meet adoptable dogs from our partner rescue organizations",
-    icon: Heart,
-    type: "dogs",
-  },
-  {
-    title: "New Year's Family Feast",
-    date: "Sunday, Dec 31",
-    time: "5:00 PM - 9:00 PM",
-    description: "Celebrate the new year with a special family-style dinner",
-    icon: Users,
-    type: "special",
-  },
-  {
-    title: "Aussie BBQ Championship",
-    date: "Saturday, Jan 13",
-    time: "12:00 PM - 6:00 PM",
-    description: "Watch our chefs compete in the ultimate BBQ showdown",
-    icon: Users,
-    type: "food",
-  },
-];
+const getEventIcon = (type: string) => {
+  switch (type) {
+    case "music":
+      return Music;
+    case "dogs":
+      return Heart;
+    case "family":
+      return Users;
+    case "special":
+      return Coffee;
+    case "food":
+      return Coffee;
+    default:
+      return Calendar;
+  }
+};
 
 const getEventColor = (type: string) => {
   switch (type) {
@@ -83,17 +39,38 @@ const getEventColor = (type: string) => {
 };
 
 export default function Events() {
+  const { siteContent, loading } = useAdmin();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <Calendar className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading events...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const thisWeekEvents = siteContent.events.filter(
+    (event) => event.category === "thisWeek",
+  );
+  const comingSoonEvents = siteContent.events.filter(
+    (event) => event.category === "comingSoon",
+  );
+
   return (
     <Layout>
       {/* Header */}
       <section className="bg-gradient-to-r from-aussie-orange/20 to-brown-200 py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-4">
-            Events & Happenings
+            {siteContent.siteTexts.eventsTitle}
           </h1>
           <p className="font-body text-xl text-brown-600 max-w-2xl mx-auto">
-            Join us for special events, live music, and community gatherings.
-            There's always something fun happening at KINGAROOS!
+            {siteContent.siteTexts.eventsSubtitle}
           </p>
         </div>
       </section>
@@ -107,41 +84,54 @@ export default function Events() {
               This Week
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {thisWeekEvents.map((event, index) => (
-              <Card
-                key={index}
-                className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`w-12 h-12 ${getEventColor(event.type)} rounded-full flex items-center justify-center`}
-                    >
-                      <event.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <Badge className="bg-aussie-orange text-white font-body">
-                      This Week
-                    </Badge>
-                  </div>
-                  <CardTitle className="font-heading text-xl text-brown-800">
-                    {event.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-1">
-                    <p className="font-body font-semibold text-brown-700">
-                      {event.date}
-                    </p>
-                    <p className="font-body text-brown-600">{event.time}</p>
-                  </div>
-                  <p className="font-body text-brown-600 leading-relaxed">
-                    {event.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+          {thisWeekEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="h-16 w-16 text-brown-400 mx-auto mb-4" />
+              <p className="font-body text-brown-600">
+                No events scheduled for this week. Check back soon!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {thisWeekEvents.map((event) => {
+                const IconComponent = getEventIcon(event.type);
+                return (
+                  <Card
+                    key={event.id}
+                    className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow"
+                  >
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={`w-12 h-12 ${getEventColor(event.type)} rounded-full flex items-center justify-center`}
+                        >
+                          <IconComponent className="h-6 w-6 text-white" />
+                        </div>
+                        <Badge className="bg-aussie-orange text-white font-body">
+                          This Week
+                        </Badge>
+                      </div>
+                      <CardTitle className="font-heading text-xl text-brown-800">
+                        {event.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="space-y-1">
+                        <p className="font-body font-semibold text-brown-700">
+                          {event.date}
+                        </p>
+                        <p className="font-body text-brown-600">{event.time}</p>
+                      </div>
+                      <p className="font-body text-brown-600 leading-relaxed">
+                        {event.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -154,45 +144,60 @@ export default function Events() {
               Coming Soon
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {comingSoonEvents.map((event, index) => (
-              <Card
-                key={index}
-                className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <CardContent className="p-6">
-                  <div className="flex space-x-4">
-                    <div
-                      className={`w-16 h-16 ${getEventColor(event.type)} rounded-lg flex items-center justify-center flex-shrink-0`}
-                    >
-                      <event.icon className="h-8 w-8 text-white" />
-                    </div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-heading text-xl font-bold text-brown-800">
-                          {event.title}
-                        </h3>
-                        {event.type === "special" && (
-                          <Badge className="bg-aussie-burnt-red text-white font-body text-xs">
-                            Special Event
-                          </Badge>
-                        )}
+
+          {comingSoonEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="h-16 w-16 text-brown-400 mx-auto mb-4" />
+              <p className="font-body text-brown-600">
+                No upcoming events scheduled. Check back soon for new events!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {comingSoonEvents.map((event) => {
+                const IconComponent = getEventIcon(event.type);
+                return (
+                  <Card
+                    key={event.id}
+                    className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex space-x-4">
+                        <div
+                          className={`w-16 h-16 ${getEventColor(event.type)} rounded-lg flex items-center justify-center flex-shrink-0`}
+                        >
+                          <IconComponent className="h-8 w-8 text-white" />
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-start justify-between">
+                            <h3 className="font-heading text-xl font-bold text-brown-800">
+                              {event.title}
+                            </h3>
+                            {event.type === "special" && (
+                              <Badge className="bg-aussie-burnt-red text-white font-body text-xs">
+                                Special Event
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="font-body font-semibold text-brown-700">
+                              {event.date}
+                            </p>
+                            <p className="font-body text-brown-600">
+                              {event.time}
+                            </p>
+                          </div>
+                          <p className="font-body text-brown-600 leading-relaxed">
+                            {event.description}
+                          </p>
+                        </div>
                       </div>
-                      <div className="space-y-1">
-                        <p className="font-body font-semibold text-brown-700">
-                          {event.date}
-                        </p>
-                        <p className="font-body text-brown-600">{event.time}</p>
-                      </div>
-                      <p className="font-body text-brown-600 leading-relaxed">
-                        {event.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

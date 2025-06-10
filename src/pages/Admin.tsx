@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Trash2,
   Edit,
@@ -33,6 +34,7 @@ import {
   Wifi,
   WifiOff,
   AlertTriangle,
+  ImageIcon,
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion } from "@/contexts/AdminContext";
 
@@ -299,7 +301,7 @@ export default function Admin() {
                         Add Dog
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Add New Dog</DialogTitle>
                       </DialogHeader>
@@ -324,11 +326,14 @@ export default function Admin() {
                       <Card key={dog.id} className="border-sand-200">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-4">
-                            <div>
+                            <div className="flex-1">
                               <h3 className="font-heading text-lg font-bold text-brown-800">
                                 {dog.name}
                               </h3>
                               <p className="text-brown-600">{dog.breed}</p>
+                              <p className="text-brown-600 text-sm">
+                                {dog.age}
+                              </p>
                             </div>
                             <div className="flex space-x-2">
                               <Dialog>
@@ -337,7 +342,7 @@ export default function Admin() {
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
+                                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
                                     <DialogTitle>Edit {dog.name}</DialogTitle>
                                   </DialogHeader>
@@ -405,7 +410,7 @@ export default function Admin() {
                         Add Menu Item
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Add New Menu Item</DialogTitle>
                       </DialogHeader>
@@ -438,77 +443,107 @@ export default function Admin() {
                               .map((item) => (
                                 <Card key={item.id} className="border-sand-200">
                                   <CardContent className="p-4">
-                                    <div className="flex justify-between items-start">
-                                      <div className="flex-1">
-                                        <h4 className="font-semibold text-brown-800">
-                                          {item.name}
-                                        </h4>
-                                        <p className="text-brown-600 text-sm">
-                                          {item.description}
-                                        </p>
-                                        <p className="font-bold text-aussie-orange">
-                                          {item.price}
-                                        </p>
+                                    <div className="flex space-x-4">
+                                      {/* Image Preview */}
+                                      <div className="w-16 h-16 flex-shrink-0">
+                                        {item.image &&
+                                        item.image !== "/placeholder.svg" ? (
+                                          <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover rounded-md"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full bg-sand-200 rounded-md flex items-center justify-center">
+                                            <ImageIcon className="h-6 w-6 text-brown-400" />
+                                          </div>
+                                        )}
                                       </div>
-                                      <div className="flex space-x-2">
-                                        <Dialog>
-                                          <DialogTrigger asChild>
-                                            <Button variant="outline" size="sm">
-                                              <Edit className="h-4 w-4" />
-                                            </Button>
-                                          </DialogTrigger>
-                                          <DialogContent>
-                                            <DialogHeader>
-                                              <DialogTitle>
-                                                Edit {item.name}
-                                              </DialogTitle>
-                                            </DialogHeader>
-                                            <MenuItemForm
-                                              item={item}
-                                              onSubmit={async (updates) => {
-                                                try {
-                                                  await updateMenuItem(
-                                                    item.id,
-                                                    updates,
-                                                  );
-                                                  setEditingMenuItem(null);
-                                                  alert(
-                                                    "Menu item updated successfully!",
-                                                  );
-                                                } catch (error) {
-                                                  alert(
-                                                    "Failed to update menu item. Updated locally.",
-                                                  );
+
+                                      <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                          <div className="flex-1">
+                                            <h4 className="font-semibold text-brown-800">
+                                              {item.name}
+                                            </h4>
+                                            <p className="text-brown-600 text-sm">
+                                              {item.description}
+                                            </p>
+                                            <p className="font-bold text-aussie-orange">
+                                              {item.price}
+                                            </p>
+                                            {item.featured && (
+                                              <span className="text-xs bg-aussie-orange text-white px-2 py-1 rounded">
+                                                Featured
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex space-x-2 ml-2">
+                                            <Dialog>
+                                              <DialogTrigger asChild>
+                                                <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                >
+                                                  <Edit className="h-4 w-4" />
+                                                </Button>
+                                              </DialogTrigger>
+                                              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                                <DialogHeader>
+                                                  <DialogTitle>
+                                                    Edit {item.name}
+                                                  </DialogTitle>
+                                                </DialogHeader>
+                                                <MenuItemForm
+                                                  item={item}
+                                                  onSubmit={async (updates) => {
+                                                    try {
+                                                      await updateMenuItem(
+                                                        item.id,
+                                                        updates,
+                                                      );
+                                                      setEditingMenuItem(null);
+                                                      alert(
+                                                        "Menu item updated successfully!",
+                                                      );
+                                                    } catch (error) {
+                                                      alert(
+                                                        "Failed to update menu item. Updated locally.",
+                                                      );
+                                                    }
+                                                  }}
+                                                />
+                                              </DialogContent>
+                                            </Dialog>
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={async () => {
+                                                if (
+                                                  confirm(
+                                                    `Are you sure you want to delete ${item.name}?`,
+                                                  )
+                                                ) {
+                                                  try {
+                                                    await deleteMenuItem(
+                                                      item.id,
+                                                    );
+                                                    alert(
+                                                      "Menu item deleted successfully!",
+                                                    );
+                                                  } catch (error) {
+                                                    alert(
+                                                      "Failed to delete menu item. Deleted locally.",
+                                                    );
+                                                  }
                                                 }
                                               }}
-                                            />
-                                          </DialogContent>
-                                        </Dialog>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={async () => {
-                                            if (
-                                              confirm(
-                                                `Are you sure you want to delete ${item.name}?`,
-                                              )
-                                            ) {
-                                              try {
-                                                await deleteMenuItem(item.id);
-                                                alert(
-                                                  "Menu item deleted successfully!",
-                                                );
-                                              } catch (error) {
-                                                alert(
-                                                  "Failed to delete menu item. Deleted locally.",
-                                                );
-                                              }
-                                            }
-                                          }}
-                                          className="text-red-600 hover:bg-red-50"
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                              className="text-red-600 hover:bg-red-50"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
                                   </CardContent>
@@ -567,6 +602,9 @@ export default function Admin() {
                               <p className="text-brown-600">
                                 {event.date} - {event.time}
                               </p>
+                              <span className="text-xs bg-brown-100 text-brown-700 px-2 py-1 rounded">
+                                {event.category} • {event.type}
+                              </span>
                             </div>
                             <div className="flex space-x-2">
                               <Dialog>
@@ -677,6 +715,9 @@ export default function Admin() {
                                 {promo.title}
                               </h3>
                               <p className="text-brown-600">{promo.subtitle}</p>
+                              <span className="text-xs bg-brown-100 text-brown-700 px-2 py-1 rounded">
+                                {promo.badge}
+                              </span>
                             </div>
                             <div className="flex space-x-2">
                               <Dialog>
@@ -754,7 +795,7 @@ export default function Admin() {
   );
 }
 
-// Form Components remain the same as before
+// Enhanced Form Components with Image Upload
 function DogForm({
   dog,
   onSubmit,
@@ -763,6 +804,21 @@ function DogForm({
   onSubmit: (dog: Partial<Dog>) => void;
 }) {
   const [formData, setFormData] = useState(dog);
+
+  const handleImageUpload = (
+    field: "beforeImage" | "afterImage",
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData((prev) => ({ ...prev, [field]: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -813,6 +869,43 @@ function DogForm({
           }
         />
       </div>
+
+      {/* Image Uploads */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Before Image</Label>
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageUpload("beforeImage", e)}
+          />
+          {formData.beforeImage &&
+            formData.beforeImage !== "/placeholder.svg" && (
+              <img
+                src={formData.beforeImage}
+                alt="Before"
+                className="w-full h-32 object-cover rounded-md mt-2"
+              />
+            )}
+        </div>
+        <div>
+          <Label>After Image</Label>
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageUpload("afterImage", e)}
+          />
+          {formData.afterImage &&
+            formData.afterImage !== "/placeholder.svg" && (
+              <img
+                src={formData.afterImage}
+                alt="After"
+                className="w-full h-32 object-cover rounded-md mt-2"
+              />
+            )}
+        </div>
+      </div>
+
       <Button onClick={() => onSubmit(formData)} className="w-full">
         Save Dog
       </Button>
@@ -828,6 +921,18 @@ function MenuItemForm({
   onSubmit: (item: Partial<MenuItem>) => void;
 }) {
   const [formData, setFormData] = useState(item);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData((prev) => ({ ...prev, image: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -882,6 +987,32 @@ function MenuItemForm({
           </Select>
         </div>
       </div>
+
+      {/* Featured Checkbox */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="featured"
+          checked={formData.featured || false}
+          onCheckedChange={(checked) =>
+            setFormData((prev) => ({ ...prev, featured: checked as boolean }))
+          }
+        />
+        <Label htmlFor="featured">Featured Item (House Special)</Label>
+      </div>
+
+      {/* Image Upload */}
+      <div>
+        <Label>Item Image</Label>
+        <Input type="file" accept="image/*" onChange={handleImageUpload} />
+        {formData.image && formData.image !== "/placeholder.svg" && (
+          <img
+            src={formData.image}
+            alt="Menu item"
+            className="w-full h-32 object-cover rounded-md mt-2"
+          />
+        )}
+      </div>
+
       <Button onClick={() => onSubmit(formData)} className="w-full">
         Save Menu Item
       </Button>
@@ -1045,12 +1176,13 @@ function PromotionForm({
           />
         </div>
         <div>
-          <Label>Color</Label>
+          <Label>Color (TailwindCSS classes)</Label>
           <Input
             value={formData.color || ""}
             onChange={(e) =>
               setFormData((prev) => ({ ...prev, color: e.target.value }))
             }
+            placeholder="from-aussie-orange to-aussie-burnt-red"
           />
         </div>
       </div>
