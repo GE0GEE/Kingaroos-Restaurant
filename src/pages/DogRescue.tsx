@@ -1,7 +1,14 @@
+import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Heart, MessageCircle, X } from "lucide-react";
 
 const rescueDogs = [
   {
@@ -10,7 +17,10 @@ const rescueDogs = [
     age: "3 years old",
     personality:
       "Energetic and loves playing fetch. Great with kids and other dogs.",
-    status: "available",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Found wandering the streets, scared and malnourished. Now a confident, happy dog ready for adventure!",
   },
   {
     name: "Rosie",
@@ -18,7 +28,10 @@ const rescueDogs = [
     age: "5 years old",
     personality:
       "Gentle soul who loves cuddles and long walks. Perfect family dog.",
-    status: "available",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Abandoned at a shelter, she was shy and withdrawn. Today she's full of love and ready to be someone's best friend!",
   },
   {
     name: "Max",
@@ -26,14 +39,20 @@ const rescueDogs = [
     age: "2 years old",
     personality:
       "Smart and loyal. Needs an active family who loves adventures.",
-    status: "adopted",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Came to us as an injured puppy. After months of care and training, he's now a strong, healthy young dog!",
   },
   {
     name: "Luna",
     breed: "Labrador Mix",
     age: "4 years old",
     personality: "Sweet and calm, loves children and is great with cats too.",
-    status: "available",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Rescued from neglect, she was fearful of humans. Now she's the sweetest, most trusting companion you could ask for!",
   },
   {
     name: "Cooper",
@@ -41,7 +60,10 @@ const rescueDogs = [
     age: "6 years old",
     personality:
       "Friendly senior who just wants a quiet home to enjoy his golden years.",
-    status: "available",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Senior dog found as a stray, thin and tired. With proper care, he's now healthy and looking for a peaceful retirement home!",
   },
   {
     name: "Bella",
@@ -49,11 +71,18 @@ const rescueDogs = [
     age: "1 year old",
     personality:
       "Playful puppy energy! Needs training but so much love to give.",
-    status: "adopted",
+    beforeImage: "/placeholder.svg",
+    afterImage: "/placeholder.svg",
+    rescueStory:
+      "Born in the shelter, she needed socialization and training. Now she's a confident, playful pup ready for her family!",
   },
 ];
 
 export default function DogRescue() {
+  const [selectedDog, setSelectedDog] = useState<(typeof rescueDogs)[0] | null>(
+    null,
+  );
+
   return (
     <Layout>
       {/* Header */}
@@ -116,16 +145,19 @@ export default function DogRescue() {
       {/* Dog Gallery */}
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
+          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-8">
             Meet Our Rescue Friends
           </h2>
+          <p className="font-body text-center text-brown-600 mb-12 max-w-2xl mx-auto">
+            Click on any dog to see their amazing transformation story from
+            rescue to recovery!
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {rescueDogs.map((dog, index) => (
               <Card
                 key={index}
-                className={`border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 ${
-                  dog.status === "adopted" ? "opacity-75" : ""
-                }`}
+                className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                onClick={() => setSelectedDog(dog)}
               >
                 <CardContent className="p-0">
                   <div className="relative">
@@ -133,22 +165,9 @@ export default function DogRescue() {
                       <div className="text-center space-y-2">
                         <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
                         <p className="font-body text-brown-600 text-sm">
-                          Photo of {dog.name}
+                          Click to see {dog.name}'s story
                         </p>
                       </div>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <Badge
-                        className={`${
-                          dog.status === "adopted"
-                            ? "bg-aussie-eucalyptus text-white"
-                            : "bg-aussie-orange text-white"
-                        } font-body font-semibold`}
-                      >
-                        {dog.status === "adopted"
-                          ? "🏡 Adopted!"
-                          : "❤️ Available"}
-                      </Badge>
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
@@ -166,6 +185,15 @@ export default function DogRescue() {
                     <p className="font-body text-brown-600 leading-relaxed">
                       {dog.personality}
                     </p>
+                    <div className="pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-aussie-orange text-aussie-orange hover:bg-aussie-orange hover:text-white"
+                      >
+                        See {dog.name}'s Transformation
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -173,6 +201,106 @@ export default function DogRescue() {
           </div>
         </div>
       </section>
+
+      {/* Dog Story Modal */}
+      <Dialog open={!!selectedDog} onOpenChange={() => setSelectedDog(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-3xl font-bold text-brown-800 flex items-center justify-between">
+              {selectedDog?.name}'s Transformation Story
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedDog(null)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedDog && (
+            <div className="space-y-6">
+              {/* Dog Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="font-body text-brown-600">
+                    <span className="font-semibold">Breed:</span>{" "}
+                    {selectedDog.breed}
+                  </p>
+                  <p className="font-body text-brown-600">
+                    <span className="font-semibold">Age:</span>{" "}
+                    {selectedDog.age}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-body text-brown-600">
+                    <span className="font-semibold">Personality:</span>{" "}
+                    {selectedDog.personality}
+                  </p>
+                </div>
+              </div>
+
+              {/* Before and After Images */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 text-center">
+                    Before Rescue
+                  </h3>
+                  <Card className="border-sand-200">
+                    <CardContent className="p-4">
+                      <div className="w-full h-64 bg-sand-200 rounded-lg flex items-center justify-center mb-4">
+                        <div className="text-center space-y-2">
+                          <Heart className="h-12 w-12 text-brown-400 mx-auto" />
+                          <p className="font-body text-brown-500 text-sm">
+                            Before: {selectedDog.name} when first rescued
+                          </p>
+                        </div>
+                      </div>
+                      <p className="font-body text-brown-600 text-center text-sm italic">
+                        When we first found {selectedDog.name}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 text-center">
+                    After Recovery
+                  </h3>
+                  <Card className="border-aussie-orange border-2">
+                    <CardContent className="p-4">
+                      <div className="w-full h-64 bg-sand-200 rounded-lg flex items-center justify-center mb-4">
+                        <div className="text-center space-y-2">
+                          <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
+                          <p className="font-body text-aussie-orange text-sm">
+                            After: {selectedDog.name} today
+                          </p>
+                        </div>
+                      </div>
+                      <p className="font-body text-brown-600 text-center text-sm italic">
+                        {selectedDog.name} today - happy and healthy!
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Rescue Story */}
+              <Card className="bg-cream-50 border-aussie-orange border-2">
+                <CardContent className="p-6">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 mb-4 flex items-center">
+                    <Heart className="h-6 w-6 text-aussie-orange mr-2" />
+                    {selectedDog.name}'s Journey
+                  </h3>
+                  <p className="font-body text-brown-600 leading-relaxed">
+                    {selectedDog.rescueStory}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Call to Action */}
       <section className="bg-brown-800 py-16">
