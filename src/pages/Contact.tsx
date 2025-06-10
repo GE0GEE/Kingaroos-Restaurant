@@ -1,5 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GoogleMap } from "@/components/GoogleMap";
 import {
   MapPin,
   Clock,
@@ -153,20 +154,14 @@ export default function Contact() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="w-full h-96 bg-sand-200 rounded-b-lg flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <MapPin className="h-16 w-16 text-aussie-orange mx-auto" />
-                      <div className="space-y-2">
-                        <p className="font-body text-brown-600 font-semibold">
-                          Google Maps Integration
-                        </p>
-                        <p className="font-body text-brown-500 text-sm max-w-xs">
-                          Interactive map would be embedded here showing our
-                          exact location and nearby landmarks
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <GoogleMap
+                    lat={9.247222}
+                    lng={123.296944}
+                    zoom={16}
+                    height="384px"
+                    restaurantName={siteContent.siteTexts.contactLocationName}
+                    address={`${siteContent.siteTexts.contactLocationAddress}, ${siteContent.siteTexts.contactLocationCity}`}
+                  />
                 </CardContent>
               </Card>
 
