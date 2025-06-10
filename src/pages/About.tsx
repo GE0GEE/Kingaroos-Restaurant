@@ -125,7 +125,8 @@ export default function About() {
                   {siteContent.siteTexts.aboutRestaurantOpensTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  {siteContent.siteTexts.aboutRestaurantOpensText}
+                  Opened our first brick-and-mortar restaurant with a mission:
+                  great food, good vibes, and helping paws.
                 </p>
               </CardContent>
             </Card>
