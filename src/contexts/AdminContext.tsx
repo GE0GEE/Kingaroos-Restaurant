@@ -80,27 +80,29 @@ export interface SiteContent {
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
   siteContent: SiteContent;
-  updateSiteContent: (content: Partial<SiteContent>) => void;
-  addDog: (dog: Omit<Dog, "id">) => void;
-  updateDog: (id: string, dog: Partial<Dog>) => void;
-  deleteDog: (id: string) => void;
-  addMenuItem: (item: Omit<MenuItem, "id">) => void;
-  updateMenuItem: (id: string, item: Partial<MenuItem>) => void;
-  deleteMenuItem: (id: string) => void;
-  addEvent: (event: Omit<Event, "id">) => void;
-  updateEvent: (id: string, event: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
-  addPromotion: (promo: Omit<Promotion, "id">) => void;
-  updatePromotion: (id: string, promo: Partial<Promotion>) => void;
-  deletePromotion: (id: string) => void;
+  loading: boolean;
+  updateSiteContent: (content: Partial<SiteContent>) => Promise<void>;
+  addDog: (dog: Omit<Dog, "id">) => Promise<void>;
+  updateDog: (id: string, dog: Partial<Dog>) => Promise<void>;
+  deleteDog: (id: string) => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
+  updateMenuItem: (id: string, item: Partial<MenuItem>) => Promise<void>;
+  deleteMenuItem: (id: string) => Promise<void>;
+  addEvent: (event: Omit<Event, "id">) => Promise<void>;
+  updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  addPromotion: (promo: Omit<Promotion, "id">) => Promise<void>;
+  updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;
+  deletePromotion: (id: string) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-const ADMIN_PASSWORD = "kingarooadmin";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 const defaultSiteContent: SiteContent = {
   logoImage: "",
@@ -148,216 +150,280 @@ const defaultSiteContent: SiteContent = {
     contactSubtitle:
       "Come visit us, give us a call, or connect with us online. We'd love to hear from you and welcome you to the KINGAROOS family!",
   },
-  dogs: [
-    {
-      id: "1",
-      name: "Bandit",
-      breed: "Border Collie Mix",
-      age: "3 years old",
-      personality:
-        "Energetic and loves playing fetch. Great with kids and other dogs.",
-      beforeImage: "/placeholder.svg",
-      afterImage: "/placeholder.svg",
-      rescueStory:
-        "Found wandering the streets, scared and malnourished. Now a confident, happy dog ready for adventure!",
-    },
-    {
-      id: "2",
-      name: "Rosie",
-      breed: "Golden Retriever Mix",
-      age: "5 years old",
-      personality:
-        "Gentle soul who loves cuddles and long walks. Perfect family dog.",
-      beforeImage: "/placeholder.svg",
-      afterImage: "/placeholder.svg",
-      rescueStory:
-        "Abandoned at a shelter, she was shy and withdrawn. Today she's full of love and ready to be someone's best friend!",
-    },
-  ],
-  menuItems: [
-    {
-      id: "1",
-      name: "Aussie Damper Bread",
-      description:
-        "Traditional bush bread served warm with native pepper butter",
-      price: "$12",
-      featured: true,
-      category: "starters",
-    },
-    {
-      id: "2",
-      name: "The Outback Burger",
-      description:
-        "Grass-fed beef, beetroot, egg, and our secret sauce on damper bun",
-      price: "$28",
-      featured: true,
-      category: "mains",
-    },
-  ],
-  events: [
-    {
-      id: "1",
-      title: "Live Acoustic Friday",
-      date: "Friday, Dec 8",
-      time: "7:00 PM - 9:00 PM",
-      description: "Local musicians perform acoustic sets while you dine",
-      type: "music",
-      category: "thisWeek",
-    },
-  ],
-  promotions: [
-    {
-      id: "1",
-      title: "Happy Hour Special",
-      subtitle: "Monday, Wednesday & Friday",
-      details: "20% off all drinks from 2-5 PM",
-      description: "Unwind with discounted drinks and great vibes",
-      badge: "Weekly Deal",
-      color: "from-aussie-orange to-aussie-burnt-red",
-    },
-  ],
+  dogs: [],
+  menuItems: [],
+  events: [],
+  promotions: [],
 };
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [siteContent, setSiteContent] =
     useState<SiteContent>(defaultSiteContent);
 
+  // Fetch content from server on mount
   useEffect(() => {
-    const saved = localStorage.getItem("kingaroos-admin-content");
-    if (saved) {
-      setSiteContent(JSON.parse(saved));
-    }
+    fetchContent();
   }, []);
 
-  const saveContent = (content: SiteContent) => {
-    setSiteContent(content);
-    localStorage.setItem("kingaroos-admin-content", JSON.stringify(content));
+  const fetchContent = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/content`);
+      if (response.ok) {
+        const content = await response.json();
+        setSiteContent(content);
+      }
+    } catch (error) {
+      console.error("Failed to fetch content:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const login = (password: string): boolean => {
-    if (password === ADMIN_PASSWORD) {
-      setIsLoggedIn(true);
-      return true;
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
     setIsLoggedIn(false);
   };
 
-  const updateSiteContent = (updates: Partial<SiteContent>) => {
-    const newContent = { ...siteContent, ...updates };
-    saveContent(newContent);
+  const updateSiteContent = async (updates: Partial<SiteContent>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/content`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        const updatedContent = await response.json();
+        setSiteContent(updatedContent);
+      }
+    } catch (error) {
+      console.error("Failed to update content:", error);
+    }
   };
 
-  const addDog = (dog: Omit<Dog, "id">) => {
-    const newDog = { ...dog, id: Date.now().toString() };
-    const newContent = {
-      ...siteContent,
-      dogs: [...siteContent.dogs, newDog],
-    };
-    saveContent(newContent);
+  const addDog = async (dog: Omit<Dog, "id">) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/dogs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dog),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to add dog:", error);
+    }
   };
 
-  const updateDog = (id: string, updates: Partial<Dog>) => {
-    const newContent = {
-      ...siteContent,
-      dogs: siteContent.dogs.map((dog) =>
-        dog.id === id ? { ...dog, ...updates } : dog,
-      ),
-    };
-    saveContent(newContent);
+  const updateDog = async (id: string, updates: Partial<Dog>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/dogs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to update dog:", error);
+    }
   };
 
-  const deleteDog = (id: string) => {
-    const newContent = {
-      ...siteContent,
-      dogs: siteContent.dogs.filter((dog) => dog.id !== id),
-    };
-    saveContent(newContent);
+  const deleteDog = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/dogs/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to delete dog:", error);
+    }
   };
 
-  const addMenuItem = (item: Omit<MenuItem, "id">) => {
-    const newItem = { ...item, id: Date.now().toString() };
-    const newContent = {
-      ...siteContent,
-      menuItems: [...siteContent.menuItems, newItem],
-    };
-    saveContent(newContent);
+  const addMenuItem = async (item: Omit<MenuItem, "id">) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(item),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to add menu item:", error);
+    }
   };
 
-  const updateMenuItem = (id: string, updates: Partial<MenuItem>) => {
-    const newContent = {
-      ...siteContent,
-      menuItems: siteContent.menuItems.map((item) =>
-        item.id === id ? { ...item, ...updates } : item,
-      ),
-    };
-    saveContent(newContent);
+  const updateMenuItem = async (id: string, updates: Partial<MenuItem>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to update menu item:", error);
+    }
   };
 
-  const deleteMenuItem = (id: string) => {
-    const newContent = {
-      ...siteContent,
-      menuItems: siteContent.menuItems.filter((item) => item.id !== id),
-    };
-    saveContent(newContent);
+  const deleteMenuItem = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to delete menu item:", error);
+    }
   };
 
-  const addEvent = (event: Omit<Event, "id">) => {
-    const newEvent = { ...event, id: Date.now().toString() };
-    const newContent = {
-      ...siteContent,
-      events: [...siteContent.events, newEvent],
-    };
-    saveContent(newContent);
+  const addEvent = async (event: Omit<Event, "id">) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(event),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to add event:", error);
+    }
   };
 
-  const updateEvent = (id: string, updates: Partial<Event>) => {
-    const newContent = {
-      ...siteContent,
-      events: siteContent.events.map((event) =>
-        event.id === id ? { ...event, ...updates } : event,
-      ),
-    };
-    saveContent(newContent);
+  const updateEvent = async (id: string, updates: Partial<Event>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to update event:", error);
+    }
   };
 
-  const deleteEvent = (id: string) => {
-    const newContent = {
-      ...siteContent,
-      events: siteContent.events.filter((event) => event.id !== id),
-    };
-    saveContent(newContent);
+  const deleteEvent = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to delete event:", error);
+    }
   };
 
-  const addPromotion = (promo: Omit<Promotion, "id">) => {
-    const newPromo = { ...promo, id: Date.now().toString() };
-    const newContent = {
-      ...siteContent,
-      promotions: [...siteContent.promotions, newPromo],
-    };
-    saveContent(newContent);
+  const addPromotion = async (promo: Omit<Promotion, "id">) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/promotions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(promo),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to add promotion:", error);
+    }
   };
 
-  const updatePromotion = (id: string, updates: Partial<Promotion>) => {
-    const newContent = {
-      ...siteContent,
-      promotions: siteContent.promotions.map((promo) =>
-        promo.id === id ? { ...promo, ...updates } : promo,
-      ),
-    };
-    saveContent(newContent);
+  const updatePromotion = async (id: string, updates: Partial<Promotion>) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/promotions/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to update promotion:", error);
+    }
   };
 
-  const deletePromotion = (id: string) => {
-    const newContent = {
-      ...siteContent,
-      promotions: siteContent.promotions.filter((promo) => promo.id !== id),
-    };
-    saveContent(newContent);
+  const deletePromotion = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/promotions/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        await fetchContent(); // Refresh content
+      }
+    } catch (error) {
+      console.error("Failed to delete promotion:", error);
+    }
   };
 
   return (
@@ -367,6 +433,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         siteContent,
+        loading,
         updateSiteContent,
         addDog,
         updateDog,

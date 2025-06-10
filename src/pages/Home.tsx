@@ -3,44 +3,41 @@ import { Heart, Users, UtensilsCrossed, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
-
-const heroImages = [
-  {
-    url: "/placeholder.svg",
-    alt: "Restaurant exterior with outdoor seating and happy customers with dogs",
-    gradient: "from-sand-300/80 to-brown-300/80",
-  },
-  {
-    url: "/placeholder.svg",
-    alt: "Delicious Australian food spread on wooden table",
-    gradient: "from-aussie-orange/70 to-brown-400/80",
-  },
-  {
-    url: "/placeholder.svg",
-    alt: "Happy rescue dogs playing in restaurant garden area",
-    gradient: "from-aussie-eucalyptus/60 to-sand-400/80",
-  },
-];
+import { useAdmin } from "@/contexts/AdminContext";
 
 export default function Home() {
+  const { siteContent, loading } = useAdmin();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
-        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1,
+        prevIndex === siteContent.heroImages.length - 1 ? 0 : prevIndex + 1,
       );
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [siteContent.heroImages.length]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading KINGAROOS...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       {/* Hero Banner with Rotating Background Images */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Images */}
-        {heroImages.map((image, index) => (
+        {siteContent.heroImages.map((image, index) => (
           <div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -69,10 +66,10 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative z-10 text-center text-white max-w-4xl px-4">
           <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-            KINGAROOS
+            {siteContent.siteTexts.homeTitle}
           </h1>
           <p className="font-body text-xl md:text-2xl mb-8 animate-fade-in delay-150">
-            Great Food. Good Vibes. Helping Paws.
+            {siteContent.siteTexts.homeSubtitle}
           </p>
           <div className="space-x-4 animate-fade-in delay-300">
             <Button
@@ -94,7 +91,7 @@ export default function Home() {
         {/* Image Indicators */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
           <div className="flex space-x-2">
-            {heroImages.map((_, index) => (
+            {siteContent.heroImages.map((_, index) => (
               <button
                 key={index}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
@@ -115,18 +112,13 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h2 className="font-heading text-4xl font-bold text-brown-800">
-              Welcome to the Pack
+              {siteContent.siteTexts.welcomeTitle}
             </h2>
             <p className="font-body text-lg text-brown-600 leading-relaxed">
-              At KINGAROOS, we believe great food brings people together – and
-              their furry friends too! Our cozy restaurant serves up delicious
-              Australian-inspired dishes in a warm, dog-friendly atmosphere
-              where every meal makes a difference.
+              {siteContent.siteTexts.welcomeText1}
             </p>
             <p className="font-body text-lg text-brown-600 leading-relaxed">
-              Started by the King family with a passion for good food and a love
-              for rescue dogs, we've created a space where community,
-              compassion, and culinary excellence come together.
+              {siteContent.siteTexts.welcomeText2}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">

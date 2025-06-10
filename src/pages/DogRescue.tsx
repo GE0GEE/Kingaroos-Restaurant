@@ -8,80 +8,26 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, X } from "lucide-react";
-
-const rescueDogs = [
-  {
-    name: "Bandit",
-    breed: "Border Collie Mix",
-    age: "3 years old",
-    personality:
-      "Energetic and loves playing fetch. Great with kids and other dogs.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Found wandering the streets, scared and malnourished. Now a confident, happy dog ready for adventure!",
-  },
-  {
-    name: "Rosie",
-    breed: "Golden Retriever Mix",
-    age: "5 years old",
-    personality:
-      "Gentle soul who loves cuddles and long walks. Perfect family dog.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Abandoned at a shelter, she was shy and withdrawn. Today she's full of love and ready to be someone's best friend!",
-  },
-  {
-    name: "Max",
-    breed: "Australian Cattle Dog",
-    age: "2 years old",
-    personality:
-      "Smart and loyal. Needs an active family who loves adventures.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Came to us as an injured puppy. After months of care and training, he's now a strong, healthy young dog!",
-  },
-  {
-    name: "Luna",
-    breed: "Labrador Mix",
-    age: "4 years old",
-    personality: "Sweet and calm, loves children and is great with cats too.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Rescued from neglect, she was fearful of humans. Now she's the sweetest, most trusting companion you could ask for!",
-  },
-  {
-    name: "Cooper",
-    breed: "Beagle Mix",
-    age: "6 years old",
-    personality:
-      "Friendly senior who just wants a quiet home to enjoy his golden years.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Senior dog found as a stray, thin and tired. With proper care, he's now healthy and looking for a peaceful retirement home!",
-  },
-  {
-    name: "Bella",
-    breed: "Australian Shepherd Mix",
-    age: "1 year old",
-    personality:
-      "Playful puppy energy! Needs training but so much love to give.",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    rescueStory:
-      "Born in the shelter, she needed socialization and training. Now she's a confident, playful pup ready for her family!",
-  },
-];
+import { Heart, MessageCircle } from "lucide-react";
+import { useAdmin } from "@/contexts/AdminContext";
+import type { Dog } from "@/contexts/AdminContext";
 
 export default function DogRescue() {
-  const [selectedDog, setSelectedDog] = useState<(typeof rescueDogs)[0] | null>(
-    null,
-  );
+  const { siteContent, loading } = useAdmin();
+  const [selectedDog, setSelectedDog] = useState<Dog | null>(null);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading rescue dogs...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -89,7 +35,7 @@ export default function DogRescue() {
       <section className="bg-gradient-to-r from-aussie-eucalyptus/20 to-sand-200 py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-6">
-            Dogs We're Helping
+            {siteContent.siteTexts.dogRescueTitle}
           </h1>
           <div className="max-w-3xl mx-auto">
             <Card className="bg-cream-50 border-sand-200 shadow-lg">
@@ -101,10 +47,7 @@ export default function DogRescue() {
                   </h2>
                 </div>
                 <p className="font-body text-lg text-brown-600 leading-relaxed">
-                  At KINGAROOS, every plate you order helps rescue a dog in
-                  need. We partner with local shelters to provide food, medical
-                  care, and love to abandoned dogs while they wait for their
-                  forever homes.
+                  {siteContent.siteTexts.dogRescueSubtitle}
                 </p>
               </CardContent>
             </Card>
@@ -118,7 +61,7 @@ export default function DogRescue() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="space-y-2">
               <div className="font-heading text-4xl font-bold text-aussie-orange">
-                127
+                {siteContent.dogs.length + 89}
               </div>
               <div className="font-body text-brown-600">
                 Dogs Helped This Year
@@ -152,53 +95,63 @@ export default function DogRescue() {
             Click on any dog to see their amazing transformation story from
             rescue to recovery!
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {rescueDogs.map((dog, index) => (
-              <Card
-                key={index}
-                className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
-                onClick={() => setSelectedDog(dog)}
-              >
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <div className="w-full h-64 bg-sand-200 rounded-t-lg flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
-                        <p className="font-body text-brown-600 text-sm">
-                          Click to see {dog.name}'s story
-                        </p>
+
+          {siteContent.dogs.length === 0 ? (
+            <div className="text-center py-12">
+              <Heart className="h-16 w-16 text-aussie-orange mx-auto mb-4" />
+              <p className="font-body text-brown-600">
+                No rescue dogs to display at the moment. Check back soon!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {siteContent.dogs.map((dog) => (
+                <Card
+                  key={dog.id}
+                  className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                  onClick={() => setSelectedDog(dog)}
+                >
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      <div className="w-full h-64 bg-sand-200 rounded-t-lg flex items-center justify-center">
+                        <div className="text-center space-y-2">
+                          <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
+                          <p className="font-body text-brown-600 text-sm">
+                            Click to see {dog.name}'s story
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-heading text-2xl font-bold text-brown-800">
-                        {dog.name}
-                      </h3>
-                      <span className="font-body text-brown-600 text-sm">
-                        {dog.age}
-                      </span>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-heading text-2xl font-bold text-brown-800">
+                          {dog.name}
+                        </h3>
+                        <span className="font-body text-brown-600 text-sm">
+                          {dog.age}
+                        </span>
+                      </div>
+                      <p className="font-body text-brown-600 font-semibold">
+                        {dog.breed}
+                      </p>
+                      <p className="font-body text-brown-600 leading-relaxed">
+                        {dog.personality}
+                      </p>
+                      <div className="pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-aussie-orange text-aussie-orange hover:bg-aussie-orange hover:text-white"
+                        >
+                          See {dog.name}'s Transformation
+                        </Button>
+                      </div>
                     </div>
-                    <p className="font-body text-brown-600 font-semibold">
-                      {dog.breed}
-                    </p>
-                    <p className="font-body text-brown-600 leading-relaxed">
-                      {dog.personality}
-                    </p>
-                    <div className="pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-aussie-orange text-aussie-orange hover:bg-aussie-orange hover:text-white"
-                      >
-                        See {dog.name}'s Transformation
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -242,12 +195,21 @@ export default function DogRescue() {
                   <Card className="border-sand-200">
                     <CardContent className="p-4">
                       <div className="w-full h-64 bg-sand-200 rounded-lg flex items-center justify-center mb-4">
-                        <div className="text-center space-y-2">
-                          <Heart className="h-12 w-12 text-brown-400 mx-auto" />
-                          <p className="font-body text-brown-500 text-sm">
-                            Before: {selectedDog.name} when first rescued
-                          </p>
-                        </div>
+                        {selectedDog.beforeImage &&
+                        selectedDog.beforeImage !== "/placeholder.svg" ? (
+                          <img
+                            src={selectedDog.beforeImage}
+                            alt={`${selectedDog.name} before rescue`}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="text-center space-y-2">
+                            <Heart className="h-12 w-12 text-brown-400 mx-auto" />
+                            <p className="font-body text-brown-500 text-sm">
+                              Before: {selectedDog.name} when first rescued
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <p className="font-body text-brown-600 text-center text-sm italic">
                         When we first found {selectedDog.name}
@@ -263,12 +225,21 @@ export default function DogRescue() {
                   <Card className="border-sand-200">
                     <CardContent className="p-4">
                       <div className="w-full h-64 bg-sand-200 rounded-lg flex items-center justify-center mb-4">
-                        <div className="text-center space-y-2">
-                          <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
-                          <p className="font-body text-aussie-orange text-sm">
-                            After: {selectedDog.name} today
-                          </p>
-                        </div>
+                        {selectedDog.afterImage &&
+                        selectedDog.afterImage !== "/placeholder.svg" ? (
+                          <img
+                            src={selectedDog.afterImage}
+                            alt={`${selectedDog.name} after recovery`}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="text-center space-y-2">
+                            <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
+                            <p className="font-body text-aussie-orange text-sm">
+                              After: {selectedDog.name} today
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <p className="font-body text-brown-600 text-center text-sm italic">
                         {selectedDog.name} today - happy and healthy!
