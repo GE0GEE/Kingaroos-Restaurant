@@ -25,6 +25,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Trash2,
   Edit,
   Plus,
@@ -35,6 +41,7 @@ import {
   WifiOff,
   AlertTriangle,
   ImageIcon,
+  Type,
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion } from "@/contexts/AdminContext";
 
@@ -60,12 +67,7 @@ export default function Admin() {
   } = useAdmin();
 
   const [editingTexts, setEditingTexts] = useState(siteContent.siteTexts);
-  const [editingDog, setEditingDog] = useState<Partial<Dog> | null>(null);
-  const [editingMenuItem, setEditingMenuItem] =
-    useState<Partial<MenuItem> | null>(null);
-  const [editingEvent, setEditingEvent] = useState<Partial<Event> | null>(null);
-  const [editingPromotion, setEditingPromotion] =
-    useState<Partial<Promotion> | null>(null);
+  const [editingImages, setEditingImages] = useState(siteContent.aboutImages);
 
   const handleLogout = () => {
     logout();
@@ -78,6 +80,15 @@ export default function Admin() {
       alert("Site texts updated successfully!");
     } catch (error) {
       alert("Failed to update site texts. Changes saved locally.");
+    }
+  };
+
+  const handleSaveImages = async () => {
+    try {
+      await updateSiteContent({ aboutImages: editingImages });
+      alert("About page images updated successfully!");
+    } catch (error) {
+      alert("Failed to update images. Changes saved locally.");
     }
   };
 
@@ -120,6 +131,176 @@ export default function Admin() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleAboutImageUpload = (
+    field: keyof typeof editingImages,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditingImages((prev) => ({ ...prev, [field]: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Group texts by page for better organization
+  const textGroups = {
+    "Header & Navigation": [
+      "siteName",
+      "headerNavHome",
+      "headerNavMenu",
+      "headerNavEvents",
+      "headerNavPromotions",
+      "headerNavAbout",
+      "headerNavDogRescue",
+      "headerNavContact",
+    ],
+    "Home Page": [
+      "homeTitle",
+      "homeSubtitle",
+      "homeViewMenuButton",
+      "homeLearnMoreButton",
+      "welcomeTitle",
+      "welcomeText1",
+      "welcomeText2",
+      "homeHighlightsTitle",
+      "dogFriendlyTitle",
+      "dogFriendlyText",
+      "aussieFoodTitle",
+      "aussieFoodText",
+      "rescueHelpTitle",
+      "rescueHelpText",
+      "homeVisitTitle",
+      "homeHoursTitle",
+      "homeLocationTitle",
+      "homeAddress",
+      "homePhone",
+      "homeEmail",
+    ],
+    "Menu Page": [
+      "menuPageTitle",
+      "menuPageSubtitle",
+      "menuReadyToDineTitle",
+      "menuReadyToDineText",
+      "menuCallText",
+      "menuAddressText",
+    ],
+    "Dog Rescue Page": [
+      "dogRescueTitle",
+      "dogRescueSubtitle",
+      "dogRescueEveryMealTitle",
+      "dogRescueEveryMealText",
+      "dogRescueMeetTitle",
+      "dogRescueMeetSubtitle",
+      "dogRescueClickInstruction",
+      "dogRescueNoDogsText",
+      "dogRescueWantToKnowTitle",
+      "dogRescueWantToKnowText",
+      "dogRescueGetInvolvedTitle",
+      "dogRescueGetInvolvedText",
+    ],
+    "Events Page": [
+      "eventsTitle",
+      "eventsSubtitle",
+      "eventsThisWeekTitle",
+      "eventsComingSoonTitle",
+      "eventsNoThisWeekText",
+      "eventsNoComingSoonText",
+      "eventsTypesTitle",
+      "eventsDontMissTitle",
+      "eventsDontMissText",
+      "eventsCallText",
+      "eventsFacebookText",
+      "eventsInstagramText",
+    ],
+    "Promotions Page": [
+      "promotionsTitle",
+      "promotionsSubtitle",
+      "promotionsNoOffersText",
+      "promotionsTermsTitle",
+      "promotionsReadyToSaveTitle",
+      "promotionsReadyToSaveText",
+      "promotionsCallAheadText",
+      "promotionsAddressText",
+      "promotionsFollowText",
+    ],
+    "About Page": [
+      "aboutTitle",
+      "aboutSubtitle",
+      "aboutMeetFamilyTitle",
+      "aboutStoryParagraph1",
+      "aboutStoryParagraph2",
+      "aboutStoryParagraph3",
+      "aboutJourneyTitle",
+      "aboutFoodTruckTitle",
+      "aboutFoodTruckText",
+      "aboutRescuePartnershipTitle",
+      "aboutRescuePartnershipText",
+      "aboutRestaurantOpensTitle",
+      "aboutRestaurantOpensText",
+      "aboutMissionTitle",
+      "aboutMissionQuote",
+      "aboutMissionSignature",
+      "aboutValuesTitle",
+      "aboutCompassionTitle",
+      "aboutCompassionText",
+      "aboutCommunityTitle",
+      "aboutCommunityText",
+      "aboutQualityTitle",
+      "aboutQualityText",
+    ],
+    "Contact Page": [
+      "contactTitle",
+      "contactSubtitle",
+      "contactLocationTitle",
+      "contactLocationName",
+      "contactLocationAddress",
+      "contactLocationCity",
+      "contactLocationCountry",
+      "contactParkingText",
+      "contactHoursTitle",
+      "contactMondayThursday",
+      "contactFridaySaturday",
+      "contactSunday",
+      "contactKitchenClosesText",
+      "contactDetailsTitle",
+      "contactPhoneDescription",
+      "contactEmailDescription",
+      "contactFindUsTitle",
+      "contactFollowTitle",
+      "contactFollowText",
+      "contactFacebookDescription",
+      "contactInstagramDescription",
+      "contactGoodToKnowTitle",
+      "contactDogPolicyTitle",
+      "contactReservationsTitle",
+      "contactParkingAccessTitle",
+      "contactPaymentTitle",
+      "contactCantWaitTitle",
+      "contactCantWaitText",
+      "contactSeeYouText",
+    ],
+    Footer: [
+      "footerTagline",
+      "footerContactTitle",
+      "footerHoursSocialTitle",
+      "footerMondayThursday",
+      "footerFridaySaturday",
+      "footerSunday",
+      "footerCopyright",
+    ],
+    "Admin Interface": [
+      "adminLoginTitle",
+      "adminPasswordLabel",
+      "adminPasswordPlaceholder",
+      "adminLoginButton",
+      "adminCancelButton",
+    ],
   };
 
   return (
@@ -169,7 +350,7 @@ export default function Admin() {
 
           <Tabs defaultValue="texts" className="space-y-6">
             <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="texts">Site Texts</TabsTrigger>
+              <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="dogs">Dogs</TabsTrigger>
               <TabsTrigger value="menu">Menu</TabsTrigger>
@@ -177,53 +358,91 @@ export default function Admin() {
               <TabsTrigger value="promotions">Promotions</TabsTrigger>
             </TabsList>
 
-            {/* Site Texts Tab */}
+            {/* All Text Content Tab */}
             <TabsContent value="texts">
               <Card>
                 <CardHeader>
-                  <CardTitle>Edit Site Texts</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Type className="h-5 w-5" />
+                    <span>Edit All Website Text Content</span>
+                  </CardTitle>
+                  <p className="text-sm text-brown-600">
+                    Every single piece of text on your website is editable here,
+                    organized by page.
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {Object.entries(editingTexts).map(([key, value]) => (
-                      <div key={key} className="space-y-2">
-                        <Label className="text-brown-800 font-semibold">
-                          {key
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/^./, (str) => str.toUpperCase())}
-                        </Label>
-                        {key.includes("Text") ? (
-                          <Textarea
-                            value={value}
-                            onChange={(e) =>
-                              setEditingTexts((prev) => ({
-                                ...prev,
-                                [key]: e.target.value,
-                              }))
-                            }
-                            className="min-h-[100px]"
-                          />
-                        ) : (
-                          <Input
-                            value={value}
-                            onChange={(e) =>
-                              setEditingTexts((prev) => ({
-                                ...prev,
-                                [key]: e.target.value,
-                              }))
-                            }
-                          />
-                        )}
-                      </div>
+                  <Accordion type="multiple" className="space-y-4">
+                    {Object.entries(textGroups).map(([groupName, fields]) => (
+                      <AccordionItem
+                        key={groupName}
+                        value={groupName}
+                        className="border border-sand-200 rounded-lg px-4"
+                      >
+                        <AccordionTrigger className="font-heading text-lg text-brown-800">
+                          {groupName} ({fields.length} items)
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 pt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {fields.map((field) => (
+                              <div key={field} className="space-y-2">
+                                <Label className="text-brown-800 font-semibold text-sm">
+                                  {field
+                                    .replace(/([A-Z])/g, " $1")
+                                    .replace(/^./, (str) => str.toUpperCase())}
+                                </Label>
+                                {field.includes("Text") ||
+                                field.includes("Paragraph") ||
+                                field.includes("Quote") ||
+                                field.includes("Description") ? (
+                                  <Textarea
+                                    value={
+                                      editingTexts[
+                                        field as keyof typeof editingTexts
+                                      ]
+                                    }
+                                    onChange={(e) =>
+                                      setEditingTexts((prev) => ({
+                                        ...prev,
+                                        [field]: e.target.value,
+                                      }))
+                                    }
+                                    className="min-h-[80px] text-sm"
+                                  />
+                                ) : (
+                                  <Input
+                                    value={
+                                      editingTexts[
+                                        field as keyof typeof editingTexts
+                                      ]
+                                    }
+                                    onChange={(e) =>
+                                      setEditingTexts((prev) => ({
+                                        ...prev,
+                                        [field]: e.target.value,
+                                      }))
+                                    }
+                                    className="text-sm"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
+                  </Accordion>
+
+                  <div className="flex justify-center pt-6">
+                    <Button
+                      onClick={handleSaveTexts}
+                      size="lg"
+                      className="bg-aussie-orange hover:bg-aussie-burnt-red"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save All Text Content
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleSaveTexts}
-                    className="bg-aussie-orange hover:bg-aussie-burnt-red"
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save All Texts
-                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -262,7 +481,7 @@ export default function Admin() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Hero Images</CardTitle>
+                    <CardTitle>Hero Images (Homepage Background)</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -283,6 +502,93 @@ export default function Admin() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>About Page Images</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-4">
+                          <Label className="text-brown-800 font-semibold">
+                            Family Photo
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleAboutImageUpload("familyPhoto", e)
+                            }
+                          />
+                          {editingImages.familyPhoto &&
+                            editingImages.familyPhoto !==
+                              "/placeholder.svg" && (
+                              <img
+                                src={editingImages.familyPhoto}
+                                alt="Family"
+                                className="w-full h-32 object-cover rounded-md"
+                              />
+                            )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <Label className="text-brown-800 font-semibold">
+                            Original Food Truck
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleAboutImageUpload("originalFoodTruck", e)
+                            }
+                          />
+                          {editingImages.originalFoodTruck &&
+                            editingImages.originalFoodTruck !==
+                              "/placeholder.svg" && (
+                              <img
+                                src={editingImages.originalFoodTruck}
+                                alt="Food Truck"
+                                className="w-full h-32 object-cover rounded-md"
+                              />
+                            )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <Label className="text-brown-800 font-semibold">
+                            First Rescue Dog
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleAboutImageUpload("firstRescueDog", e)
+                            }
+                          />
+                          {editingImages.firstRescueDog &&
+                            editingImages.firstRescueDog !==
+                              "/placeholder.svg" && (
+                              <img
+                                src={editingImages.firstRescueDog}
+                                alt="First Rescue Dog"
+                                className="w-full h-32 object-cover rounded-md"
+                              />
+                            )}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <Button
+                          onClick={handleSaveImages}
+                          className="bg-aussie-orange hover:bg-aussie-burnt-red"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Save About Page Images
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -310,7 +616,6 @@ export default function Admin() {
                         onSubmit={async (dog) => {
                           try {
                             await addDog(dog as Omit<Dog, "id">);
-                            setEditingDog(null);
                             alert("Dog added successfully!");
                           } catch (error) {
                             alert("Failed to add dog. Added locally.");
@@ -351,7 +656,6 @@ export default function Admin() {
                                     onSubmit={async (updates) => {
                                       try {
                                         await updateDog(dog.id, updates);
-                                        setEditingDog(null);
                                         alert("Dog updated successfully!");
                                       } catch (error) {
                                         alert(
@@ -419,7 +723,6 @@ export default function Admin() {
                         onSubmit={async (item) => {
                           try {
                             await addMenuItem(item as Omit<MenuItem, "id">);
-                            setEditingMenuItem(null);
                             alert("Menu item added successfully!");
                           } catch (error) {
                             alert("Failed to add menu item. Added locally.");
@@ -502,7 +805,6 @@ export default function Admin() {
                                                         item.id,
                                                         updates,
                                                       );
-                                                      setEditingMenuItem(null);
                                                       alert(
                                                         "Menu item updated successfully!",
                                                       );
@@ -579,7 +881,6 @@ export default function Admin() {
                         onSubmit={async (event) => {
                           try {
                             await addEvent(event as Omit<Event, "id">);
-                            setEditingEvent(null);
                             alert("Event added successfully!");
                           } catch (error) {
                             alert("Failed to add event. Added locally.");
@@ -624,7 +925,6 @@ export default function Admin() {
                                     onSubmit={async (updates) => {
                                       try {
                                         await updateEvent(event.id, updates);
-                                        setEditingEvent(null);
                                         alert("Event updated successfully!");
                                       } catch (error) {
                                         alert(
@@ -694,7 +994,6 @@ export default function Admin() {
                             await addPromotion(
                               promotion as Omit<Promotion, "id">,
                             );
-                            setEditingPromotion(null);
                             alert("Promotion added successfully!");
                           } catch (error) {
                             alert("Failed to add promotion. Added locally.");
@@ -740,7 +1039,6 @@ export default function Admin() {
                                           promo.id,
                                           updates,
                                         );
-                                        setEditingPromotion(null);
                                         alert(
                                           "Promotion updated successfully!",
                                         );

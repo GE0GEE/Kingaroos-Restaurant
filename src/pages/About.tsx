@@ -1,19 +1,34 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Users, Truck, Home } from "lucide-react";
+import { useAdmin } from "@/contexts/AdminContext";
 
 export default function About() {
+  const { siteContent, loading } = useAdmin();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading our story...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* Header */}
       <section className="bg-gradient-to-r from-brown-200 to-sand-200 py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-4">
-            Our Story
+            {siteContent.siteTexts.aboutTitle}
           </h1>
           <p className="font-body text-xl text-brown-600 max-w-2xl mx-auto">
-            From a small food truck dream to a community gathering place that's
-            changing lives, one meal and one rescue dog at a time.
+            {siteContent.siteTexts.aboutSubtitle}
           </p>
         </div>
       </section>
@@ -25,47 +40,40 @@ export default function About() {
             {/* Story Text */}
             <div className="space-y-6">
               <h2 className="font-heading text-4xl font-bold text-brown-800">
-                Meet the King Family
+                {siteContent.siteTexts.aboutMeetFamilyTitle}
               </h2>
               <div className="space-y-4 font-body text-brown-600 leading-relaxed">
-                <p>
-                  KINGAROOS began as a dream shared around our family dinner
-                  table. Sarah and David King, along with their three kids, had
-                  always been passionate about two things: creating amazing food
-                  and helping animals in need.
-                </p>
-                <p>
-                  What started as weekend barbecues for friends slowly grew into
-                  something bigger. Our neighbors kept asking us to cater their
-                  events, and we realized we had something special brewing. But
-                  it wasn't until we rescued our first dog, Rusty, that we found
-                  our true purpose.
-                </p>
-                <p>
-                  Rusty came from a local shelter, scared and skinny. Watching
-                  him transform into the happy, confident dog he is today made
-                  us realize how many other dogs needed that same second chance.
-                  That's when we decided to combine our love of food with our
-                  passion for animal rescue.
-                </p>
+                <p>{siteContent.siteTexts.aboutStoryParagraph1}</p>
+                <p>{siteContent.siteTexts.aboutStoryParagraph2}</p>
+                <p>{siteContent.siteTexts.aboutStoryParagraph3}</p>
               </div>
             </div>
 
-            {/* Family Photo Placeholder */}
+            {/* Family Photo */}
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-0">
                 <div className="w-full h-96 bg-sand-200 rounded-lg flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <Users className="h-16 w-16 text-aussie-orange mx-auto" />
-                    <div className="space-y-2">
-                      <p className="font-body text-brown-600 font-semibold">
-                        The King Family
-                      </p>
-                      <p className="font-body text-brown-500 text-sm">
-                        Sarah, David, and their three kids with rescue dog Rusty
-                      </p>
+                  {siteContent.aboutImages.familyPhoto &&
+                  siteContent.aboutImages.familyPhoto !== "/placeholder.svg" ? (
+                    <img
+                      src={siteContent.aboutImages.familyPhoto}
+                      alt="The King Family"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-center space-y-4">
+                      <Users className="h-16 w-16 text-aussie-orange mx-auto" />
+                      <div className="space-y-2">
+                        <p className="font-body text-brown-600 font-semibold">
+                          The King Family
+                        </p>
+                        <p className="font-body text-brown-500 text-sm">
+                          Sarah, David, and their three kids with rescue dog
+                          Rusty
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -77,7 +85,7 @@ export default function About() {
       <section className="py-16 bg-cream-100">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
-            Our Journey
+            {siteContent.siteTexts.aboutJourneyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="border-sand-200 shadow-lg text-center">
@@ -86,11 +94,10 @@ export default function About() {
                   <Truck className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  2019: The Food Truck
+                  {siteContent.siteTexts.aboutFoodTruckTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  Started with a single food truck, "King's Mobile Kitchen,"
-                  serving Australian comfort food at local markets and events.
+                  {siteContent.siteTexts.aboutFoodTruckText}
                 </p>
               </CardContent>
             </Card>
@@ -101,11 +108,10 @@ export default function About() {
                   <Heart className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  2021: First Rescue Partnership
+                  {siteContent.siteTexts.aboutRescuePartnershipTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  After rescuing Rusty, we partnered with Sydney Animal Rescue
-                  to donate a portion of profits to help other dogs.
+                  {siteContent.siteTexts.aboutRescuePartnershipText}
                 </p>
               </CardContent>
             </Card>
@@ -116,11 +122,10 @@ export default function About() {
                   <Home className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  2023: KINGAROOS Opens
+                  {siteContent.siteTexts.aboutRestaurantOpensTitle}
                 </h3>
                 <p className="font-body text-brown-600 leading-relaxed">
-                  Opened our first brick-and-mortar restaurant with a mission:
-                  great food, good vibes, and helping paws.
+                  {siteContent.siteTexts.aboutRestaurantOpensText}
                 </p>
               </CardContent>
             </Card>
@@ -132,17 +137,17 @@ export default function About() {
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-cream-50 mb-8">
-            Our Mission
+            {siteContent.siteTexts.aboutMissionTitle}
           </h2>
-          <Card className="bg-cream-50 border-aussie-orange border-2 shadow-xl">
+          <Card className="bg-cream-50 border-sand-200 shadow-xl">
             <CardContent className="p-12">
               <blockquote className="font-heading text-2xl text-brown-800 italic leading-relaxed">
-                "We believe in good food, family, and giving every dog a second
-                chance. At KINGAROOS, every meal shared is a step toward
-                building a more compassionate community."
+                "{siteContent.siteTexts.aboutMissionQuote}"
               </blockquote>
               <div className="mt-6 text-center">
-                <p className="font-body text-brown-600">— The King Family</p>
+                <p className="font-body text-brown-600">
+                  {siteContent.siteTexts.aboutMissionSignature}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -153,7 +158,7 @@ export default function About() {
       <section className="py-16 px-4 bg-sand-100">
         <div className="max-w-6xl mx-auto">
           <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
-            What We Stand For
+            {siteContent.siteTexts.aboutValuesTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-4">
@@ -161,11 +166,10 @@ export default function About() {
                 <Heart className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-heading text-xl font-bold text-brown-800">
-                Compassion
+                {siteContent.siteTexts.aboutCompassionTitle}
               </h3>
               <p className="font-body text-brown-600 leading-relaxed">
-                Every decision we make considers the wellbeing of animals, our
-                community, and our planet.
+                {siteContent.siteTexts.aboutCompassionText}
               </p>
             </div>
             <div className="text-center space-y-4">
@@ -173,11 +177,10 @@ export default function About() {
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-heading text-xl font-bold text-brown-800">
-                Community
+                {siteContent.siteTexts.aboutCommunityTitle}
               </h3>
               <p className="font-body text-brown-600 leading-relaxed">
-                We're more than a restaurant - we're a gathering place where
-                friendships form and families grow.
+                {siteContent.siteTexts.aboutCommunityText}
               </p>
             </div>
             <div className="text-center space-y-4">
@@ -185,11 +188,10 @@ export default function About() {
                 <Truck className="h-8 w-8 text-white" />
               </div>
               <h3 className="font-heading text-xl font-bold text-brown-800">
-                Quality
+                {siteContent.siteTexts.aboutQualityTitle}
               </h3>
               <p className="font-body text-brown-600 leading-relaxed">
-                From our locally-sourced ingredients to our carefully crafted
-                atmosphere, we never compromise on quality.
+                {siteContent.siteTexts.aboutQualityText}
               </p>
             </div>
           </div>
