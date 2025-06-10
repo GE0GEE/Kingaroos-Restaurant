@@ -54,12 +54,12 @@ export default function Home() {
                 backgroundRepeat: "no-repeat",
               }}
             />
-            {/* Light Gradient Overlay */}
+            {/* Balanced Gradient Overlay */}
             <div
-              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-30`}
+              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-50`}
             />
-            {/* Very Light Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-black/10" />
+            {/* Balanced Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-black/15" />
           </div>
         ))}
 
