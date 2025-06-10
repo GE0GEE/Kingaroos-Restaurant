@@ -277,7 +277,7 @@ const defaultSiteContent: SiteContent = {
     {
       url: "/placeholder.svg",
       alt: "Restaurant exterior with outdoor seating and happy customers with dogs",
-      gradient: "from-sand-300/80 to-brown-300/80",
+      gradient: "from-aussie-orange/60 to-aussie-burnt-red/70",
     },
     {
       url: "/placeholder.svg",
