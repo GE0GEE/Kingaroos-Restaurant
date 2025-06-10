@@ -364,6 +364,9 @@ app.delete("/api/promotions/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete promotion" });
   }
 });
+app.get("/", (req, res) => {
+  res.send("Kingaroos Backend is live!");
+});
 
 // Start server
 app.listen(PORT, () => {
