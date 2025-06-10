@@ -206,15 +206,8 @@ export default function DogRescue() {
       <Dialog open={!!selectedDog} onOpenChange={() => setSelectedDog(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-heading text-3xl font-bold text-brown-800 flex items-center justify-between">
+            <DialogTitle className="font-heading text-3xl font-bold text-brown-800">
               {selectedDog?.name}'s Transformation Story
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedDog(null)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
             </DialogTitle>
           </DialogHeader>
 
