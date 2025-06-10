@@ -163,7 +163,16 @@ const writeContent = async (content) => {
 app.get("/api/content", async (req, res) => {
   try {
     const content = await readContent();
-    res.json(content);
+    const mergedContent = {
+  ...defaultContent,
+  ...content,
+  siteTexts: {
+    ...defaultContent.siteTexts,
+    ...(content.siteTexts || {})
+  }
+};
+
+res.json(mergedContent);
   } catch (error) {
     res.status(500).json({ error: "Failed to read content" });
   }
@@ -173,7 +182,14 @@ app.get("/api/content", async (req, res) => {
 app.put("/api/content", async (req, res) => {
   try {
     const currentContent = await readContent();
-    const updatedContent = { ...currentContent, ...req.body };
+    const updatedContent = {
+  ...currentContent,
+  ...req.body,
+  siteTexts: {
+    ...currentContent.siteTexts,
+    ...(req.body.siteTexts || {})
+  }
+};
     await writeContent(updatedContent);
     res.json(updatedContent);
   } catch (error) {
