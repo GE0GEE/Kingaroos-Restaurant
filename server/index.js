@@ -183,13 +183,13 @@ app.put("/api/content", async (req, res) => {
   try {
     const currentContent = await readContent();
     const updatedContent = {
-  ...currentContent,
-  ...req.body,
-  siteTexts: {
-    ...currentContent.siteTexts,
-    ...(req.body.siteTexts || {})
-  }
-};
+      ...currentContent,
+      ...req.body,
+      siteTexts: {
+        ...currentContent.siteTexts,
+        ...(req.body.siteTexts || {})
+      }
+    };
     await writeContent(updatedContent);
     res.json(updatedContent);
   } catch (error) {
