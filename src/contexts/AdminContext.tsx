@@ -468,6 +468,25 @@ const defaultSiteContent: SiteContent = {
     contactSeeYouText:
       "See you soon at KINGAROOS - where great food meets helping paws! 🐾",
 
+    // Contact Page - Additional Fields for hardcoded content
+    contactDogPolicy1: "Dogs must be well-behaved and leashed",
+    contactDogPolicy2: "We provide water bowls and dog treats",
+    contactDogPolicy3: "Outdoor seating area is dog-friendly",
+    contactDogPolicy4: "Please clean up after your pet",
+    contactReservations1: "Recommended for dinner and weekends",
+    contactReservations2: "Call ahead for large groups (6+ people)",
+    contactReservations3: "Walk-ins welcome based on availability",
+    contactReservations4: "Special events may require booking",
+    contactParkingAccess1: "Free on-site parking available",
+    contactParkingAccess2: "Wheelchair accessible entrance",
+    contactParkingAccess3: "Public transport: Bus stop 2 blocks away",
+    contactParkingAccess4: "Bicycle parking available",
+    contactPayment1: "Cash and all major cards accepted",
+    contactPayment2: "No BYO alcohol policy",
+    contactPayment3: "Split bills welcome",
+    contactPayment4: "10% service charge for groups of 8+",
+    contactInstagramHandle: "@kingaroos_sydney",
+
     // Footer
     footerTagline:
       "Great Food. Good Vibes. Helping Paws. Every meal helps rescue a dog in need.",
