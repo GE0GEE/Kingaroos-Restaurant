@@ -303,7 +303,7 @@ const defaultSiteContent: SiteContent = {
     headerNavEvents: "Events",
     headerNavPromotions: "Promotions",
     headerNavAbout: "About",
-    headerNavDogRescue: "Dog Rescue",
+    headerNavDogRescue: "Rescue",
     headerNavContact: "Contact",
 
     // Home Page
