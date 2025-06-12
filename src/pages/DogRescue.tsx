@@ -37,51 +37,9 @@ export default function DogRescue() {
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-6">
             {siteContent.siteTexts.dogRescueTitle}
           </h1>
-          <div className="max-w-3xl mx-auto">
-            <Card className="bg-cream-50 border-sand-200 shadow-lg">
-              <CardContent className="p-8">
-                <div className="flex items-center justify-center space-x-3 mb-4">
-                  <Heart className="h-8 w-8 text-aussie-orange" />
-                  <h2 className="font-heading text-2xl font-bold text-brown-800">
-                    Every Meal Makes a Difference
-                  </h2>
-                </div>
-                <p className="font-body text-lg text-brown-600 leading-relaxed">
-                  {siteContent.siteTexts.dogRescueSubtitle}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Impact Stats */}
-      <section className="py-12 bg-cream-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="font-heading text-4xl font-bold text-aussie-orange">
-                {siteContent.dogs.length + 89}
-              </div>
-              <div className="font-body text-brown-600">
-                Dogs Helped This Year
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="font-heading text-4xl font-bold text-aussie-orange">
-                89
-              </div>
-              <div className="font-body text-brown-600">Dogs Found Homes</div>
-            </div>
-            <div className="space-y-2">
-              <div className="font-heading text-4xl font-bold text-aussie-orange">
-                $42,500
-              </div>
-              <div className="font-body text-brown-600">
-                Raised for Rescue Care
-              </div>
-            </div>
-          </div>
+          <p className="font-body text-xl text-brown-600 max-w-3xl mx-auto">
+            {siteContent.siteTexts.dogRescueSubtitle}
+          </p>
         </div>
       </section>
 
@@ -113,12 +71,25 @@ export default function DogRescue() {
                 >
                   <CardContent className="p-0">
                     <div className="relative">
-                      <div className="w-full h-64 bg-sand-200 rounded-t-lg flex items-center justify-center">
-                        <div className="text-center space-y-2">
-                          <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
-                          <p className="font-body text-brown-600 text-sm">
-                            Click to see {dog.name}'s story
-                          </p>
+                      <div className="w-full h-64 bg-sand-200 rounded-t-lg overflow-hidden">
+                        {dog.afterImage && dog.afterImage !== "/placeholder.svg" ? (
+                          <img 
+                            src={dog.afterImage} 
+                            alt={`${dog.name} after recovery`} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center space-y-2">
+                              <Heart className="h-12 w-12 text-aussie-orange mx-auto" />
+                              <p className="font-body text-brown-600 text-sm">
+                                Click to see {dog.name}'s story
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                          <p className="text-white font-semibold text-sm">Click to view {dog.name}'s transformation</p>
                         </div>
                       </div>
                     </div>
@@ -265,7 +236,7 @@ export default function DogRescue() {
           )}
         </DialogContent>
       </Dialog>
-
+      
       {/* Call to Action */}
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
