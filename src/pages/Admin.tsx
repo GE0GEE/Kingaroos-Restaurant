@@ -368,9 +368,10 @@ export default function Admin() {
           )}
 
           <Tabs defaultValue="texts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7 gap-1">
               <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="dogs">Dogs</TabsTrigger>
               <TabsTrigger value="menu">Menu</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
@@ -466,6 +467,81 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
+            {/* Settings Tab */}
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Site Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Theme Toggle */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-brown-800">Theme Settings</h3>
+                    <div className="flex items-center space-x-4">
+                      <Label htmlFor="theme-toggle">Theme</Label>
+                      <Select 
+                        value={siteContent.theme} 
+                        onValueChange={(value) => {
+                          updateSiteContent({ theme: value as 'light' | 'dark' });
+                        }}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Social Media Links */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold text-brown-800">Social Media Links</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="facebook-link">Facebook URL</Label>
+                        <Input 
+                          id="facebook-link"
+                          value={siteContent.socialLinks.facebook} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, facebook: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://facebook.com/yourpage"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="instagram-link">Instagram URL</Label>
+                        <Input 
+                          id="instagram-link"
+                          value={siteContent.socialLinks.instagram} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, instagram: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://instagram.com/yourhandle"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="twitter-link">Twitter URL</Label>
+                        <Input 
+                          id="twitter-link"
+                          value={siteContent.socialLinks.twitter} 
+                          onChange={(e) => {
+                            const newSocialLinks = {...siteContent.socialLinks, twitter: e.target.value};
+                            updateSiteContent({ socialLinks: newSocialLinks });
+                          }}
+                          placeholder="https://twitter.com/yourhandle"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
             {/* Images Tab */}
             <TabsContent value="images">
               <div className="space-y-6">
@@ -647,73 +723,74 @@ export default function Admin() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {siteContent.dogs.map((dog) => (
-                      <Card key={dog.id} className="border-sand-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex-1">
-                              <h3 className="font-heading text-lg font-bold text-brown-800">
-                                {dog.name}
-                              </h3>
-                              <p className="text-brown-600">{dog.breed}</p>
-                              <p className="text-brown-600 text-sm">
-                                {dog.age}
-                              </p>
-                            </div>
-                            <div className="flex space-x-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                                  <DialogHeader>
-                                    <DialogTitle>Edit {dog.name}</DialogTitle>
-                                  </DialogHeader>
-                                  <DogForm
-                                    dog={dog}
-                                    onSubmit={async (updates) => {
-                                      try {
-                                        await updateDog(dog.id, updates);
-                                        alert("Dog updated successfully!");
-                                      } catch (error) {
-                                        alert(
-                                          "Failed to update dog. Updated locally.",
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </DialogContent>
-                              </Dialog>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={async () => {
-                                  if (
-                                    confirm(
-                                      `Are you sure you want to delete ${dog.name}?`,
-                                    )
-                                  ) {
-                                    try {
-                                      await deleteDog(dog.id);
-                                      alert("Dog deleted successfully!");
-                                    } catch (error) {
-                                      alert(
-                                        "Failed to delete dog. Deleted locally.",
-                                      );
-                                    }
-                                  }
-                                }}
-                                className="text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <p className="text-brown-600 text-sm">
-                            {dog.personality}
-                          </p>
-                        </CardContent>
+                      <Card key={dog.id} className="border-sand-200 p-4 flex gap-4 items-start">
+                        <img src={dog.afterImage || "/placeholder.svg"} alt={dog.name} className="w-24 h-24 object-cover rounded-md flex-shrink-0" />
+                        <div className="flex-1">
+                           <div className="flex justify-between items-start mb-2">
+                             <div className="flex-1">
+                               <h3 className="font-heading text-lg font-bold text-brown-800">
+                                 {dog.name}
+                               </h3>
+                               <p className="text-brown-600 text-sm">{dog.breed}</p>
+                               <p className="text-brown-600 text-sm">
+                                 {dog.age}
+                               </p>
+                             </div>
+                             <div className="flex space-x-2">
+                               <Dialog>
+                                 <DialogTrigger asChild>
+                                   <Button variant="outline" size="sm">
+                                     <Edit className="h-4 w-4" />
+                                   </Button>
+                                 </DialogTrigger>
+                                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                                   <DialogHeader>
+                                     <DialogTitle>Edit {dog.name}</DialogTitle>
+                                   </DialogHeader>
+                                   <DogForm
+                                     dog={dog}
+                                     onSubmit={async (updates) => {
+                                       try {
+                                         await updateDog(dog.id, updates);
+                                         alert("Dog updated successfully!");
+                                       } catch (error) {
+                                         alert(
+                                           "Failed to update dog. Updated locally.",
+                                         );
+                                       }
+                                     }}
+                                   />
+                                 </DialogContent>
+                               </Dialog>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={async () => {
+                                   if (
+                                     confirm(
+                                       `Are you sure you want to delete ${dog.name}?`,
+                                     )
+                                   ) {
+                                     try {
+                                       await deleteDog(dog.id);
+                                       alert("Dog deleted successfully!");
+                                     } catch (error) {
+                                       alert(
+                                         "Failed to delete dog. Deleted locally.",
+                                       );
+                                     }
+                                   }
+                                 }}
+                                 className="text-red-600 hover:bg-red-50"
+                               >
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                             </div>
+                           </div>
+                           <p className="text-brown-600 text-sm line-clamp-3">
+                             {dog.personality}
+                           </p>
+                        </div>
                       </Card>
                     ))}
                   </div>
