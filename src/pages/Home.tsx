@@ -35,9 +35,6 @@ export default function Home() {
     );
   }
 
-  // Fallback URL for Google Maps in case it's missing from the database
-  const googleMapsFallbackUrl = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus";
-
   return (
     <Layout>
       {/* Hero Banner */}
@@ -77,9 +74,6 @@ export default function Home() {
             >
               {siteContent.siteTexts?.homeViewMenuButton ?? "View Menu"}
             </Button>
-            
-            {/* --- FIX 1: "Learn More" button visibility --- */}
-            {/* Added `bg-black/30` to give the white text a dark background, making it always visible. */}
             <Button
               size="lg"
               variant="outline"
@@ -88,7 +82,6 @@ export default function Home() {
             >
               {siteContent.siteTexts?.homeLearnMoreButton ?? "Learn More"}
             </Button>
-
           </div>
         </div>
 
@@ -125,12 +118,13 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
+            {/* UPDATED: Dynamic welcome images and captions */}
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-4">
                 <img
                   src={siteContent.welcomeImages?.[0]?.url ?? "/placeholder.svg"}
                   alt={siteContent.welcomeImages?.[0]?.alt ?? "Happy customers with dogs"}
-                  className="w-full h-32 object-cover rounded-md mb-4 bg-sand-200"
+                  className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200"
                 />
                 <p className="font-body text-sm text-brown-600">
                   {siteContent.siteTexts?.welcomeImage1Caption ?? "Smiling customers enjoying our dog-friendly atmosphere"}
@@ -142,7 +136,7 @@ export default function Home() {
                 <img
                   src={siteContent.welcomeImages?.[1]?.url ?? "/placeholder.svg"}
                   alt={siteContent.welcomeImages?.[1]?.alt ?? "Delicious food"}
-                  className="w-full h-32 object-cover rounded-md mb-4 bg-sand-200"
+                  className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200"
                 />
                 <p className="font-body text-sm text-brown-600">
                   {siteContent.siteTexts?.welcomeImage2Caption ?? "Fresh, delicious Australian-inspired cuisine"}
@@ -180,12 +174,9 @@ export default function Home() {
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-0 h-full">
                 <div className="w-full h-full min-h-[400px]">
-                  
-                  {/* --- FIX 2: Google Maps visibility --- */}
-                  {/* Now uses the URL from your data OR falls back to a valid, hardcoded URL. */}
                   <iframe
-                    key={siteContent.siteTexts?.googleMapsUrl || googleMapsFallbackUrl} 
-                    src={siteContent.siteTexts?.googleMapsUrl || googleMapsFallbackUrl}
+                    key={siteContent.siteTexts?.googleMapsUrl} 
+                    src={siteContent.siteTexts?.googleMapsUrl}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
@@ -195,7 +186,6 @@ export default function Home() {
                     className="rounded-lg"
                     title="KINGAROOS Restaurant Location Map"
                   />
-
                 </div>
               </CardContent>
             </Card>
