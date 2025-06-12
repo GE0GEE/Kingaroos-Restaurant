@@ -277,13 +277,6 @@ export default function DogRescue() {
                 </p>
               </CardContent>
             </Card>
-            <div className="space-y-2 text-cream-200">
-              <p className="font-body">
-                📘 Follow us on Facebook: @KingaroosRestaurant
-              </p>
-              <p className="font-body">📞 Call us: (02) 1234 5678</p>
-              <p className="font-body">🏪 Visit us: 123 Outback Lane, Sydney</p>
-            </div>
           </div>
         </div>
       </section>
