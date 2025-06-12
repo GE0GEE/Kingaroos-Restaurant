@@ -37,11 +37,25 @@ export default function DogRescue() {
           <h1 className="font-heading text-5xl font-bold text-brown-800 mb-6">
             {siteContent.siteTexts.dogRescueTitle}
           </h1>
-          <p className="font-body text-xl text-brown-600 max-w-3xl mx-auto">
-            {siteContent.siteTexts.dogRescueSubtitle}
-          </p>
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-cream-50 border-sand-200 shadow-lg">
+              <CardContent className="p-8">
+                <div className="flex items-center justify-center space-x-3 mb-4">
+                  <Heart className="h-8 w-8 text-aussie-orange" />
+                  <h2 className="font-heading text-2xl font-bold text-brown-800">
+                    Every Meal Makes a Difference
+                  </h2>
+                </div>
+                <p className="font-body text-lg text-brown-600 leading-relaxed">
+                  {siteContent.siteTexts.dogRescueSubtitle}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
+
+
 
       {/* Dog Gallery */}
       <section className="py-16 px-4">
@@ -236,7 +250,7 @@ export default function DogRescue() {
           )}
         </DialogContent>
       </Dialog>
-      
+
       {/* Call to Action */}
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
