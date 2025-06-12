@@ -1,4 +1,7 @@
+
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Heart, Users, UtensilsCrossed, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,17 +10,20 @@ import { useAdmin } from "@/contexts/AdminContext";
 
 export default function Home() {
   const { siteContent, loading } = useAdmin();
+  const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === siteContent.heroImages.length - 1 ? 0 : prevIndex + 1,
-      );
-    }, 5000);
+    if (siteContent.heroImages && siteContent.heroImages.length > 0) {
+        const interval = setInterval(() => {
+          setCurrentImageIndex((prevIndex) =>
+            prevIndex === siteContent.heroImages.length - 1 ? 0 : prevIndex + 1,
+          );
+        }, 5000);
 
-    return () => clearInterval(interval);
-  }, [siteContent.heroImages.length]);
+        return () => clearInterval(interval);
+    }
+  }, [siteContent.heroImages]);
 
   if (loading) {
     return (
@@ -54,12 +60,8 @@ export default function Home() {
                 backgroundRepeat: "no-repeat",
               }}
             />
-            {/* Balanced Gradient Overlay */}
-            <div
-              className={`absolute inset-0 bg-gradient-to-br ${image.gradient} opacity-50`}
-            />
             {/* Balanced Dark Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-black/15" />
+            <div className="absolute inset-0 bg-black/50" />
           </div>
         ))}
 
@@ -75,6 +77,7 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-aussie-orange hover:bg-aussie-burnt-red text-white font-body font-semibold"
+              onClick={() => navigate("/menu")}
             >
               {siteContent.siteTexts.homeViewMenuButton}
             </Button>
@@ -82,6 +85,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-brown-800 font-body font-semibold"
+              onClick={() => navigate("/about")}
             >
               {siteContent.siteTexts.homeLearnMoreButton}
             </Button>
@@ -125,24 +129,24 @@ export default function Home() {
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-4">
                 <img
-                  src="/placeholder.svg"
-                  alt="Happy customers with dogs"
+                  src={siteContent.welcomeImages[0]?.url || "/placeholder.svg"}
+                  alt={siteContent.welcomeImages[0]?.alt || "Happy customers with dogs"}
                   className="w-full h-32 object-cover rounded-md mb-4 bg-sand-200"
                 />
                 <p className="font-body text-sm text-brown-600">
-                  Smiling customers enjoying our dog-friendly atmosphere
+                  {siteContent.siteTexts.welcomeImage1Caption}
                 </p>
               </CardContent>
             </Card>
             <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-4">
                 <img
-                  src="/placeholder.svg"
-                  alt="Delicious food"
+                  src={siteContent.welcomeImages[1]?.url || "/placeholder.svg"}
+                  alt={siteContent.welcomeImages[1]?.alt || "Delicious food"}
                   className="w-full h-32 object-cover rounded-md mb-4 bg-sand-200"
                 />
                 <p className="font-body text-sm text-brown-600">
-                  Fresh, delicious Australian-inspired cuisine
+                   {siteContent.siteTexts.welcomeImage2Caption}
                 </p>
               </CardContent>
             </Card>
@@ -222,15 +226,15 @@ export default function Home() {
                   <div className="space-y-3 font-body text-brown-600">
                     <div className="flex justify-between">
                       <span>Monday - Thursday</span>
-                      <span className="font-semibold">11am - 9pm</span>
+                      <span className="font-semibold">{siteContent.siteTexts.hoursWeekday}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Friday - Saturday</span>
-                      <span className="font-semibold">11am - 10pm</span>
+                      <span className="font-semibold">{siteContent.siteTexts.hoursWeekend}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Sunday</span>
-                      <span className="font-semibold">10am - 8pm</span>
+                      <span className="font-semibold">{siteContent.siteTexts.hoursSunday}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -261,10 +265,10 @@ export default function Home() {
 
             {/* Map */}
             <Card className="border-sand-200 shadow-lg">
-              <CardContent className="p-0">
-                <div className="w-full h-96">
+              <CardContent className="p-0 h-full">
+                <div className="w-full h-full min-h-[400px]">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus"
+                    src={siteContent.siteTexts.googleMapsUrl}
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
