@@ -18,7 +18,7 @@ export interface Dog {
 }
 
 export interface MenuItem {
-  id: string;
+  id:string;
   name: string;
   description: string;
   price: string;
@@ -49,6 +49,12 @@ export interface Promotion {
 
 export interface SiteContent {
   logoImage: string;
+  theme: 'light' | 'dark';
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
   heroImages: Array<{
     url: string;
     alt: string;
@@ -273,6 +279,12 @@ const ADMIN_PASSWORD = "kingarooadmin";
 
 const defaultSiteContent: SiteContent = {
   logoImage: "",
+  theme: 'light',
+  socialLinks: {
+    facebook: "https://facebook.com/KingaroosRestaurant",
+    instagram: "https://instagram.com/kingaroos_sydney",
+    twitter: "https://twitter.com/kingaroos_syd",
+  },
   heroImages: [
     {
       url: "/placeholder.svg",
@@ -768,6 +780,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [isServerConnected, setIsServerConnected] = useState(false);
   const [siteContent, setSiteContent] =
     useState<SiteContent>(defaultSiteContent);
+
+  // Apply theme to the root element
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (siteContent.theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [siteContent.theme]);
 
   // Check server connectivity and load content
   useEffect(() => {
