@@ -1,127 +1,312 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Heart, Users, UtensilsCrossed, MapPin, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Layout } from "@/components/Layout";
-import { useAdmin } from "@/contexts/AdminContext";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
-export default function Home() {
-  const { siteContent, loading } = useAdmin();
-  const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+// --- INTERFACES ---
+export interface Dog {
+  id: string;
+  name: string;
+  breed: string;
+  age: string;
+  personality: string;
+  beforeImage: string;
+  afterImage: string;
+  rescueStory: string;
+}
+
+export interface MenuItem {
+  id:string;
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+  featured?: boolean;
+  category: "starters" | "mains" | "desserts" | "drinks";
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  description: string;
+  type: "music" | "dogs" | "family" | "special" | "food";
+  category: "thisWeek" | "comingSoon";
+}
+
+export interface Promotion {
+  id: string;
+  title: string;
+  subtitle: string;
+  details: string;
+  description: string;
+  badge: string;
+  color: string;
+}
+
+// This interface matches the latest one you provided
+export interface SiteContent {
+  logoImage: string;
+  theme: 'light' | 'dark'; // Kept as per your latest file structure
+  socialLinks: {
+    facebook: string;
+    instagram: string;
+    twitter: string;
+  };
+  heroImages: Array<{
+    url: string;
+    alt: string;
+    gradient: string;
+  }>;
+  welcomeImages: Array<{
+    url: string;
+    alt: string;
+  }>;
+  siteImages: {
+    familyPhoto: string;
+    originalFoodTruck: string;
+    firstRescueDog: string;
+    dogRescuePlaceholderImage: string;
+  };
+  siteTexts: {
+    [key: string]: any; // Allows for flexible text fields
+  };
+  dogs: Dog[];
+  menuItems: MenuItem[];
+  events: Event[];
+  promotions: Promotion[];
+}
+
+interface AdminContextType {
+  isLoggedIn: boolean;
+  login: (password: string) => Promise<boolean>;
+  logout: () => void;
+  siteContent: SiteContent;
+  loading: boolean;
+  isServerConnected: boolean;
+  updateSiteContent: (content: Partial<SiteContent>) => Promise<void>;
+  addDog: (dog: Omit<Dog, "id">) => Promise<void>;
+  updateDog: (id: string, dog: Partial<Dog>) => Promise<void>;
+  deleteDog: (id: string) => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
+  updateMenuItem: (id: string, item: Partial<MenuItem>) => Promise<void>;
+  deleteMenuItem: (id: string) => Promise<void>;
+  addEvent: (event: Omit<Event, "id">) => Promise<void>;
+  updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  addPromotion: (promo: Omit<Promotion, "id">) => Promise<void>;
+  updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;
+  deletePromotion: (id: string) => Promise<void>;
+}
+
+const AdminContext = createContext<AdminContextType | undefined>(undefined);
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "https://kingaroos-backend.onrender.com/api";
+
+const ADMIN_PASSWORD = "kingarooadmin";
+
+// A minimal default state. The `initializeContent` function will populate this.
+const defaultSiteContent: SiteContent = {
+  logoImage: "",
+  theme: 'light',
+  socialLinks: { facebook: "", instagram: "", twitter: "" },
+  heroImages: [],
+  welcomeImages: [],
+  siteImages: { familyPhoto: "", originalFoodTruck: "", firstRescueDog: "", dogRescuePlaceholderImage: ""},
+  siteTexts: {},
+  dogs: [],
+  menuItems: [],
+  events: [],
+  promotions: [],
+};
+
+export function AdminProvider({ children }: { children: ReactNode }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isServerConnected, setIsServerConnected] = useState(false);
+  const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
+
+  // --- FIX 1: THE KEEP-ALIVE PING ---
+  // This runs for every user and pings the backend every 10 minutes
+  // to prevent it from going to sleep on free hosting services.
+  useEffect(() => {
+    const keepAliveInterval = setInterval(() => {
+      fetch(`${API_BASE_URL}/content`).then(response => {
+        if (response.ok) {
+          console.log(`Keep-alive ping successful at ${new Date().toLocaleTimeString()}`);
+          if (!isServerConnected) setIsServerConnected(true);
+        } else {
+          if (isServerConnected) setIsServerConnected(false);
+        }
+      }).catch(() => {
+        console.warn('Keep-alive ping failed. Server might be offline.');
+        if (isServerConnected) setIsServerConnected(false);
+      });
+    }, 10 * 60 * 1000); // 10 minutes
+
+    return () => clearInterval(keepAliveInterval);
+  }, [isServerConnected]); // Dependency ensures we can update connection status
 
   useEffect(() => {
-    if (siteContent?.heroImages && siteContent.heroImages.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) =>
-          prevIndex === siteContent.heroImages.length - 1 ? 0 : prevIndex + 1,
-        );
-      }, 5000);
-      return () => clearInterval(interval);
+    initializeContent();
+  }, []);
+
+  const initializeContent = async () => {
+    setLoading(true);
+    try {
+      // Attempt to fetch fresh data from the server
+      const response = await fetch(`${API_BASE_URL}/content`, { signal: AbortSignal.timeout(8000) });
+      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+      
+      const serverContent = await response.json();
+      
+      // Deep merge server content with defaults to prevent crashes from missing fields
+      const mergedContent = {
+        ...defaultSiteContent,
+        ...serverContent,
+        siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
+        siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
+        socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
+      };
+
+      setSiteContent(mergedContent);
+      setIsServerConnected(true);
+      console.log("✅ Data successfully loaded from server.");
+
+    } catch (error) {
+      console.warn("⚠️ Server not available, using local data as fallback.", error);
+      setIsServerConnected(false);
+
+      // If server fails, fall back to localStorage
+      const saved = localStorage.getItem("kingaroos-admin-content");
+      if (saved) {
+        try {
+          const localContent = JSON.parse(saved);
+          // Also merge local content with defaults to be safe
+          const mergedContent = {
+            ...defaultSiteContent,
+            ...localContent,
+            siteTexts: { ...defaultSiteContent.siteTexts, ...(localContent.siteTexts || {}) },
+            siteImages: { ...defaultSiteContent.siteImages, ...(localContent.siteImages || {}) },
+            socialLinks: { ...defaultSiteContent.socialLinks, ...(localContent.socialLinks || {}) },
+          };
+          setSiteContent(mergedContent);
+          console.log("📱 Displaying content from local storage.");
+        } catch {
+          setSiteContent(defaultSiteContent); // If local data is corrupted
+        }
+      } else {
+        setSiteContent(defaultSiteContent); // If no local data, use defaults
+        console.log("🔄 No local data found, using default content.");
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [siteContent?.heroImages]);
+  };
 
-  if (loading || !siteContent) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading KINGAROOS...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  const saveToLocalStorage = (content: SiteContent) => {
+    localStorage.setItem("kingaroos-admin-content", JSON.stringify(content));
+  };
 
-  const googleMapsFallbackUrl = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus";
+  const apiCall = async (url: string, options: RequestInit = {}) => {
+    if (!isServerConnected) throw new Error("Server not available for API call");
+    const response = await fetch(`${API_BASE_URL}${url}`, {
+      signal: AbortSignal.timeout(10000), ...options, headers: { "Content-Type": "application/json", ...options.headers },
+    });
+    if (!response.ok) throw new Error(`API call to ${url} failed: ${response.status}`);
+    return response.json();
+  };
   
+  const login = async (password: string): Promise<boolean> => {
+    if (password !== ADMIN_PASSWORD) return false;
+    setIsLoggedIn(true);
+    await initializeContent(); // Re-fetch content on login to get latest data
+    return true;
+  };
+
+  const logout = () => setIsLoggedIn(false);
+  
+  const updateSiteContent = async (updates: Partial<SiteContent>) => {
+    // Optimistically update the local state for a fast UI
+    const newContent = {
+      ...siteContent,
+      ...updates,
+      // Ensure nested objects are merged correctly
+      siteTexts: { ...siteContent.siteTexts, ...updates.siteTexts },
+      siteImages: { ...siteContent.siteImages, ...updates.siteImages },
+      socialLinks: { ...siteContent.socialLinks, ...updates.socialLinks },
+    };
+    setSiteContent(newContent);
+    saveToLocalStorage(newContent);
+    
+    // Attempt to sync with the server
+    if (isServerConnected) {
+      try {
+        await apiCall("/content", { method: "PUT", body: JSON.stringify(updates) });
+      } catch (error) {
+        console.error("Server update failed, changes are saved locally.", error);
+        setIsServerConnected(false);
+      }
+    }
+  };
+
+  const createCrudOperations = <T extends { id: string }>(endpoint: string, stateKey: keyof SiteContent) => {
+    const data = (siteContent[stateKey] as T[] | undefined) ?? [];
+    
+    const add = async (item: Omit<T, 'id'>) => {
+      const newItem = { ...item, id: Date.now().toString() } as T;
+      const newContent = { ...siteContent, [stateKey]: [...data, newItem] };
+      setSiteContent(newContent);
+      saveToLocalStorage(newContent);
+      if (isServerConnected) { try { await apiCall(`/${endpoint}`, { method: 'POST', body: JSON.stringify(item) }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
+    };
+
+    const update = async (id: string, updates: Partial<T>) => {
+      const newData = data.map(item => item.id === id ? { ...item, ...updates } : item);
+      const newContent = { ...siteContent, [stateKey]: newData };
+      setSiteContent(newContent);
+      saveToLocalStorage(newContent);
+      if (isServerConnected) { try { await apiCall(`/${endpoint}/${id}`, { method: 'PUT', body: JSON.stringify(updates) }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
+    };
+
+    const remove = async (id: string) => {
+      const newData = data.filter(item => item.id !== id);
+      const newContent = { ...siteContent, [stateKey]: newData };
+      setSiteContent(newContent);
+      saveToLocalStorage(newContent);
+      if (isServerConnected) { try { await apiCall(`/${endpoint}/${id}`, { method: 'DELETE' }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
+    };
+    
+    return { add, update, remove };
+  };
+
+  const dogOps = createCrudOperations<Dog>('dogs', 'dogs');
+  const menuItemOps = createCrudOperations<MenuItem>('menu-items', 'menuItems');
+  const eventOps = createCrudOperations<Event>('events', 'events');
+  const promotionOps = createCrudOperations<Promotion>('promotions', 'promotions');
+
   return (
-    <Layout>
-      {/* Hero Banner */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {(siteContent.heroImages ?? []).map((image, index) => (
-          <div key={image?.url || index} className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentImageIndex ? "opacity-100" : "opacity-0"}`}>
-            <div className="absolute inset-0 bg-sand-200" style={{ backgroundImage: `url(${image?.url})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}/>
-            <div className="absolute inset-0 bg-black/50" />
-          </div>
-        ))}
-        <div className="relative z-10 text-center text-white max-w-4xl px-4">
-          <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6 animate-fade-in">{siteContent.siteTexts?.homeTitle ?? "Welcome to Kingaroos"}</h1>
-          <p className="font-body text-xl md:text-2xl mb-8 animate-fade-in delay-150">{siteContent.siteTexts?.homeSubtitle ?? "Your Aussie-inspired escape."}</p>
-          <div className="space-x-4 animate-fade-in delay-300">
-            <Button size="lg" className="bg-aussie-orange hover:bg-aussie-burnt-red text-white font-body font-semibold" onClick={() => navigate("/menu")}>{siteContent.siteTexts?.homeViewMenuButton ?? "View Menu"}</Button>
-            <Button size="lg" variant="outline" className="border-white text-white bg-black/30 hover:bg-white hover:text-brown-800 font-body font-semibold" onClick={() => navigate("/about")}>{siteContent.siteTexts?.homeLearnMoreButton ?? "Learn More"}</Button>
-          </div>
-        </div>
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="flex space-x-2">
-            {(siteContent.heroImages ?? []).map((_, index) => (<button key={index} className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentImageIndex ? "bg-white" : "bg-white/50 hover:bg-white/75"}`} onClick={() => setCurrentImageIndex(index)} aria-label={`View image ${index + 1}`} />))}
-          </div>
-        </div>
-      </section>
-
-      {/* Welcome Section */}
-      <section className="py-16 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h2 className="font-heading text-4xl font-bold text-brown-800">{siteContent.siteTexts?.welcomeTitle ?? "A G'day from Kingaroos!"}</h2>
-            <p className="font-body text-lg text-brown-600 leading-relaxed">{siteContent.siteTexts?.welcomeText1 ?? "Welcome text one..."}</p>
-            <p className="font-body text-lg text-brown-600 leading-relaxed">{siteContent.siteTexts?.welcomeText2 ?? "Welcome text two..."}</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="border-sand-200 shadow-lg">
-              <CardContent className="p-4">
-                <img src={siteContent.welcomeImages?.[0]?.url ?? "/placeholder.svg"} alt={siteContent.welcomeImages?.[0]?.alt ?? ""} className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200" />
-                <p className="font-body text-sm text-brown-600">{siteContent.siteTexts?.welcomeImage1Caption ?? ""}</p>
-              </CardContent>
-            </Card>
-            <Card className="border-sand-200 shadow-lg">
-              <CardContent className="p-4">
-                <img src={siteContent.welcomeImages?.[1]?.url ?? "/placeholder.svg"} alt={siteContent.welcomeImages?.[1]?.alt ?? ""} className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200" />
-                <p className="font-body text-sm text-brown-600">{siteContent.siteTexts?.welcomeImage2Caption ?? ""}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Info Highlights */}
-      <section className="py-16 bg-sand-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">{siteContent.siteTexts?.homeHighlightsTitle ?? "What Makes Us Special"}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-orange rounded-full flex items-center justify-center mx-auto mb-6"><Heart className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.dogFriendlyTitle ?? "Dog Friendly"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.dogFriendlyText ?? ""}</p></CardContent></Card>
-            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-eucalyptus rounded-full flex items-center justify-center mx-auto mb-6"><UtensilsCrossed className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.aussieFoodTitle ?? "Aussie-Inspired Food"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.aussieFoodText ?? ""}</p></CardContent></Card>
-            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-burnt-red rounded-full flex items-center justify-center mx-auto mb-6"><Users className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.rescueHelpTitle ?? "Supporting Rescues"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.rescueHelpText ?? ""}</p></CardContent></Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Hours & Location */}
-      <section className="py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">{siteContent.siteTexts?.homeVisitTitle ?? "Come Say G'day!"}</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <Card className="border-sand-200 shadow-lg"><CardContent className="p-8"><div className="flex items-center space-x-4 mb-6"><Clock className="h-8 w-8 text-aussie-orange" /><h3 className="font-heading text-2xl font-bold text-brown-800">{siteContent.siteTexts?.homeHoursTitle ?? "Our Hours"}</h3></div><div className="space-y-3 font-body text-brown-600"><div className="flex justify-between"><span>Monday - Thursday</span><span className="font-semibold">{siteContent.siteTexts?.hoursWeekday ?? ""}</span></div><div className="flex justify-between"><span>Friday - Saturday</span><span className="font-semibold">{siteContent.siteTexts?.hoursWeekend ?? ""}</span></div><div className="flex justify-between"><span>Sunday</span><span className="font-semibold">{siteContent.siteTexts?.hoursSunday ?? ""}</span></div></div></CardContent></Card>
-              <Card className="border-sand-200 shadow-lg"><CardContent className="p-8"><div className="flex items-center space-x-4 mb-6"><MapPin className="h-8 w-8 text-aussie-orange" /><h3 className="font-heading text-2xl font-bold text-brown-800">{siteContent.siteTexts?.homeLocationTitle ?? "Our Location"}</h3></div><div className="space-y-2 font-body text-brown-600"><p className="font-semibold">{siteContent.siteTexts?.homeAddress ?? ""}</p><p className="text-aussie-orange font-semibold">{siteContent.siteTexts?.homePhone ?? ""}</p><p className="text-aussie-orange">{siteContent.siteTexts?.homeEmail ?? ""}</p></div></CardContent></Card>
-            </div>
-            <Card className="border-sand-200 shadow-lg">
-              <CardContent className="p-0 h-full">
-                <div className="w-full h-full min-h-[400px]">
-                  <iframe
-                    key={siteContent.siteTexts?.googleMapsUrl || googleMapsFallbackUrl} 
-                    src={siteContent.siteTexts?.googleMapsUrl || googleMapsFallbackUrl}
-                    width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="rounded-lg" title="KINGAROOS Restaurant Location Map"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-    </Layout>
+    <AdminContext.Provider value={{
+        isLoggedIn, login, logout, siteContent, loading, isServerConnected, updateSiteContent,
+        addDog: dogOps.add, updateDog: dogOps.update, deleteDog: dogOps.remove,
+        addMenuItem: menuItemOps.add, updateMenuItem: menuItemOps.update, deleteMenuItem: menuItemOps.remove,
+        addEvent: eventOps.add, updateEvent: eventOps.update, deleteEvent: eventOps.remove,
+        addPromotion: promotionOps.add, updatePromotion: promotionOps.update, deletePromotion: promotionOps.remove,
+    }}>
+      {children}
+    </AdminContext.Provider>
   );
-}//
+}
+
+export function useAdmin() {
+  const context = useContext(AdminContext);
+  if (context === undefined) {
+    throw new Error("useAdmin must be used within an AdminProvider");
+  }
+  return context;
+}
