@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MapPin, Phone, Mail, Facebook, Instagram } from "lucide-react";
+import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,53 +18,8 @@ export function Footer() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Define default footer values
-  const defaultFooterTexts = {
-    siteName: "KINGAROOS",
-    footerTagline:
-      "Great Food. Good Vibes. Helping Paws. Every meal helps rescue a dog in need.",
-    footerContactTitle: "Contact Us",
-    homeAddress: "123 Outback Lane, Sydney, NSW 2000",
-    homePhone: "(02) 1234 5678",
-    homeEmail: "hello@kingaroos.com.au",
-    footerHoursSocialTitle: "Hours & Social",
-    footerMondayThursday: "Mon-Thu: 11am - 9pm",
-    footerFridaySaturday: "Fri-Sat: 11am - 10pm",
-    footerSunday: "Sunday: 10am - 8pm",
-    footerCopyright: "© 2024 KINGAROOS. All rights reserved.",
-    adminLoginTitle: "Admin Login",
-    adminPasswordLabel: "Password",
-    adminPasswordPlaceholder: "Enter admin password",
-    adminLoginButton: "Login",
-    adminCancelButton: "Cancel"
-  };
-  
-  // Handle potential context loading state
-  let siteContent, login;
-  try {
-    const adminContext = useAdmin();
-    siteContent = {
-      ...adminContext.siteContent,
-      siteTexts: {
-        ...defaultFooterTexts,
-        ...(adminContext.siteContent.siteTexts || {})
-      }
-    };
-    login = adminContext.login;
-  } catch (err) {
-    // Fallback content if context is not available
-    siteContent = {
-      logoImage: "",
-      siteTexts: defaultFooterTexts
-    };
-    login = async (password: string) => {
-      if (password === "kingarooadmin") {
-        navigate("/admin");
-        return true;
-      }
-      return false;
-    };
-  }
+  // Directly use the context. The provider handles defaults, loading, and state updates.
+  const { siteContent, login } = useAdmin();
 
   const handleAdminClick = () => {
     setShowLoginDialog(true);
@@ -102,7 +57,7 @@ export function Footer() {
               {siteContent.logoImage ? (
                 <img
                   src={siteContent.logoImage}
-                  alt="KINGAROOS Logo"
+                  alt={`${siteContent.siteTexts.siteName} Logo`}
                   className="h-8 w-8 object-cover rounded"
                 />
               ) : (
@@ -152,8 +107,21 @@ export function Footer() {
               <div>{siteContent.siteTexts.footerSunday}</div>
             </div>
             <div className="flex space-x-4 pt-2">
-              <Facebook className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
-              <Instagram className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
+              {siteContent.socialLinks?.facebook && (
+                <a href={siteContent.socialLinks.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                    <Facebook className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
+                </a>
+              )}
+              {siteContent.socialLinks?.instagram && (
+                <a href={siteContent.socialLinks.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <Instagram className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
+                </a>
+              )}
+              {siteContent.socialLinks?.twitter && (
+                <a href={siteContent.socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+                    <Twitter className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
+                </a>
+              )}
             </div>
           </div>
         </div>
