@@ -339,7 +339,7 @@ const defaultSiteContent: SiteContent = {
     homeAddress: "123 Outback Lane, Sydney, NSW 2000",
     homePhone: "(02) 1234 5678",
     homeEmail: "hello@kingaroos.com.au",
-    googleMapsUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.671948197793!2d151.2041355762818!3d-33.87214951918385!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12ae418e2c0e8f%3A0x34f60369dc56b107!2sSydney%2C%20Australia!5e0!3m2!1sen!2sus!4v1625804854321!5m2!1sen!2sus",
+    googleMapsUrl: "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15751.867549789918!2d123.29718759559996!3d9.247256723398154!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x33ab69f7f93062cf%3A0xedaf9d009a9047d0!2sKingaroo's%20Seaview%20Resto%20Bar!5e0!3m2!1sen!2sus!4v1749525539183!5m2!1sen!2sus",
     hoursWeekday: "11am - 9pm",
     hoursWeekend: "11am - 10pm",
     hoursSunday: "10am - 8pm",
