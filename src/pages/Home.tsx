@@ -14,79 +14,181 @@ export default function Home() {
   useEffect(() => {
     if (siteContent?.heroImages && siteContent.heroImages.length > 1) {
       const interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % siteContent.heroImages.length);
+        setCurrentImageIndex((prevIndex) =>
+          prevIndex === siteContent.heroImages.length - 1 ? 0 : prevIndex + 1,
+        );
       }, 5000);
       return () => clearInterval(interval);
     }
   }, [siteContent?.heroImages]);
 
-  if (loading) {
-    return <Layout><div className="h-screen flex items-center justify-center"><Heart className="animate-pulse h-12 w-12 text-aussie-orange" /></div></Layout>;
+  if (loading || !siteContent) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center bg-cream-50">
+          <div className="text-center space-y-4">
+            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <p className="font-body text-brown-600">Loading KINGAROOS...</p>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
     <Layout>
+      {/* Hero Banner */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {(siteContent.heroImages ?? []).map((image, index) => (
-          <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? "opacity-100" : "opacity-0"}`}>
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${image.url})` }} />
+          <div
+            key={image?.url || index}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              index === currentImageIndex ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div
+              className="absolute inset-0 bg-sand-200"
+              style={{
+                backgroundImage: `url(${image?.url})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            />
             <div className="absolute inset-0 bg-black/50" />
           </div>
         ))}
+
         <div className="relative z-10 text-center text-white max-w-4xl px-4">
-          <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6">{siteContent.siteTexts.homeTitle}</h1>
-          <p className="font-body text-xl md:text-2xl mb-8">{siteContent.siteTexts.homeSubtitle}</p>
-          <div className="space-x-4">
-            <Button size="lg" className="bg-aussie-orange" onClick={() => navigate("/menu")}>{siteContent.siteTexts.homeViewMenuButton}</Button>
-            <Button size="lg" variant="outline" className="border-white text-white" onClick={() => navigate("/about")}>{siteContent.siteTexts.homeLearnMoreButton}</Button>
+          <h1 className="font-heading text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+            {siteContent.siteTexts?.homeTitle ?? "Welcome to Kingaroos"}
+          </h1>
+          <p className="font-body text-xl md:text-2xl mb-8 animate-fade-in delay-150">
+            {siteContent.siteTexts?.homeSubtitle ?? "Your Aussie-inspired escape."}
+          </p>
+          <div className="space-x-4 animate-fade-in delay-300">
+            <Button
+              size="lg"
+              className="bg-aussie-orange hover:bg-aussie-burnt-red text-white font-body font-semibold"
+              onClick={() => navigate("/menu")}
+            >
+              {siteContent.siteTexts?.homeViewMenuButton ?? "View Menu"}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white text-white bg-black/30 hover:bg-white hover:text-brown-800 font-body font-semibold"
+              onClick={() => navigate("/about")}
+            >
+              {siteContent.siteTexts?.homeLearnMoreButton ?? "Learn More"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="flex space-x-2">
+            {(siteContent.heroImages ?? []).map((_, index) => (
+              <button
+                key={index}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentImageIndex
+                    ? "bg-white"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                onClick={() => setCurrentImageIndex(index)}
+                aria-label={`View image ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Welcome Section */}
       <section className="py-16 px-4 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="font-heading text-4xl font-bold text-brown-800">{siteContent.siteTexts.welcomeTitle}</h2>
-            <p className="font-body text-lg text-brown-600 leading-relaxed">{siteContent.siteTexts.welcomeText1}</p>
-            <p className="font-body text-lg text-brown-600 leading-relaxed">{siteContent.siteTexts.welcomeText2}</p>
+            <h2 className="font-heading text-4xl font-bold text-brown-800">
+              {siteContent.siteTexts?.welcomeTitle ?? "A G'day from Kingaroos!"}
+            </h2>
+            <p className="font-body text-lg text-brown-600 leading-relaxed">
+              {siteContent.siteTexts?.welcomeText1 ?? "Welcome text one..."}
+            </p>
+            <p className="font-body text-lg text-brown-600 leading-relaxed">
+              {siteContent.siteTexts?.welcomeText2 ?? "Welcome text two..."}
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Card>
+            {/* UPDATED: Dynamic welcome images and captions */}
+            <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-4">
-                <img src={siteContent.siteImages.welcomeImage1} alt="Happy customers with dogs" className="w-full h-40 object-cover rounded-md mb-4" />
-                <p className="font-body text-sm text-brown-600">{siteContent.siteTexts.welcomeImage1Caption}</p>
+                <img
+                  src={siteContent.welcomeImages?.[0]?.url ?? "/placeholder.svg"}
+                  alt={siteContent.welcomeImages?.[0]?.alt ?? "Happy customers with dogs"}
+                  className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200"
+                />
+                <p className="font-body text-sm text-brown-600">
+                  {siteContent.siteTexts?.welcomeImage1Caption ?? "Smiling customers enjoying our dog-friendly atmosphere"}
+                </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-sand-200 shadow-lg">
               <CardContent className="p-4">
-                <img src={siteContent.siteImages.welcomeImage2} alt="Delicious Australian-inspired cuisine" className="w-full h-40 object-cover rounded-md mb-4" />
-                <p className="font-body text-sm text-brown-600">{siteContent.siteTexts.welcomeImage2Caption}</p>
+                <img
+                  src={siteContent.welcomeImages?.[1]?.url ?? "/placeholder.svg"}
+                  alt={siteContent.welcomeImages?.[1]?.alt ?? "Delicious food"}
+                  className="w-full h-40 object-cover rounded-md mb-4 bg-sand-200"
+                />
+                <p className="font-body text-sm text-brown-600">
+                  {siteContent.siteTexts?.welcomeImage2Caption ?? "Fresh, delicious Australian-inspired cuisine"}
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
 
+      {/* Info Highlights */}
       <section className="py-16 bg-sand-100">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">{siteContent.siteTexts.homeHighlightsTitle}</h2>
+          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
+            {siteContent.siteTexts?.homeHighlightsTitle ?? "What Makes Us Special"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="text-center p-8"><Heart className="mx-auto h-8 w-8" /><h3 className="text-2xl font-bold mt-4">{siteContent.siteTexts.dogFriendlyTitle}</h3><p className="mt-2">{siteContent.siteTexts.dogFriendlyText}</p></Card>
-            <Card className="text-center p-8"><UtensilsCrossed className="mx-auto h-8 w-8" /><h3 className="text-2xl font-bold mt-4">{siteContent.siteTexts.aussieFoodTitle}</h3><p className="mt-2">{siteContent.siteTexts.aussieFoodText}</p></Card>
-            <Card className="text-center p-8"><Users className="mx-auto h-8 w-8" /><h3 className="text-2xl font-bold mt-4">{siteContent.siteTexts.rescueHelpTitle}</h3><p className="mt-2">{siteContent.siteTexts.rescueHelpText}</p></Card>
+            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-orange rounded-full flex items-center justify-center mx-auto mb-6"><Heart className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.dogFriendlyTitle ?? "Dog Friendly"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.dogFriendlyText ?? "We love our furry friends!"}</p></CardContent></Card>
+            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-eucalyptus rounded-full flex items-center justify-center mx-auto mb-6"><UtensilsCrossed className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.aussieFoodTitle ?? "Aussie-Inspired Food"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.aussieFoodText ?? "A taste of down under."}</p></CardContent></Card>
+            <Card className="text-center border-sand-200 shadow-lg hover:shadow-xl transition-shadow"><CardContent className="p-8"><div className="w-16 h-16 bg-aussie-burnt-red rounded-full flex items-center justify-center mx-auto mb-6"><Users className="h-8 w-8 text-white" /></div><h3 className="font-heading text-2xl font-bold text-brown-800 mb-4">{siteContent.siteTexts?.rescueHelpTitle ?? "Supporting Rescues"}</h3><p className="font-body text-brown-600 leading-relaxed">{siteContent.siteTexts?.rescueHelpText ?? "Every meal helps a dog in need."}</p></CardContent></Card>
           </div>
         </div>
       </section>
 
+      {/* Hours & Location */}
       <section className="py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">{siteContent.siteTexts.homeVisitTitle}</h2>
+          <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">{siteContent.siteTexts?.homeVisitTitle ?? "Come Say G'day!"}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-8">
-              <Card className="p-8"><h3 className="text-2xl font-bold flex items-center"><Clock className="mr-2"/>{siteContent.siteTexts.homeHoursTitle}</h3><p className="mt-4">{siteContent.siteTexts.hoursWeekday}</p><p>{siteContent.siteTexts.hoursWeekend}</p><p>{siteContent.siteTexts.hoursSunday}</p></Card>
-              <Card className="p-8"><h3 className="text-2xl font-bold flex items-center"><MapPin className="mr-2"/>{siteContent.siteTexts.homeLocationTitle}</h3><p className="mt-4">{siteContent.siteTexts.homeAddress}</p><p>{siteContent.siteTexts.homePhone}</p><p>{siteContent.siteTexts.homeEmail}</p></Card>
+              <Card className="border-sand-200 shadow-lg"><CardContent className="p-8"><div className="flex items-center space-x-4 mb-6"><Clock className="h-8 w-8 text-aussie-orange" /><h3 className="font-heading text-2xl font-bold text-brown-800">{siteContent.siteTexts?.homeHoursTitle ?? "Our Hours"}</h3></div><div className="space-y-3 font-body text-brown-600"><div className="flex justify-between"><span>Monday - Thursday</span><span className="font-semibold">{siteContent.siteTexts?.hoursWeekday ?? "11am - 9pm"}</span></div><div className="flex justify-between"><span>Friday - Saturday</span><span className="font-semibold">{siteContent.siteTexts?.hoursWeekend ?? "11am - 10pm"}</span></div><div className="flex justify-between"><span>Sunday</span><span className="font-semibold">{siteContent.siteTexts?.hoursSunday ?? "10am - 8pm"}</span></div></div></CardContent></Card>
+              <Card className="border-sand-200 shadow-lg"><CardContent className="p-8"><div className="flex items-center space-x-4 mb-6"><MapPin className="h-8 w-8 text-aussie-orange" /><h3 className="font-heading text-2xl font-bold text-brown-800">{siteContent.siteTexts?.homeLocationTitle ?? "Our Location"}</h3></div><div className="space-y-2 font-body text-brown-600"><p className="font-semibold">{siteContent.siteTexts?.homeAddress ?? "123 Aussie Way, Sydney, AUS"}</p><p className="text-aussie-orange font-semibold">{siteContent.siteTexts?.homePhone ?? "(123) 456-7890"}</p><p className="text-aussie-orange">{siteContent.siteTexts?.homeEmail ?? "contact@kingaroos.com"}</p></div></CardContent></Card>
             </div>
-            <Card className="p-0 h-full"><iframe src={siteContent.siteTexts.googleMapsUrl} width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="rounded-lg"></iframe></Card>
+
+            <Card className="border-sand-200 shadow-lg">
+              <CardContent className="p-0 h-full">
+                <div className="w-full h-full min-h-[400px]">
+                  <iframe
+                    key={siteContent.siteTexts?.googleMapsUrl} 
+                    src={siteContent.siteTexts?.googleMapsUrl}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="rounded-lg"
+                    title="KINGAROOS Restaurant Location Map"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
