@@ -6,7 +6,7 @@ import { useAdmin } from "@/contexts/AdminContext";
 export default function About() {
   const { siteContent, loading } = useAdmin();
 
-  if (loading) {
+  if (loading || !siteContent.aboutImages) { // Added guard for aboutImages
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
@@ -88,34 +88,49 @@ export default function About() {
             {siteContent.siteTexts.aboutJourneyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-sand-200 shadow-lg text-center">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-aussie-orange rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Truck className="h-8 w-8 text-white" />
+            {/* Food Truck Card with Image */}
+            <Card className="border-sand-200 shadow-lg text-center overflow-hidden">
+              <CardContent className="p-0">
+                <div className="w-full h-48 bg-sand-200 flex items-center justify-center">
+                  {siteContent.aboutImages.originalFoodTruck && siteContent.aboutImages.originalFoodTruck !== "/placeholder.svg" ? (
+                    <img src={siteContent.aboutImages.originalFoodTruck} alt="Original food truck" className="w-full h-full object-cover"/>
+                  ) : (
+                    <Truck className="h-16 w-16 text-aussie-orange" />
+                  )}
                 </div>
-                <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  {siteContent.siteTexts.aboutFoodTruckTitle}
-                </h3>
-                <p className="font-body text-brown-600 leading-relaxed">
-                  {siteContent.siteTexts.aboutFoodTruckText}
-                </p>
+                <div className="p-8">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
+                    {siteContent.siteTexts.aboutFoodTruckTitle}
+                  </h3>
+                  <p className="font-body text-brown-600 leading-relaxed">
+                    {siteContent.siteTexts.aboutFoodTruckText}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="border-sand-200 shadow-lg text-center">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-aussie-eucalyptus rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="h-8 w-8 text-white" />
+            {/* Rescue Partnership Card with Image */}
+            <Card className="border-sand-200 shadow-lg text-center overflow-hidden">
+              <CardContent className="p-0">
+                <div className="w-full h-48 bg-sand-200 flex items-center justify-center">
+                  {siteContent.aboutImages.firstRescueDog && siteContent.aboutImages.firstRescueDog !== "/placeholder.svg" ? (
+                    <img src={siteContent.aboutImages.firstRescueDog} alt="First rescue dog partner" className="w-full h-full object-cover"/>
+                  ) : (
+                    <Heart className="h-16 w-16 text-aussie-eucalyptus" />
+                  )}
                 </div>
-                <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  {siteContent.siteTexts.aboutRescuePartnershipTitle}
-                </h3>
-                <p className="font-body text-brown-600 leading-relaxed">
-                  {siteContent.siteTexts.aboutRescuePartnershipText}
-                </p>
+                <div className="p-8">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
+                    {siteContent.siteTexts.aboutRescuePartnershipTitle}
+                  </h3>
+                  <p className="font-body text-brown-600 leading-relaxed">
+                    {siteContent.siteTexts.aboutRescuePartnershipText}
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
+            {/* Restaurant Opens Card */}
             <Card className="border-sand-200 shadow-lg text-center">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-aussie-burnt-red rounded-full flex items-center justify-center mx-auto mb-6">
