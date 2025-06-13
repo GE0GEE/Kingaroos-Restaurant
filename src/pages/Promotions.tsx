@@ -1,32 +1,35 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Heart, Utensils, Gift, Calendar, Star } from "lucide-react";
-import { useAdmin } from "@/contexts/AdminContext";
+import { Clock, Heart, Utensils, Gift, Star } from "lucide-react";
+import { useAdmin, promotionCategories } from "@/contexts/AdminContext";
 
 const getPromotionIcon = (title: string) => {
+  const lowerTitle = title.toLowerCase();
   if (
-    title.toLowerCase().includes("happy hour") ||
-    title.toLowerCase().includes("early bird")
+    lowerTitle.includes("happy hour") ||
+    lowerTitle.includes("early bird")
   ) {
     return Clock;
   }
   if (
-    title.toLowerCase().includes("dog") ||
-    title.toLowerCase().includes("rescue") ||
-    title.toLowerCase().includes("pooch")
+    lowerTitle.includes("dog") ||
+    lowerTitle.includes("rescue") ||
+    lowerTitle.includes("pooch")
   ) {
     return Heart;
   }
   if (
-    title.toLowerCase().includes("birthday") ||
-    title.toLowerCase().includes("club")
+    lowerTitle.includes("birthday") ||
+    lowerTitle.includes("club") ||
+    lowerTitle.includes("loyalty")
   ) {
     return Gift;
   }
   if (
-    title.toLowerCase().includes("family") ||
-    title.toLowerCase().includes("sunday")
+    lowerTitle.includes("family") ||
+    lowerTitle.includes("sunday") ||
+    lowerTitle.includes("deal")
   ) {
     return Utensils;
   }
@@ -70,25 +73,27 @@ export default function Promotions() {
             <div className="text-center py-12">
               <Gift className="h-16 w-16 text-brown-400 mx-auto mb-4" />
               <p className="font-body text-brown-600">
-                No promotions available at the moment. Check back soon for great
-                deals!
+                {siteContent.siteTexts.promotionsNoOffersText}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {siteContent.promotions.map((promo) => {
                 const IconComponent = getPromotionIcon(promo.title);
+                const categoryKey = promo.category && promotionCategories[promo.category] ? promo.category : 'general';
+                const categoryDetails = promotionCategories[categoryKey];
+                
                 return (
                   <Card
                     key={promo.id}
                     className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                   >
                     <div
-                      className={`bg-gradient-to-r ${promo.color} p-6 text-white relative`}
+                      className={`bg-gradient-to-r ${categoryDetails.colorClasses} p-6 text-white relative`}
                     >
                       <div className="absolute top-4 right-4">
                         <Badge className="bg-white/20 text-white border-white/30 font-body text-xs">
-                          {promo.badge}
+                          {categoryDetails.badge}
                         </Badge>
                       </div>
                       <div className="flex items-center space-x-4">
@@ -122,8 +127,6 @@ export default function Promotions() {
           )}
         </div>
       </section>
-
-
 
       {/* Call to Action */}
       <section className="bg-gradient-to-r from-aussie-orange to-aussie-burnt-red py-16">
@@ -168,4 +171,4 @@ export default function Promotions() {
       </section>
     </Layout>
   );
-} //
+}
