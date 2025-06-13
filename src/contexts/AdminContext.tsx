@@ -66,6 +66,20 @@ const defaultSiteContent: SiteContent = {
     contactHoursFridaySaturday: "11:00 AM - 10:00 PM",
     contactSunday: "Sunday",
     contactHoursSunday: "10:00 AM - 8:00 PM",
+    // For Menu Page CTA
+    menuReadyToDineTitle: "Ready to Dine With Us?",
+    menuReadyToDineText: "Book your table today and help us make a difference for rescue dogs!",
+    menuCallText: "Call us at",
+    menuAddressText: "123 Outback Lane, Sydney, NSW 2000",
+    // For Events Page CTA
+    eventsDontMissTitle: "Don't Miss Out!",
+    eventsDontMissText: "Follow us on social media or call ahead to secure your spot at our special events. Some events may have limited seating!",
+    eventsCallText: "Call for reservations:",
+    eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant",
+    eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
+    // General info used across pages
+    homePhone: "(02) 1234 5678",
+    homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
   dogs: [],
   menuItems: [],
