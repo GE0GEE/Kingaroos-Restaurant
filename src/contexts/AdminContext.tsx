@@ -25,13 +25,14 @@ export interface SiteContent {
   logoImage: string;
   theme: 'light' | 'dark';
   socialLinks: { facebook: string; instagram: string; twitter: string; };
-  heroImages: Array<{ url: string; alt: string; gradient: string; }>;
-  siteImages: {
-    welcomeImage1: string;
-    welcomeImage2: string;
+  heroImages: Array<{ url: string; alt: string; }>;
+  welcomeImages: Array<{ url: string; alt: string; }>; // Structured for Home page
+  aboutImages: { // Structured for About page
     familyPhoto: string;
     originalFoodTruck: string;
     firstRescueDog: string;
+  };
+  siteImages: { // For other miscellaneous images
     dogRescuePlaceholderImage: string;
   };
   siteTexts: { [key: string]: any; };
@@ -46,14 +47,18 @@ const defaultSiteContent: SiteContent = {
   logoImage: "/placeholder.svg",
   theme: 'light',
   socialLinks: { facebook: "#", instagram: "#", twitter: "#" },
-  heroImages: [{url: "/placeholder.svg", alt: "Kingaroos food", gradient: ""}],
-  siteImages: {
-    welcomeImage1: "/placeholder.svg",
-    welcomeImage2: "/placeholder.svg",
+  heroImages: [{url: "/placeholder.svg", alt: "Kingaroos food"}],
+  welcomeImages: [
+    { url: "/placeholder.svg", alt: "Happy customers" },
+    { url: "/placeholder.svg", alt: "Delicious food" },
+  ],
+  aboutImages: {
     familyPhoto: "/placeholder.svg",
     originalFoodTruck: "/placeholder.svg",
     firstRescueDog: "/placeholder.svg",
-    dogRescuePlaceholderImage: "/placeholder.svg"
+  },
+  siteImages: {
+    dogRescuePlaceholderImage: "/placeholder.svg",
   },
   siteTexts: { siteName: "Kingaroos", footerTagline: "Content loading..." },
   dogs: [],
@@ -96,11 +101,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     const unsubscribeSnapshot = onSnapshot(siteContentRef, (snapshot) => {
       if (snapshot.exists()) {
-        const serverContent = snapshot.data() as SiteContent;
-        const mergedContent = {
+        const serverContent = snapshot.data() as Partial<SiteContent>;
+        // Deep merge to prevent wiping out nested objects
+        const mergedContent: SiteContent = {
           ...defaultSiteContent,
           ...serverContent,
           socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
+          heroImages: serverContent.heroImages && serverContent.heroImages.length > 0 ? serverContent.heroImages : defaultSiteContent.heroImages,
+          welcomeImages: serverContent.welcomeImages && serverContent.welcomeImages.length > 0 ? serverContent.welcomeImages : defaultSiteContent.welcomeImages,
+          aboutImages: { ...defaultSiteContent.aboutImages, ...(serverContent.aboutImages || {}) },
           siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
           siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
         };
