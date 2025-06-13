@@ -246,22 +246,23 @@ export default function Events() {
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-cream-50 mb-6">
-            Don't Miss Out!
+            {siteContent.siteTexts.eventsDontMissTitle}
           </h2>
           <p className="font-body text-xl text-cream-200 mb-8">
-            Follow us on social media or call ahead to secure your spot at our
-            special events. Some events may have limited seating!
+            {siteContent.siteTexts.eventsDontMissText}
           </p>
           <div className="space-y-4 text-cream-200">
             <p className="font-body">
-              📞 Call for reservations:{" "}
-              <span className="font-semibold">(02) 1234 5678</span>
+              📞 {siteContent.siteTexts.eventsCallText}{" "}
+              <span className="font-semibold">
+                {siteContent.siteTexts.homePhone}
+              </span>
             </p>
             <p className="font-body">
-              📘 Follow us on Facebook: @KingaroosRestaurant
+              📘 {siteContent.siteTexts.eventsFacebookText}
             </p>
             <p className="font-body">
-              📷 Follow us on Instagram: @kingaroos_sydney
+              📷 {siteContent.siteTexts.eventsInstagramText}
             </p>
           </div>
         </div>
