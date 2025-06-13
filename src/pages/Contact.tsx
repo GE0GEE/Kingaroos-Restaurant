@@ -87,21 +87,17 @@ export default function Contact() {
                   <div className="space-y-3 font-body text-brown-600">
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
                       <span>{siteContent.siteTexts.contactMondayThursday}</span>
-                      <span className="font-semibold">11:00 AM - 9:00 PM</span>
+                      <span className="font-semibold">{siteContent.siteTexts.contactHoursMondayThursday}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
                       <span>{siteContent.siteTexts.contactFridaySaturday}</span>
-                      <span className="font-semibold">11:00 AM - 10:00 PM</span>
+                      <span className="font-semibold">{siteContent.siteTexts.contactHoursFridaySaturday}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-sand-200">
                       <span>{siteContent.siteTexts.contactSunday}</span>
-                      <span className="font-semibold">10:00 AM - 8:00 PM</span>
+                      <span className="font-semibold">{siteContent.siteTexts.contactHoursSunday}</span>
                     </div>
-                    <div className="pt-3">
-                      <p className="text-sm text-aussie-orange">
-                        {siteContent.siteTexts.contactKitchenClosesText}
-                      </p>
-                    </div>
+                    {/* ... */}
                   </div>
                 </CardContent>
               </Card>
@@ -181,17 +177,33 @@ export default function Contact() {
                     {siteContent.siteTexts.contactFollowText}
                   </p>
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
-                      <Facebook className="h-6 w-6 text-aussie-orange" />
-                      <div>
-                        <p className="font-body font-semibold text-brown-800">
-                          @KingaroosRestaurant
-                        </p>
-                        <p className="font-body text-brown-600 text-sm">
-                          {siteContent.siteTexts.contactFacebookDescription}
-                        </p>
+                        <a href={siteContent.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="block">
+                          <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
+                            <Facebook className="h-6 w-6 text-aussie-orange" />
+                            <div>
+                              <p className="font-body font-semibold text-brown-800">
+                                @KingaroosRestaurant
+                              </p>
+                              <p className="font-body text-brown-600 text-sm">
+                                {siteContent.siteTexts.contactFacebookDescription}
+                              </p>
+                            </div>
+                          </div>
+                        </a>
+                        <a href={siteContent.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="block">
+                          <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
+                            <Instagram className="h-6 w-6 text-aussie-orange" />
+                            <div>
+                              <p className="font-body font-semibold text-brown-800">
+                                {siteContent.siteTexts.contactInstagramHandle}
+                              </p>
+                              <p className="font-body text-brown-600 text-sm">
+                                {siteContent.siteTexts.contactInstagramDescription}
+                              </p>
+                            </div>
+                          </div>
+                        </a>
                       </div>
-                    </div>
                     <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
                       <Instagram className="h-6 w-6 text-aussie-orange" />
                       <div>
