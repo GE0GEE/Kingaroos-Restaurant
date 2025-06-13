@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-import { useAdmin } from "@/contexts/AdminContext";
+import { useAdmin, promotionCategories } from "@/contexts/AdminContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ import {
   Type,
   DatabaseZap, // New icon for Firebase
 } from "lucide-react";
-import type { Dog, MenuItem, Event, Promotion } from "@/contexts/AdminContext";
+import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey } from "@/contexts/AdminContext";
 
 
 // --- ALL YOUR FORM COMPONENTS ARE NOW INCLUDED ---
@@ -132,9 +132,19 @@ function PromotionForm({ promotion, onSubmit }: { promotion: Partial<Promotion>;
       <div><Label>Subtitle</Label><Input value={formData.subtitle || ""} onChange={(e) => setFormData((prev) => ({ ...prev, subtitle: e.target.value }))} /></div>
       <div><Label>Details</Label><Input value={formData.details || ""} onChange={(e) => setFormData((prev) => ({ ...prev, details: e.target.value }))} /></div>
       <div><Label>Description</Label><Textarea value={formData.description || ""} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} /></div>
-      <div className="grid grid-cols-2 gap-4">
-        <div><Label>Badge</Label><Input value={formData.badge || ""} onChange={(e) => setFormData((prev) => ({ ...prev, badge: e.target.value }))} /></div>
-        <div><Label>Color</Label><Input value={formData.color || ""} onChange={(e) => setFormData((prev) => ({ ...prev, color: e.target.value }))} /></div>
+      <div>
+        <Label>Category</Label>
+        <Select
+          value={formData.category || ""}
+          onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as PromotionCategoryKey }))}
+        >
+          <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+          <SelectContent>
+            {Object.entries(promotionCategories).map(([key, { name }]) => (
+              <SelectItem key={key} value={key}>{name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <Button onClick={() => onSubmit(formData)} className="w-full">Save Promotion</Button>
     </div>
@@ -152,11 +162,11 @@ export default function Admin() {
   } = useAdmin();
 
   const [editingTexts, setEditingTexts] = useState(siteContent.siteTexts);
-  const [editingImages, setEditingImages] = useState(siteContent.siteImages);
+  const [editingImages, setEditingImages] = useState(siteContent.aboutImages);
 
   useEffect(() => {
     setEditingTexts(siteContent.siteTexts);
-    setEditingImages(siteContent.siteImages);
+    setEditingImages(siteContent.aboutImages);
   }, [siteContent]);
 
   const handleLogout = () => { logout(); navigate("/"); };
@@ -167,7 +177,7 @@ export default function Admin() {
   };
 
   const handleSaveImages = async () => {
-    try { await updateSiteContent({ siteImages: editingImages }); alert("About page images updated!"); }
+    try { await updateSiteContent({ aboutImages: editingImages }); alert("About page images updated!"); }
     catch (error) { alert(`Error: ${error.message}`); }
   };
 
@@ -298,10 +308,11 @@ export default function Admin() {
                 <Card>
                   <CardHeader><CardTitle>About Page Images</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid md:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div><Label>Family Photo</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('familyPhoto')}/>{editingImages.familyPhoto && <img src={editingImages.familyPhoto} className="w-full h-32 mt-2 object-cover"/>}</div>
                       <div><Label>Original Food Truck</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('originalFoodTruck')}/>{editingImages.originalFoodTruck && <img src={editingImages.originalFoodTruck} className="w-full h-32 mt-2 object-cover"/>}</div>
                       <div><Label>First Rescue Dog</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('firstRescueDog')}/>{editingImages.firstRescueDog && <img src={editingImages.firstRescueDog} className="w-full h-32 mt-2 object-cover"/>}</div>
+                      <div><Label>Restaurant Opens Image</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('restaurantOpensImage')}/>{editingImages.restaurantOpensImage && <img src={editingImages.restaurantOpensImage} className="w-full h-32 mt-2 object-cover"/>}</div>
                     </div>
                     <Button onClick={handleSaveImages}><Save className="mr-2 h-4 w-4"/>Save About Images</Button>
                   </CardContent>
