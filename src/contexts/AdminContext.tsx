@@ -57,7 +57,16 @@ const defaultSiteContent: SiteContent = {
   siteImages: {
     dogRescuePlaceholderImage: "/placeholder.svg",
   },
-  siteTexts: { siteName: "Kingaroos", footerTagline: "Content loading..." },
+   siteTexts: { 
+    siteName: "Kingaroos", 
+    footerTagline: "Content loading...",
+    contactMondayThursday: "Monday - Thursday",
+    contactHoursMondayThursday: "11:00 AM - 9:00 PM",
+    contactFridaySaturday: "Friday - Saturday",
+    contactHoursFridaySaturday: "11:00 AM - 10:00 PM",
+    contactSunday: "Sunday",
+    contactHoursSunday: "10:00 AM - 8:00 PM",
+  },
   dogs: [],
   menuItems: [],
   events: [],
