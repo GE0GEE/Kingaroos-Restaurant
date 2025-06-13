@@ -148,18 +148,18 @@ export default function Menu() {
       <section className="bg-aussie-orange py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-white mb-4">
-            Ready to Dine With Us?
+            {siteContent.siteTexts.menuReadyToDineTitle}
           </h2>
           <p className="font-body text-xl text-cream-100 mb-8">
-            Book your table today and help us make a difference for rescue dogs!
+            {siteContent.siteTexts.menuReadyToDineText}
           </p>
           <div className="space-y-4">
             <p className="font-body text-cream-100">
-              📞 Call us at{" "}
-              <span className="font-semibold">(02) 1234 5678</span>
+              📞 {siteContent.siteTexts.menuCallText}{" "}
+              <span className="font-semibold">{siteContent.siteTexts.homePhone}</span>
             </p>
             <p className="font-body text-cream-100">
-              📍 123 Outback Lane, Sydney, NSW 2000
+              📍 {siteContent.siteTexts.menuAddressText}
             </p>
           </div>
         </div>
