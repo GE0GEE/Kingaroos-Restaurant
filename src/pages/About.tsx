@@ -88,17 +88,17 @@ export default function About() {
             {siteContent.siteTexts.aboutJourneyTitle}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Food Truck Card with Image */}
+            {/* Food Truck Card */}
             <Card className="border-sand-200 shadow-lg text-center overflow-hidden">
               <CardContent className="p-0">
-                <div className="w-full h-48 bg-sand-200 flex items-center justify-center">
+                <div className="w-full h-48 bg-orange-100 flex items-center justify-center">
                   {siteContent.aboutImages.originalFoodTruck && siteContent.aboutImages.originalFoodTruck !== "/placeholder.svg" ? (
                     <img src={siteContent.aboutImages.originalFoodTruck} alt="Original food truck" className="w-full h-full object-cover"/>
                   ) : (
                     <Truck className="h-16 w-16 text-aussie-orange" />
                   )}
                 </div>
-                <div className="p-8">
+                <div className="p-8 bg-white">
                   <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
                     {siteContent.siteTexts.aboutFoodTruckTitle}
                   </h3>
@@ -109,17 +109,17 @@ export default function About() {
               </CardContent>
             </Card>
 
-            {/* Rescue Partnership Card with Image */}
+            {/* Rescue Partnership Card */}
             <Card className="border-sand-200 shadow-lg text-center overflow-hidden">
               <CardContent className="p-0">
-                <div className="w-full h-48 bg-sand-200 flex items-center justify-center">
+                <div className="w-full h-48 bg-green-100 flex items-center justify-center">
                   {siteContent.aboutImages.firstRescueDog && siteContent.aboutImages.firstRescueDog !== "/placeholder.svg" ? (
                     <img src={siteContent.aboutImages.firstRescueDog} alt="First rescue dog partner" className="w-full h-full object-cover"/>
                   ) : (
                     <Heart className="h-16 w-16 text-aussie-eucalyptus" />
                   )}
                 </div>
-                <div className="p-8">
+                <div className="p-8 bg-white">
                   <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
                     {siteContent.siteTexts.aboutRescuePartnershipTitle}
                   </h3>
@@ -131,17 +131,25 @@ export default function About() {
             </Card>
 
             {/* Restaurant Opens Card */}
-            <Card className="border-sand-200 shadow-lg text-center">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-aussie-burnt-red rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Home className="h-8 w-8 text-white" />
+            <Card className="border-sand-200 shadow-lg text-center overflow-hidden">
+              <CardContent className="p-0">
+                <div className="w-full h-48 bg-red-100 flex items-center justify-center">
+                  {siteContent.aboutImages.restaurantOpensImage && siteContent.aboutImages.restaurantOpensImage !== "/placeholder.svg" ? (
+                    <img src={siteContent.aboutImages.restaurantOpensImage} alt="Restaurant opens" className="w-full h-full object-cover"/>
+                  ) : (
+                    <div className="w-16 h-16 bg-aussie-burnt-red rounded-full flex items-center justify-center">
+                      <Home className="h-8 w-8 text-white" />
+                    </div>
+                  )}
                 </div>
-                <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
-                  {siteContent.siteTexts.aboutRestaurantOpensTitle}
-                </h3>
-                <p className="font-body text-brown-600 leading-relaxed">
-                  {siteContent.siteTexts.aboutRestaurantOpensText}
-                </p>
+                <div className="p-8 bg-white">
+                  <h3 className="font-heading text-xl font-bold text-brown-800 mb-4">
+                    {siteContent.siteTexts.aboutRestaurantOpensTitle}
+                  </h3>
+                  <p className="font-body text-brown-600 leading-relaxed">
+                    {siteContent.siteTexts.aboutRestaurantOpensText}
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
