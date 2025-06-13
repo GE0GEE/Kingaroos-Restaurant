@@ -14,11 +14,41 @@ import {
 } from "firebase/auth";
 import { db, auth } from "../firebase-config";
 
+// --- PROMOTION CATEGORIES ---
+export const promotionCategories = {
+  happyHour: {
+    name: "Happy Hour",
+    badge: "Limited Time",
+    colorClasses: "from-aussie-orange to-aussie-burnt-red",
+  },
+  dogSpecial: {
+    name: "Dog Special",
+    badge: "Pawsome Deal",
+    colorClasses: "from-aussie-eucalyptus to-green-700",
+  },
+  familyDeal: {
+    name: "Family Deal",
+    badge: "Family Fun",
+    colorClasses: "from-brown-600 to-brown-800",
+  },
+  loyalty: {
+    name: "Loyalty Offer",
+    badge: "Member's Gift",
+    colorClasses: "from-sand-600 to-aussie-orange",
+  },
+  general: {
+    name: "Special Offer",
+    badge: "Special",
+    colorClasses: "from-gray-500 to-gray-700",
+  },
+};
+export type PromotionCategoryKey = keyof typeof promotionCategories;
+
 // --- INTERFACES ---
 export interface Dog { id: string; name: string; breed: string; age: string; personality: string; beforeImage: string; afterImage: string; rescueStory: string; }
 export interface MenuItem { id:string; name: string; description: string; price: string; image: string; featured?: boolean; category: "starters" | "mains" | "desserts" | "drinks"; }
 export interface Event { id: string; title: string; date: string; time: string; description: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
-export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; badge: string; color: string; }
+export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; category: PromotionCategoryKey; }
 
 export interface SiteContent {
   logoImage: string;
@@ -26,7 +56,7 @@ export interface SiteContent {
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
   welcomeImages: Array<{ url: string; alt: string; }>;
-  aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; };
+  aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
   dogs: Dog[];
@@ -53,6 +83,7 @@ const defaultSiteContent: SiteContent = {
     familyPhoto: "/placeholder.svg",
     originalFoodTruck: "/placeholder.svg",
     firstRescueDog: "/placeholder.svg",
+    restaurantOpensImage: "/placeholder.svg",
   },
   siteImages: {
     dogRescuePlaceholderImage: "/placeholder.svg",
