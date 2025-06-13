@@ -16,25 +16,18 @@ import { db, auth } from "../firebase-config";
 
 // --- INTERFACES ---
 export interface Dog { id: string; name: string; breed: string; age: string; personality: string; beforeImage: string; afterImage: string; rescueStory: string; }
-export interface MenuItem { id: string; name: string; description: string; price: string; image: string; featured?: boolean; category: "starters" | "mains" | "desserts" | "drinks"; }
+export interface MenuItem { id:string; name: string; description: string; price: string; image: string; featured?: boolean; category: "starters" | "mains" | "desserts" | "drinks"; }
 export interface Event { id: string; title: string; date: string; time: string; description: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
 export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; badge: string; color: string; }
 
-// --- CORRECTED SiteContent INTERFACE ---
 export interface SiteContent {
   logoImage: string;
   theme: 'light' | 'dark';
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
-  welcomeImages: Array<{ url: string; alt: string; }>; // Structured for Home page
-  aboutImages: { // Structured for About page
-    familyPhoto: string;
-    originalFoodTruck: string;
-    firstRescueDog: string;
-  };
-  siteImages: { // For other miscellaneous images
-    dogRescuePlaceholderImage: string;
-  };
+  welcomeImages: Array<{ url: string; alt: string; }>;
+  aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; };
+  siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
   dogs: Dog[];
   menuItems: MenuItem[];
@@ -42,12 +35,16 @@ export interface SiteContent {
   promotions: Promotion[];
 }
 
-// --- CORRECTED defaultSiteContent with UNIFIED IMAGES ---
+// --- CORRECTED defaultSiteContent with 3 HERO IMAGES ---
 const defaultSiteContent: SiteContent = {
   logoImage: "/placeholder.svg",
   theme: 'light',
   socialLinks: { facebook: "#", instagram: "#", twitter: "#" },
-  heroImages: [{url: "/placeholder.svg", alt: "Kingaroos food"}],
+  heroImages: [
+    { url: "/placeholder.svg", alt: "Kingaroos food hero 1" },
+    { url: "/placeholder.svg", alt: "Kingaroos atmosphere hero 2" },
+    { url: "/placeholder.svg", alt: "Happy dogs at Kingaroos hero 3" },
+  ],
   welcomeImages: [
     { url: "/placeholder.svg", alt: "Happy customers" },
     { url: "/placeholder.svg", alt: "Delicious food" },
@@ -102,7 +99,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const unsubscribeSnapshot = onSnapshot(siteContentRef, (snapshot) => {
       if (snapshot.exists()) {
         const serverContent = snapshot.data() as Partial<SiteContent>;
-        // Deep merge to prevent wiping out nested objects
         const mergedContent: SiteContent = {
           ...defaultSiteContent,
           ...serverContent,
