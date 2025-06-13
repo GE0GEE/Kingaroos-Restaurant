@@ -1,312 +1,317 @@
 import {
   createContext,
-  useContext,
+ string; firstRescueDog: string; dogRescuePlaceholderImage: string; };
+  siteTexts: { [key  useContext,
   useState,
   useEffect,
   ReactNode,
 } from "react";
-
-// --- INTERFACES ---
-export interface Dog {
-  id: string;
-  name: string;
-  breed: string;
-  age: string;
-  personality: string;
-  beforeImage: string;
-  afterImage: string;
-  rescueStory: string;
-}
-
-export interface MenuItem {
-  id:string;
-  name: string;
-  description: string;
-  price: string;
-  image: string;
-  featured?: boolean;
-  category: "starters" | "mains" | "desserts" | "drinks";
-}
-
-export interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  description: string;
-  type: "music" | "dogs" | "family" | "special" | "food";
-  category: "thisWeek" | "comingSoon";
-}
-
-export interface Promotion {
-  id: string;
-  title: string;
-  subtitle: string;
-  details: string;
-  description: string;
-  badge: string;
-  color: string;
-}
-
-// This interface matches the latest one you provided
-export interface SiteContent {
-  logoImage: string;
-  theme: 'light' | 'dark'; // Kept as per your latest file structure
-  socialLinks: {
-    facebook: string;
-    instagram: string;
-    twitter: string;
-  };
-  heroImages: Array<{
-    url: string;
-    alt: string;
-    gradient: string;
-  }>;
-  welcomeImages: Array<{
-    url: string;
-    alt: string;
-  }>;
-  siteImages: {
-    familyPhoto: string;
-    originalFoodTruck: string;
-    firstRescueDog: string;
-    dogRescuePlaceholderImage: string;
-  };
-  siteTexts: {
-    [key: string]: any; // Allows for flexible text fields
-  };
+: string]: any; };
   dogs: Dog[];
   menuItems: MenuItem[];
-  events: Event[];
+  events: Eventimport { doc, onSnapshot, setDoc } from "firebase/firestore";
+import {
+  signInWithEmail[];
   promotions: Promotion[];
 }
 
-interface AdminContextType {
+// Default content to prevent crashes before Firebase loads
+const defaultSiteContent:AndPassword,
+  onAuthStateChanged,
+  signOut,
+  User,
+} from "firebase/auth"; SiteContent = {
+  logoImage: "", theme: 'light', socialLinks: { facebook: "", instagram:
+import { db, auth } from "../firebase-config"; // This imports the file you created
+
+// --- YOUR INTERFACES ---
+export interface Dog { id: string; name: string; breed: string; age: string "", twitter: "" },
+  heroImages: [], welcomeImages: [],
+  siteImages: { familyPhoto: "", originalFoodTruck: "", firstRescueDog: "", dogRescuePlaceholderImage: "" },
+  siteTexts: {},; personality: string; beforeImage: string; afterImage: string; rescueStory: string; }
+export interface MenuItem { id:string; name: string; description: string; price: string; image: string; featured?: boolean; category dogs: [], menuItems: [], events: [], promotions: [],
+};
+
+// --- THIS IS THE CORRECTED INTERFACE ---
+: "starters" | "mains" | "desserts" | "drinks"; }
+export interface Eventinterface AdminContextType {
   isLoggedIn: boolean;
-  login: (password: string) => Promise<boolean>;
+  login: (password: string) => Promise< { id: string; title: string; date: string; time: string; description: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek"boolean>;
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
-  isServerConnected: boolean;
   updateSiteContent: (content: Partial<SiteContent>) => Promise<void>;
-  addDog: (dog: Omit<Dog, "id">) => Promise<void>;
+  addDog: | "comingSoon"; }
+export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; badge: string; color: string; }
+export interface SiteContent {
+   (dog: Omit<Dog, "id">) => Promise<void>;
   updateDog: (id: string, dog: Partial<Dog>) => Promise<void>;
-  deleteDog: (id: string) => Promise<void>;
-  addMenuItem: (item: Omit<MenuItem, "id">) => Promise<void>;
+  deleteDog: (id: string)logoImage: string;
+  theme: 'light' | 'dark';
+  socialLinks: { facebook: => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, "id">) => Promise string; instagram: string; twitter: string; };
+  heroImages: Array<{ url: string; alt: string; gradient: string; }>;
+  welcomeImages: Array<{ url:string; alt: string; }>;
+<void>;
   updateMenuItem: (id: string, item: Partial<MenuItem>) => Promise<void>;
   deleteMenuItem: (id: string) => Promise<void>;
-  addEvent: (event: Omit<Event, "id">) => Promise<void>;
+  addEvent: (event: O  siteImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; dogRescuemit<Event, "id">) => Promise<void>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
-  deleteEvent: (id: string) => Promise<void>;
+  deleteEvent: (id: string) => Promise<voidPlaceholderImage: string; };
+  siteTexts: { [key: string]: any; };
+  dogs:>;
   addPromotion: (promo: Omit<Promotion, "id">) => Promise<void>;
-  updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;
+ Dog[];
+  menuItems: MenuItem[];
+  events: Event[];
+  promotions: Promotion[];
+}  updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;
+  deletePromotion
+
+const defaultSiteContent: SiteContent = {
+  logoImage: "", theme: 'light', socialLinks: { facebook: (id: string) => Promise<void>;
+}
+
+const AdminContext = createContext<AdminContextType |: "", instagram: "", twitter: "" },
+  heroImages: [], welcomeImages: [],
+  siteImages: { familyPhoto: "", originalFoodTruck: "", firstRescueDog: "", dogRescuePlaceholderImage: ""},
+   undefined>(undefined);
+
+// A direct reference to our single document in the Firestore database.
+const siteContentRef = doc(siteTexts: {}, dogs: [], menuItems: [], events: [], promotions: [],
+};
+
+// This is the new,db, "content", "main");
+
+export function AdminProvider({ children }: { children: ReactNode }) {
+ simplified type for our context
+interface AdminContextType {
+  isLoggedIn: boolean;
+  login: (password: string  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading]) => Promise<boolean>;
+  logout: () => void;
+  siteContent: SiteContent;
+   = useState(true);
+  const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
+
+  useEffect(() => {
+    // This listener checks if the admin is logged in or not.
+loading: boolean;
+  updateSiteContent: (content: Partial<SiteContent>) => Promise<void>;
+  addDog: (dog: Omit<Dog, "id">) => Promise<void>;
+  update    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    Dog: (id: string, dog: Partial<Dog>) => Promise<void>;
+  deleteDog: (});
+
+    // This listener gets data from Firebase in REAL-TIME.
+    // Any change in the database will automatically updateid: string) => Promise<void>;
+  addMenuItem: (item: Omit<MenuItem, "id the website on all devices.
+    const unsubscribeSnapshot = onSnapshot(siteContentRef, (snapshot) => {
+      ">) => Promise<void>;
+  updateMenuItem: (id: string, item: Partial<MenuItem>) =>if (snapshot.exists()) {
+        const serverContent = snapshot.data() as SiteContent;
+        // Promise<void>;
+  deleteMenuItem: (id: string) => Promise<void>;
+  addEvent: Merge with defaults to prevent the app from crashing if a new field is added to the code
+        const mergedContent = { ... (event: Omit<Event, "id">) => Promise<void>;
+  updateEvent: (iddefaultSiteContent, ...serverContent,
+            siteTexts: { ...defaultSiteContent.siteTexts, ...(server: string, event: Partial<Event>) => Promise<void>;
+  deleteEvent: (id: string)Content.siteTexts || {}) },
+            siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
+            socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent. => Promise<void>;
+  addPromotion: (promo: Omit<Promotion, "id">) => Promise<void>;
+  updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;socialLinks || {}) },
+        };
+        setSiteContent(mergedContent);
+      } else {
+        
   deletePromotion: (id: string) => Promise<void>;
 }
 
-const AdminContext = createContext<AdminContextType | undefined>(undefined);
+const AdminContext = createContext<// This runs only ONCE, the very first time the app connects to an empty database.
+        console.logAdminContextType | undefined>(undefined);
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://kingaroos-backend.onrender.com/api";
+// A direct reference to our single document in the Firestore database.
+const siteContent("No content document in Firebase. Creating one with default data.");
+        setDoc(siteContentRef, defaultSiteRef = doc(db, "content", "main");
 
-const ADMIN_PASSWORD = "kingarooadmin";
+export function AdminProvider({ children }: { children: ReactContent);
+        setSiteContent(defaultSiteContent);
+      }
+      setLoading(false);
+    Node }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [}, (error) => {
+      console.error("Firebase Snapshot Error:", error);
+      setLoading(falseloading, setLoading] = useState(true);
+  const [siteContent, setSiteContent] = useState<Site);
+    });
 
-// A minimal default state. The `initializeContent` function will populate this.
-const defaultSiteContent: SiteContent = {
-  logoImage: "",
-  theme: 'light',
-  socialLinks: { facebook: "", instagram: "", twitter: "" },
-  heroImages: [],
-  welcomeImages: [],
-  siteImages: { familyPhoto: "", originalFoodTruck: "", firstRescueDog: "", dogRescuePlaceholderImage: ""},
-  siteTexts: {},
-  dogs: [],
-  menuItems: [],
-  events: [],
-  promotions: [],
-};
-
-export function AdminProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [isServerConnected, setIsServerConnected] = useState(false);
-  const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
-
-  // --- FIX 1: THE KEEP-ALIVE PING ---
-  // This runs for every user and pings the backend every 10 minutes
-  // to prevent it from going to sleep on free hosting services.
-  useEffect(() => {
-    const keepAliveInterval = setInterval(() => {
-      fetch(`${API_BASE_URL}/content`).then(response => {
-        if (response.ok) {
-          console.log(`Keep-alive ping successful at ${new Date().toLocaleTimeString()}`);
-          if (!isServerConnected) setIsServerConnected(true);
-        } else {
-          if (isServerConnected) setIsServerConnected(false);
-        }
-      }).catch(() => {
-        console.warn('Keep-alive ping failed. Server might be offline.');
-        if (isServerConnected) setIsServerConnected(false);
-      });
-    }, 10 * 60 * 1000); // 10 minutes
-
-    return () => clearInterval(keepAliveInterval);
-  }, [isServerConnected]); // Dependency ensures we can update connection status
+    // Cleanup function to prevent memory leaks
+    return () => {
+      unsubscribeAuth();Content>(defaultSiteContent);
 
   useEffect(() => {
-    initializeContent();
+    // This listener checks if the admin is logged in
+      unsubscribeSnapshot();
+    };
   }, []);
 
-  const initializeContent = async () => {
-    setLoading(true);
+  const login = async (password: string): Promise<boolean> or not.
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      setUser( => {
     try {
-      // Attempt to fetch fresh data from the server
-      const response = await fetch(`${API_BASE_URL}/content`, { signal: AbortSignal.timeout(8000) });
-      if (!response.ok) throw new Error(`Server responded with ${response.status}`);
-      
-      const serverContent = await response.json();
-      
-      // Deep merge server content with defaults to prevent crashes from missing fields
-      const mergedContent = {
-        ...defaultSiteContent,
-        ...serverContent,
-        siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
-        siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
-        socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
-      };
-
-      setSiteContent(mergedContent);
-      setIsServerConnected(true);
-      console.log("✅ Data successfully loaded from server.");
-
-    } catch (error) {
-      console.warn("⚠️ Server not available, using local data as fallback.", error);
-      setIsServerConnected(false);
-
-      // If server fails, fall back to localStorage
-      const saved = localStorage.getItem("kingaroos-admin-content");
-      if (saved) {
-        try {
-          const localContent = JSON.parse(saved);
-          // Also merge local content with defaults to be safe
-          const mergedContent = {
-            ...defaultSiteContent,
-            ...localContent,
-            siteTexts: { ...defaultSiteContent.siteTexts, ...(localContent.siteTexts || {}) },
-            siteImages: { ...defaultSiteContent.siteImages, ...(localContent.siteImages || {}) },
-            socialLinks: { ...defaultSiteContent.socialLinks, ...(localContent.socialLinks || {}) },
-          };
-          setSiteContent(mergedContent);
-          console.log("📱 Displaying content from local storage.");
-        } catch {
-          setSiteContent(defaultSiteContent); // If local data is corrupted
-        }
-      } else {
-        setSiteContent(defaultSiteContent); // If no local data, use defaults
-        console.log("🔄 No local data found, using default content.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveToLocalStorage = (content: SiteContent) => {
-    localStorage.setItem("kingaroos-admin-content", JSON.stringify(content));
-  };
-
-  const apiCall = async (url: string, options: RequestInit = {}) => {
-    if (!isServerConnected) throw new Error("Server not available for API call");
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      signal: AbortSignal.timeout(10000), ...options, headers: { "Content-Type": "application/json", ...options.headers },
+      // Use the email you created in the Firebase console.
+      await signInWithEmailAndPassword(currentUser);
     });
-    if (!response.ok) throw new Error(`API call to ${url} failed: ${response.status}`);
-    return response.json();
-  };
-  
-  const login = async (password: string): Promise<boolean> => {
-    if (password !== ADMIN_PASSWORD) return false;
-    setIsLoggedIn(true);
-    await initializeContent(); // Re-fetch content on login to get latest data
-    return true;
-  };
 
-  const logout = () => setIsLoggedIn(false);
-  
-  const updateSiteContent = async (updates: Partial<SiteContent>) => {
-    // Optimistically update the local state for a fast UI
-    const newContent = {
-      ...siteContent,
-      ...updates,
-      // Ensure nested objects are merged correctly
-      siteTexts: { ...siteContent.siteTexts, ...updates.siteTexts },
-      siteImages: { ...siteContent.siteImages, ...updates.siteImages },
-      socialLinks: { ...siteContent.socialLinks, ...updates.socialLinks },
-    };
-    setSiteContent(newContent);
-    saveToLocalStorage(newContent);
-    
-    // Attempt to sync with the server
-    if (isServerConnected) {
-      try {
-        await apiCall("/content", { method: "PUT", body: JSON.stringify(updates) });
-      } catch (error) {
-        console.error("Server update failed, changes are saved locally.", error);
-        setIsServerConnected(false);
-      }
+    // This listener gets data from Firebase in REAL-TIME.
+    // Any change in the databaseauth, "admin@kingaroos.com", password);
+      return true;
+    } catch (error) will automatically update the website on all devices.
+    const unsubscribeSnapshot = onSnapshot(siteContentRef, (snapshot {
+      console.error("Firebase login failed:", error);
+      return false;
     }
   };
 
-  const createCrudOperations = <T extends { id: string }>(endpoint: string, stateKey: keyof SiteContent) => {
-    const data = (siteContent[stateKey] as T[] | undefined) ?? [];
+  const logout = async () => {
+    await signOut(auth);
+  };
+
+  const updateSite) => {
+      if (snapshot.exists()) {
+        const serverContent = snapshot.data() as SiteContent = async (updates: Partial<SiteContent>) => {
+    if (!user) {
+      throw newContent;
+        // Merge with defaults to prevent the app from crashing if a new field is added to the code
+        const mergedContent = { ...defaultSiteContent, ...serverContent,
+            siteTexts: { ...defaultSiteContent.site Error("Not authenticated. You must be logged in to make changes.");
+    }
+    // 'setDoc' with 'merge: true' is a powerful way to update only the fields you provide.
+    await setDoc(siteContentTexts, ...(serverContent.siteTexts || {}) },
+            siteImages: { ...defaultSiteContent.siteImagesRef, updates, { merge: true });
+  };
+
+  // This is a generic helper function to create add, ...(serverContent.siteImages || {}) },
+            socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
+        };
+        setSiteContent(mergedContent);
+      }/update/delete logic for any array in our data.
+  const createCrudOperations = <T extends { id else {
+        // This runs only ONCE, the very first time the app connects to an empty database.
+: string }>(stateKey: keyof SiteContent) => {
+    const data = (siteContent[state        console.log("No content document in Firebase. Creating one with default data.");
+        setDoc(siteContentKey] as T[] | undefined) ?? [];
     
     const add = async (item: Omit<T, 'id'>) => {
-      const newItem = { ...item, id: Date.now().toString() } as T;
-      const newContent = { ...siteContent, [stateKey]: [...data, newItem] };
-      setSiteContent(newContent);
-      saveToLocalStorage(newContent);
-      if (isServerConnected) { try { await apiCall(`/${endpoint}`, { method: 'POST', body: JSON.stringify(item) }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
+      const newItem = { ...item, id: `id-${Date.Ref, defaultSiteContent);
+        setSiteContent(defaultSiteContent);
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error("Firebase Snapshot Error:", error);
+      now()}` } as T;
+      await updateSiteContent({ [stateKey]: [...data, newItem] }setLoading(false);
+    });
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+ as any);
     };
 
-    const update = async (id: string, updates: Partial<T>) => {
+    const update = async (id: string, updates: Partial<T>) =>      unsubscribeAuth();
+      unsubscribeSnapshot();
+    };
+  }, []);
+
+  const login = async (password: string): {
       const newData = data.map(item => item.id === id ? { ...item, ...updates } : item);
-      const newContent = { ...siteContent, [stateKey]: newData };
-      setSiteContent(newContent);
-      saveToLocalStorage(newContent);
-      if (isServerConnected) { try { await apiCall(`/${endpoint}/${id}`, { method: 'PUT', body: JSON.stringify(updates) }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
+      await updateSiteContent({ [stateKey]: newData } as any);
     };
 
-    const remove = async (id: string) => {
+ Promise<boolean> => {
+    try {
+      // Use the email you created in the Firebase console.
+      await signInWithEmailAndPassword(auth, "admin@kingaroos.com", password);
+      return true;
+    }    const remove = async (id: string) => {
       const newData = data.filter(item => item.id !== id);
-      const newContent = { ...siteContent, [stateKey]: newData };
-      setSiteContent(newContent);
-      saveToLocalStorage(newContent);
-      if (isServerConnected) { try { await apiCall(`/${endpoint}/${id}`, { method: 'DELETE' }); await initializeContent(); } catch (e) { setIsServerConnected(false); } }
-    };
+      await updateSiteContent({ [stateKey]: newData } as any);
+    }; catch (error) {
+      console.error("Firebase login failed:", error);
+      return false;
+    
     
     return { add, update, remove };
   };
 
-  const dogOps = createCrudOperations<Dog>('dogs', 'dogs');
-  const menuItemOps = createCrudOperations<MenuItem>('menu-items', 'menuItems');
-  const eventOps = createCrudOperations<Event>('events', 'events');
-  const promotionOps = createCrudOperations<Promotion>('promotions', 'promotions');
+  const dogOps = createCrudOperations}
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+  };
+
+<Dog>('dogs');
+  const menuItemOps = createCrudOperations<MenuItem>('menuItems');
+    const updateSiteContent = async (updates: Partial<SiteContent>) => {
+    if (!user) {
+      throw new Error("Not authenticated. You must be logged in to make changes.");
+    }
+    //const eventOps = createCrudOperations<Event>('events');
+  const promotionOps = createCrudOperations<Promotion 'setDoc' with 'merge: true' is a powerful way to update only the fields you provide.
+    >('promotions');
 
   return (
     <AdminContext.Provider value={{
-        isLoggedIn, login, logout, siteContent, loading, isServerConnected, updateSiteContent,
-        addDog: dogOps.add, updateDog: dogOps.update, deleteDog: dogOps.remove,
-        addMenuItem: menuItemOps.add, updateMenuItem: menuItemOps.update, deleteMenuItem: menuItemOps.remove,
-        addEvent: eventOps.add, updateEvent: eventOps.update, deleteEvent: eventOps.remove,
-        addPromotion: promotionOps.add, updatePromotion: promotionOps.update, deletePromotion: promotionOps.remove,
+      isLoggedIn: !!user,
+      login,
+      logout,
+      siteContent,
+      loading,
+      updateSiteContentawait setDoc(siteContentRef, updates, { merge: true });
+  };
+
+  // This is a,
+      addDog: dogOps.add,
+      updateDog: dogOps.update,
+      delete generic helper function to create add/update/delete logic for any array in our data.
+  const createCrudOperationsDog: dogOps.remove,
+      addMenuItem: menuItemOps.add,
+      updateMenuItem: menuItemOps = <T extends { id: string }>(stateKey: keyof SiteContent) => {
+    const data = (siteContent[stateKey] as T[] | undefined) ?? [];
+    
+    const add = async.update,
+      deleteMenuItem: menuItemOps.remove,
+      addEvent: eventOps.add,
+      updateEvent: eventOps.update,
+      deleteEvent: eventOps.remove,
+      addPromotion: (item: Omit<T, 'id'>) => {
+      const newItem = { ...item, id: `id-${Date.now()}` } as T;
+      await updateSiteContent({ [stateKey]: promotionOps.add,
+      updatePromotion: promotionOps.update,
+      deletePromotion: promotionOps.remove,
     }}>
       {children}
     </AdminContext.Provider>
   );
 }
 
-export function useAdmin() {
+export [...data, newItem] } as any);
+    };
+
+    const update = async (id: string, updates function useAdmin() {
   const context = useContext(AdminContext);
-  if (context === undefined) {
-    throw new Error("useAdmin must be used within an AdminProvider");
+  if (!context) {
+    : Partial<T>) => {
+      const newData = data.map(item => item.id === id ?throw new Error("useAdmin must be used within an AdminProvider");
   }
   return context;
-}
+} { ...item, ...updates } : item);
+      await updateSiteContent({ [stateKey]: newData } as any);
+    };
+
+    const remove = async (id: string) => {
+      const newData = data
