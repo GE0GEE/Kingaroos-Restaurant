@@ -66,6 +66,9 @@ const defaultSiteContent: SiteContent = {
     contactHoursFridaySaturday: "11:00 AM - 10:00 PM",
     contactSunday: "Sunday",
     contactHoursSunday: "10:00 AM - 8:00 PM",
+    footerMondayThursday: "Mon - Thu: 11am - 9pm",
+    footerFridaySaturday: "Fri - Sat: 11am - 10pm",
+    footerSunday: "Sun: 10am - 8pm",
     // For Menu Page CTA
     menuReadyToDineTitle: "Ready to Dine With Us?",
     menuReadyToDineText: "Book your table today and help us make a difference for rescue dogs!",
@@ -79,6 +82,7 @@ const defaultSiteContent: SiteContent = {
     eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
     // General info used across pages
     homePhone: "(02) 1234 5678",
+    homeEmail: "hello@kingaroos.com",
     homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
   dogs: [],
