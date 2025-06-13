@@ -165,63 +165,51 @@ export default function Contact() {
                 </CardContent>
               </Card>
 
-              {/* Social Media Card */}
-              <Card className="border-sand-200 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="font-heading text-2xl text-brown-800">
-                    {siteContent.siteTexts.contactFollowTitle}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <p className="font-body text-brown-600">
-                    {siteContent.siteTexts.contactFollowText}
-                  </p>
-                  <div className="space-y-4">
-                        <a href={siteContent.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="block">
-                          <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
-                            <Facebook className="h-6 w-6 text-aussie-orange" />
-                            <div>
-                              <p className="font-body font-semibold text-brown-800">
-                                @KingaroosRestaurant
-                              </p>
-                              <p className="font-body text-brown-600 text-sm">
-                                {siteContent.siteTexts.contactFacebookDescription}
-                              </p>
-                            </div>
-                          </div>
-                        </a>
-                        <a href={siteContent.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="block">
-                          <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
-                            <Instagram className="h-6 w-6 text-aussie-orange" />
-                            <div>
-                              <p className="font-body font-semibold text-brown-800">
-                                {siteContent.siteTexts.contactInstagramHandle}
-                              </p>
-                              <p className="font-body text-brown-600 text-sm">
-                                {siteContent.siteTexts.contactInstagramDescription}
-                              </p>
-                            </div>
-                          </div>
-                        </a>
-                      </div>
-                    <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
-                      <Instagram className="h-6 w-6 text-aussie-orange" />
-                      <div>
-                        <p className="font-body font-semibold text-brown-800">
-                          {siteContent.siteTexts.contactInstagramHandle}
-                        </p>
-                        <p className="font-body text-brown-600 text-sm">
-                          {siteContent.siteTexts.contactInstagramDescription}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Social Media Card */}
+<Card className="border-sand-200 shadow-lg">
+  <CardHeader>
+    <CardTitle className="font-heading text-2xl text-brown-800">
+      {siteContent.siteTexts.contactFollowTitle}
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <p className="font-body text-brown-600">
+      {siteContent.siteTexts.contactFollowText}
+    </p>
+    <div className="space-y-4">
+      {/* Clickable Facebook Link */}
+      <a href={siteContent.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="block">
+        <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
+          <Facebook className="h-6 w-6 text-aussie-orange" />
+          <div>
+            <p className="font-body font-semibold text-brown-800">
+              @KingaroosRestaurant
+            </p>
+            <p className="font-body text-brown-600 text-sm">
+              {siteContent.siteTexts.contactFacebookDescription}
+            </p>
           </div>
         </div>
-      </section>
+      </a>
+
+      {/* Clickable Instagram Link */}
+      <a href={siteContent.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="block">
+        <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
+          <Instagram className="h-6 w-6 text-aussie-orange" />
+          <div>
+            <p className="font-body font-semibold text-brown-800">
+              {siteContent.siteTexts.contactInstagramHandle}
+            </p>
+            <p className="font-body text-brown-600 text-sm">
+              {siteContent.siteTexts.contactInstagramDescription}
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+    {/* The duplicate div that was here has been removed */}
+  </CardContent>
+</Card>
 
       {/* Additional Information */}
       <section className="py-16 bg-cream-100">
