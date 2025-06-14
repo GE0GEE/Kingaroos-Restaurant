@@ -80,8 +80,7 @@ export default function About() {
           </div>
         </div>
       </section>
-
-      {/* Journey Timeline */}
+  {/* Journey Timeline */}Add commentMore actions
       <section className="py-16 bg-cream-100">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="font-heading text-4xl font-bold text-center text-brown-800 mb-12">
@@ -155,7 +154,7 @@ export default function About() {
           </div>
         </div>
       </section>
-
+     
       {/* Mission Statement */}
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -222,3 +221,4 @@ export default function About() {
       </section>
     </Layout>
   );
+}
