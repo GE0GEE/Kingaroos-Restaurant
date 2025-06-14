@@ -382,9 +382,6 @@ export default function Admin() {
                   <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div><Label>Family Photo</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('familyPhoto')} disabled={isProcessing}/><br/>{editingImages.familyPhoto && <img src={editingImages.familyPhoto} className="w-full h-32 mt-2 object-cover"/>}</div>
-                      <div><Label>Original Food Truck</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('originalFoodTruck')} disabled={isProcessing}/><br/>{editingImages.originalFoodTruck && <img src={editingImages.originalFoodTruck} className="w-full h-32 mt-2 object-cover"/>}</div>
-                      <div><Label>First Rescue Dog</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('firstRescueDog')} disabled={isProcessing}/><br/>{editingImages.firstRescueDog && <img src={editingImages.firstRescueDog} className="w-full h-32 mt-2 object-cover"/>}</div>
-                      <div><Label>Restaurant Opens Image</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('restaurantOpensImage')} disabled={isProcessing}/><br/>{editingImages.restaurantOpensImage && <img src={editingImages.restaurantOpensImage} className="w-full h-32 mt-2 object-cover"/>}</div>
                     </div>
                     <Button onClick={handleSaveImages} disabled={isProcessing}><Save className="mr-2 h-4 w-4"/>Save About Images</Button>
                   </CardContent>
