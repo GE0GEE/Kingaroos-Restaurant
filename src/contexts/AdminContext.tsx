@@ -56,7 +56,7 @@ export interface SiteContent {
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
   welcomeImages: Array<{ url: string; alt: string; }>;
-  aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
+  Images: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
   dogs: Dog[];
@@ -81,9 +81,6 @@ const defaultSiteContent: SiteContent = {
   ],
   aboutImages: {
     familyPhoto: "/placeholder.svg",
-    originalFoodTruck: "/placeholder.svg",
-    firstRescueDog: "/placeholder.svg",
-    restaurantOpensImage: "/placeholder.svg",
   },
   siteImages: {
     dogRescuePlaceholderImage: "/placeholder.svg",
