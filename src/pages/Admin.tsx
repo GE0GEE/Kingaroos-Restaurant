@@ -36,11 +36,9 @@ import {
   Plus,
   Save,
   LogOut,
-  Upload,
   Type,
   DatabaseZap,
   Loader2,
-  Link2,
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey } from "@/contexts/AdminContext";
 import imageCompression from 'browser-image-compression';
@@ -49,17 +47,19 @@ import imageCompression from 'browser-image-compression';
 const handleFileAndCompress = async (file: File): Promise<string> => {
     console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     
+    // --- OPTIMIZED SETTINGS FOR BEST QUALITY ---
     const options = {
-      maxSizeMB: 0.9,
-      maxWidthOrHeight: 1920,
+      maxSizeMB: 0.9,         // Target a much larger file size (just under the 1MB limit)
+      maxWidthOrHeight: 1920,   // Keep a high resolution
       useWebWorker: true,
-      initialQuality: 0.9,
+      initialQuality: 0.9,      // Start with 90% quality, library will reduce if needed
     };
 
     try {
         const compressedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
 
+        // Convert the compressed file to a Base64 string to store in Firestore
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(compressedFile);
@@ -163,7 +163,6 @@ function MenuItemForm({ item, onSubmit }: { item: Partial<MenuItem>; onSubmit: (
   );
 }
 
-// ... EventForm and PromotionForm remain unchanged ...
 function EventForm({ event, onSubmit }: { event: Partial<Event>; onSubmit: (event: Partial<Event>) => void; }) {
     const [formData, setFormData] = useState(event);
     return (
@@ -283,7 +282,6 @@ export default function Admin() {
   };
 
   const textGroups = {
-    // ... textGroups object is unchanged ...
     "Header & Navigation": ["siteName", "headerNavHome", "headerNavMenu", "headerNavEvents", "headerNavPromotions", "headerNavAbout", "headerNavDogRescue", "headerNavContact"],
     "Home Page": ["homeTitle", "homeSubtitle", "homeViewMenuButton", "homeLearnMoreButton", "welcomeTitle", "welcomeText1", "welcomeText2", "welcomeImage1Caption", "welcomeImage2Caption", "homeHighlightsTitle", "dogFriendlyTitle", "dogFriendlyText", "aussieFoodTitle", "aussieFoodText", "rescueHelpTitle", "rescueHelpText", "homeVisitTitle", "homeHoursTitle", "homeLocationTitle", "homeAddress", "homePhone", "homeEmail", "googleMapsUrl"],
     "Menu Page": ["menuPageTitle", "menuPageSubtitle", "menuReadyToDineTitle", "menuReadyToDineText", "menuCallText", "menuAddressText"],
@@ -350,7 +348,16 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="settings">{/* ... unchanged ... */}</TabsContent>
+            <TabsContent value="settings">
+              <Card>
+                <CardHeader><CardTitle>Site Settings</CardTitle></CardHeader>
+                <CardContent className="space-y-4">
+                  <div><Label>Facebook URL</Label><Input value={siteContent.socialLinks?.facebook ?? ''} onChange={(e) => updateSiteContent({ socialLinks: { ...siteContent.socialLinks, facebook: e.target.value } })} /></div>
+                  <div><Label>Instagram URL</Label><Input value={siteContent.socialLinks?.instagram ?? ''} onChange={(e) => updateSiteContent({ socialLinks: { ...siteContent.socialLinks, instagram: e.target.value } })} /></div>
+                  <div><Label>Twitter URL</Label><Input value={siteContent.socialLinks?.twitter ?? ''} onChange={(e) => updateSiteContent({ socialLinks: { ...siteContent.socialLinks, twitter: e.target.value } })} /></div>
+                </CardContent>
+              </Card>
+            </TabsContent>
             
             <TabsContent value="images">
               <div className="space-y-6">
@@ -424,8 +431,23 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="events">{/* ... content ... */}</TabsContent>
-            <TabsContent value="promotions">{/* ... content ... */}</TabsContent>
+            <TabsContent value="events">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus/> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }}/></DialogContent></Dialog></CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit/></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }}/></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if(confirm("Delete?")) await deleteEvent(event.id) }}><Trash2/></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="promotions">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Promotions</CardTitle><Dialog><DialogTrigger asChild><Button><Plus/> Add Promotion</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Promotion</DialogTitle></DialogHeader><PromotionForm promotion={{}} onSubmit={async (promo) => { await addPromotion(promo as Omit<Promotion, "id">); alert("Promotion added!"); }}/></DialogContent></Dialog></CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  {(siteContent.promotions ?? []).map((promo) => (<Card key={promo.id} className="p-4"><h3 className="font-bold">{promo.title}</h3><p>{promo.subtitle}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit/></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {promo.title}</DialogTitle></DialogHeader><PromotionForm promotion={promo} onSubmit={async (updates) => { await updatePromotion(promo.id, updates); alert("Promotion updated!"); }}/></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if(confirm("Delete?")) await deletePromotion(promo.id) }}><Trash2/></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           </Tabs>
         </div>
