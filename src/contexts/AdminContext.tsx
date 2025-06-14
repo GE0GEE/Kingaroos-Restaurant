@@ -81,6 +81,9 @@ const defaultSiteContent: SiteContent = {
   ],
   aboutImages: {
     familyPhoto: "/placeholder.svg",
+    originalFoodTruck: "/placeholder.svg",
+    firstRescueDog: "/placeholder.svg",
+    restaurantOpensImage: "/placeholder.svg",
   },
   siteImages: {
     dogRescuePlaceholderImage: "/placeholder.svg",
