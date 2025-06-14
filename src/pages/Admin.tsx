@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";//
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -40,6 +40,7 @@ import {
   Type,
   DatabaseZap,
   Loader2,
+  Link2,
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey } from "@/contexts/AdminContext";
 import imageCompression from 'browser-image-compression';
@@ -48,19 +49,17 @@ import imageCompression from 'browser-image-compression';
 const handleFileAndCompress = async (file: File): Promise<string> => {
     console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     
-    // --- OPTIMIZED SETTINGS FOR BEST QUALITY ---
     const options = {
-      maxSizeMB: 0.9,         // Target a much larger file size (just under the 1MB limit)
-      maxWidthOrHeight: 1920,   // Keep a high resolution
+      maxSizeMB: 0.9,
+      maxWidthOrHeight: 1920,
       useWebWorker: true,
-      initialQuality: 0.9,      // Start with 90% quality, library will reduce if needed
+      initialQuality: 0.9,
     };
 
     try {
         const compressedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
 
-        // Convert the compressed file to a Base64 string to store in Firestore
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(compressedFile);
@@ -74,7 +73,8 @@ const handleFileAndCompress = async (file: File): Promise<string> => {
 };
 
 
-// --- FORM COMPONENTS (No changes needed, they use the helper above) ---
+// --- FORM COMPONENTS (Now with URL input) ---
+
 function DogForm({ dog, onSubmit }: { dog: Partial<Dog>; onSubmit: (dog: Partial<Dog>) => void; }) {
   const [formData, setFormData] = useState(dog);
   const [isUploading, setIsUploading] = useState(false);
@@ -97,7 +97,6 @@ function DogForm({ dog, onSubmit }: { dog: Partial<Dog>; onSubmit: (dog: Partial
   return (
     <div className="space-y-4">
       {isUploading && <div className="flex items-center justify-center text-sm text-blue-600"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing image...</div>}
-      {/* ... form fields ... */}
       <div className="grid grid-cols-2 gap-4">
         <div><Label>Name</Label><Input value={formData.name || ""} onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))} /></div>
         <div><Label>Breed</Label><Input value={formData.breed || ""} onChange={(e) => setFormData((prev) => ({ ...prev, breed: e.target.value }))} /></div>
@@ -106,12 +105,16 @@ function DogForm({ dog, onSubmit }: { dog: Partial<Dog>; onSubmit: (dog: Partial
       <div><Label>Personality</Label><Textarea value={formData.personality || ""} onChange={(e) => setFormData((prev) => ({ ...prev, personality: e.target.value }))} /></div>
       <div><Label>Rescue Story</Label><Textarea value={formData.rescueStory || ""} onChange={(e) => setFormData((prev) => ({ ...prev, rescueStory: e.target.value }))} /></div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Before Image</Label><Input type="file" accept="image/*" onChange={(e) => handleImageUpload("beforeImage", e)} disabled={isUploading} />
+        <div className="space-y-2">
+          <Label>Before Image</Label>
+          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload("beforeImage", e)} disabled={isUploading} className="mb-2" />
+          <Input type="text" placeholder="Or paste image URL" value={formData.beforeImage?.startsWith('http') ? formData.beforeImage : ''} onChange={(e) => setFormData(prev => ({ ...prev, beforeImage: e.target.value }))} />
           {formData.beforeImage && <img src={formData.beforeImage} alt="Before" className="w-full h-32 object-cover rounded-md mt-2" />}
         </div>
-        <div>
-          <Label>After Image</Label><Input type="file" accept="image/*" onChange={(e) => handleImageUpload("afterImage", e)} disabled={isUploading} />
+        <div className="space-y-2">
+          <Label>After Image</Label>
+          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload("afterImage", e)} disabled={isUploading} className="mb-2" />
+          <Input type="text" placeholder="Or paste image URL" value={formData.afterImage?.startsWith('http') ? formData.afterImage : ''} onChange={(e) => setFormData(prev => ({ ...prev, afterImage: e.target.value }))} />
           {formData.afterImage && <img src={formData.afterImage} alt="After" className="w-full h-32 object-cover rounded-md mt-2" />}
         </div>
       </div>
@@ -149,7 +152,12 @@ function MenuItemForm({ item, onSubmit }: { item: Partial<MenuItem>; onSubmit: (
         <div><Label>Category</Label><Select value={formData.category || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as MenuItem["category"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="starters">Starters</SelectItem><SelectItem value="mains">Mains</SelectItem><SelectItem value="desserts">Desserts</SelectItem><SelectItem value="drinks">Drinks</SelectItem></SelectContent></Select></div>
       </div>
       <div className="flex items-center space-x-2"><Checkbox id="featured" checked={formData.featured || false} onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked as boolean }))} /><Label htmlFor="featured">Featured Item</Label></div>
-      <div><Label>Item Image</Label><Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />{formData.image && <img src={formData.image} alt="Menu item" className="w-full h-32 object-cover rounded-md mt-2" />}</div>
+      <div className="space-y-2">
+        <Label>Item Image</Label>
+        <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="mb-2" />
+        <Input type="text" placeholder="Or paste image URL" value={formData.image?.startsWith('http') ? formData.image : ''} onChange={(e) => setFormData(prev => ({...prev, image: e.target.value}))} />
+        {formData.image && <img src={formData.image} alt="Menu item" className="w-full h-32 object-cover rounded-md mt-2" />}
+      </div>
       <Button onClick={() => onSubmit(formData)} className="w-full" disabled={isUploading}>Save Menu Item</Button>
     </div>
   );
@@ -243,7 +251,7 @@ export default function Admin() {
     }
   };
 
-  const handleGenericImageUpload = (updateFunction: (base64: string) => Promise<void>) => async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGenericImageUpload = (updateFunction: (value: string) => Promise<void>) => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -305,7 +313,6 @@ export default function Admin() {
 
           <Tabs defaultValue="texts" className="space-y-6">
             <TabsList className="grid w-full grid-cols-7 gap-1">
-              {/* ... TabsList unchanged ... */}
               <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -316,7 +323,6 @@ export default function Admin() {
             </TabsList>
 
             <TabsContent value="texts">
-                {/* ... This tab is unchanged ... */}
                 <Card>
                 <CardHeader><CardTitle className="flex items-center space-x-2"><Type /> Website Text</CardTitle></CardHeader>
                 <CardContent>
@@ -351,15 +357,22 @@ export default function Admin() {
                 {isProcessing && <div className="flex items-center justify-center p-4 bg-blue-100 text-blue-700 rounded-lg"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing image... Please wait.</div>}
                 <Card>
                   <CardHeader><CardTitle>Logo Image</CardTitle></CardHeader>
-                  <CardContent><Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => updateSiteContent({ logoImage: base64 }))} disabled={isProcessing}/><br/>{siteContent.logoImage && <img src={siteContent.logoImage} alt="Logo" className="w-32 h-32 mt-4" />}</CardContent>
+                  <CardContent className="space-y-2">
+                    <Label>Upload File</Label>
+                    <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => updateSiteContent({ logoImage: base64 }))} disabled={isProcessing}/>
+                    <Label>Or Paste URL</Label>
+                    <Input type="text" placeholder="https://..." value={siteContent.logoImage?.startsWith('http') ? siteContent.logoImage : ''} onChange={(e) => updateSiteContent({ logoImage: e.target.value })}/>
+                    {siteContent.logoImage && <img src={siteContent.logoImage} alt="Logo" className="w-32 h-32 mt-4" />}
+                  </CardContent>
                 </Card>
                 <Card>
                   <CardHeader><CardTitle>Hero Images</CardTitle></CardHeader>
                   <CardContent className="grid md:grid-cols-3 gap-4">
                     {(siteContent.heroImages ?? []).map((image, index) => (
-                      <div key={index}>
+                      <div key={index} className="space-y-2">
                         <Label>Hero Image {index + 1}</Label>
                         <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ heroImages: newImages });})} disabled={isProcessing}/>
+                        <Input type="text" placeholder="Or paste URL" value={image.url?.startsWith('http') ? image.url : ''} onChange={(e) => { const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ heroImages: newImages }); }}/>
                         {image.url && <img src={image.url} alt={image.alt} className="w-full h-32 mt-2 object-cover" />}
                       </div>
                     ))}
@@ -369,9 +382,10 @@ export default function Admin() {
                     <CardHeader><CardTitle>Welcome Images</CardTitle></CardHeader>
                     <CardContent className="grid md:grid-cols-2 gap-4">
                     {(siteContent.welcomeImages ?? []).map((image, index) => (
-                        <div key={index}>
+                        <div key={index} className="space-y-2">
                         <Label>Welcome Image {index + 1}</Label>
                         <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ welcomeImages: newImages });})} disabled={isProcessing}/>
+                        <Input type="text" placeholder="Or paste URL" value={image.url?.startsWith('http') ? image.url : ''} onChange={(e) => { const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ welcomeImages: newImages }); }}/>
                         {image.url && <img src={image.url} alt={image.alt} className="w-full h-32 mt-2 object-cover" />}
                         </div>
                     ))}
@@ -381,7 +395,10 @@ export default function Admin() {
                   <CardHeader><CardTitle>About Page Images</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div><Label>Family Photo</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('familyPhoto')} disabled={isProcessing}/><br/>{editingImages.familyPhoto && <img src={editingImages.familyPhoto} className="w-full h-32 mt-2 object-cover"/>}</div>
+                        <div className="space-y-2"><Label>Family Photo</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('familyPhoto')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.familyPhoto?.startsWith('http') ? editingImages.familyPhoto : ''} onChange={(e) => setEditingImages(prev => ({...prev, familyPhoto: e.target.value}))} />{editingImages.familyPhoto && <img src={editingImages.familyPhoto} className="w-full h-32 mt-2 object-cover"/>}</div>
+                        <div className="space-y-2"><Label>Original Food Truck</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('originalFoodTruck')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.originalFoodTruck?.startsWith('http') ? editingImages.originalFoodTruck : ''} onChange={(e) => setEditingImages(prev => ({...prev, originalFoodTruck: e.target.value}))} />{editingImages.originalFoodTruck && <img src={editingImages.originalFoodTruck} className="w-full h-32 mt-2 object-cover"/>}</div>
+                        <div className="space-y-2"><Label>First Rescue Dog</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('firstRescueDog')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.firstRescueDog?.startsWith('http') ? editingImages.firstRescueDog : ''} onChange={(e) => setEditingImages(prev => ({...prev, firstRescueDog: e.target.value}))} />{editingImages.firstRescueDog && <img src={editingImages.firstRescueDog} className="w-full h-32 mt-2 object-cover"/>}</div>
+                        <div className="space-y-2"><Label>Restaurant Opens Image</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('restaurantOpensImage')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.restaurantOpensImage?.startsWith('http') ? editingImages.restaurantOpensImage : ''} onChange={(e) => setEditingImages(prev => ({...prev, restaurantOpensImage: e.target.value}))} />{editingImages.restaurantOpensImage && <img src={editingImages.restaurantOpensImage} className="w-full h-32 mt-2 object-cover"/>}</div>
                     </div>
                     <Button onClick={handleSaveImages} disabled={isProcessing}><Save className="mr-2 h-4 w-4"/>Save About Images</Button>
                   </CardContent>
@@ -389,9 +406,24 @@ export default function Admin() {
               </div>
             </TabsContent>
             
-            {/* The rest of the tabs require no changes */}
-            <TabsContent value="dogs">{/* ... content ... */}</TabsContent>
-            <TabsContent value="menu">{/* ... content ... */}</TabsContent>
+            <TabsContent value="dogs">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Dogs</CardTitle><Dialog><DialogTrigger asChild><Button><Plus/> Add Dog</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Dog</DialogTitle></DialogHeader><DogForm dog={{}} onSubmit={async (dog) => { await addDog(dog as Omit<Dog, "id">); alert("Dog added!"); }}/></DialogContent></Dialog></CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  {(siteContent.dogs ?? []).map((dog) => (<Card key={dog.id} className="p-4"><h3 className="font-bold">{dog.name}</h3><p>{dog.breed}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit/></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {dog.name}</DialogTitle></DialogHeader><DogForm dog={dog} onSubmit={async (updates) => { await updateDog(dog.id, updates); alert("Dog updated!"); }}/></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if(confirm("Delete?")) await deleteDog(dog.id) }}><Trash2/></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="menu">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Menu</CardTitle><Dialog><DialogTrigger asChild><Button><Plus/> Add Item</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Menu Item</DialogTitle></DialogHeader><MenuItemForm item={{}} onSubmit={async (item) => { await addMenuItem(item as Omit<MenuItem, "id">); alert("Item added!"); }}/></DialogContent></Dialog></CardHeader>
+                <CardContent className="space-y-4">
+                  {["starters", "mains", "desserts", "drinks"].map((cat) => (<div key={cat}><h3 className="font-bold capitalize text-lg mb-2">{cat}</h3><div className="grid md:grid-cols-2 gap-4">{(siteContent.menuItems ?? []).filter(i => i.category === cat).map(item => (<Card key={item.id} className="p-4"><h4 className="font-semibold">{item.name}</h4><p>{item.price}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit/></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {item.name}</DialogTitle></DialogHeader><MenuItemForm item={item} onSubmit={async (updates) => { await updateMenuItem(item.id, updates); alert("Item updated!"); }}/></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if(confirm("Delete?")) await deleteMenuItem(item.id) }}><Trash2/></Button></div></Card>))}</div></div>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="events">{/* ... content ... */}</TabsContent>
             <TabsContent value="promotions">{/* ... content ... */}</TabsContent>
 
