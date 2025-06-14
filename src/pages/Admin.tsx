@@ -47,19 +47,17 @@ import imageCompression from 'browser-image-compression';
 const handleFileAndCompress = async (file: File): Promise<string> => {
     console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
     
-    // --- OPTIMIZED SETTINGS FOR BEST QUALITY ---
     const options = {
-      maxSizeMB: 0.9,         // Target a much larger file size (just under the 1MB limit)
-      maxWidthOrHeight: 1920,   // Keep a high resolution
+      maxSizeMB: 0.9,
+      maxWidthOrHeight: 1920,
       useWebWorker: true,
-      initialQuality: 0.9,      // Start with 90% quality, library will reduce if needed
+      initialQuality: 0.9,
     };
 
     try {
         const compressedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
 
-        // Convert the compressed file to a Base64 string to store in Firestore
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.readAsDataURL(compressedFile);
@@ -72,8 +70,41 @@ const handleFileAndCompress = async (file: File): Promise<string> => {
     }
 };
 
+// --- REUSABLE IMAGE INPUT COMPONENT ---
+interface ImageInputProps {
+  label: string;
+  value: string | undefined;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUrlChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+  isProcessing: boolean;
+}
 
-// --- FORM COMPONENTS (Now with URL input) ---
+function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProcessing }: ImageInputProps) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input type="file" accept="image/*" onChange={onFileChange} disabled={isProcessing} />
+      <Input type="text" placeholder="Or paste image URL" value={value?.startsWith('http') ? value : ''} onChange={onUrlChange} />
+      {value && (
+        <div className="relative mt-2">
+          <img src={value} alt={label} className="w-full h-32 object-cover rounded-md" />
+          <Button
+            variant="destructive"
+            size="icon"
+            className="absolute top-1 right-1 h-7 w-7"
+            onClick={onRemove}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// --- FORM COMPONENTS (Updated to use ImageInput) ---
 
 function DogForm({ dog, onSubmit }: { dog: Partial<Dog>; onSubmit: (dog: Partial<Dog>) => void; }) {
   const [formData, setFormData] = useState(dog);
@@ -105,18 +136,22 @@ function DogForm({ dog, onSubmit }: { dog: Partial<Dog>; onSubmit: (dog: Partial
       <div><Label>Personality</Label><Textarea value={formData.personality || ""} onChange={(e) => setFormData((prev) => ({ ...prev, personality: e.target.value }))} /></div>
       <div><Label>Rescue Story</Label><Textarea value={formData.rescueStory || ""} onChange={(e) => setFormData((prev) => ({ ...prev, rescueStory: e.target.value }))} /></div>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Before Image</Label>
-          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload("beforeImage", e)} disabled={isUploading} className="mb-2" />
-          <Input type="text" placeholder="Or paste image URL" value={formData.beforeImage?.startsWith('http') ? formData.beforeImage : ''} onChange={(e) => setFormData(prev => ({ ...prev, beforeImage: e.target.value }))} />
-          {formData.beforeImage && <img src={formData.beforeImage} alt="Before" className="w-full h-32 object-cover rounded-md mt-2" />}
-        </div>
-        <div className="space-y-2">
-          <Label>After Image</Label>
-          <Input type="file" accept="image/*" onChange={(e) => handleImageUpload("afterImage", e)} disabled={isUploading} className="mb-2" />
-          <Input type="text" placeholder="Or paste image URL" value={formData.afterImage?.startsWith('http') ? formData.afterImage : ''} onChange={(e) => setFormData(prev => ({ ...prev, afterImage: e.target.value }))} />
-          {formData.afterImage && <img src={formData.afterImage} alt="After" className="w-full h-32 object-cover rounded-md mt-2" />}
-        </div>
+        <ImageInput
+          label="Before Image"
+          value={formData.beforeImage}
+          onFileChange={(e) => handleImageUpload("beforeImage", e)}
+          onUrlChange={(e) => setFormData(prev => ({ ...prev, beforeImage: e.target.value }))}
+          onRemove={() => setFormData(prev => ({ ...prev, beforeImage: "" }))}
+          isProcessing={isUploading}
+        />
+        <ImageInput
+          label="After Image"
+          value={formData.afterImage}
+          onFileChange={(e) => handleImageUpload("afterImage", e)}
+          onUrlChange={(e) => setFormData(prev => ({ ...prev, afterImage: e.target.value }))}
+          onRemove={() => setFormData(prev => ({ ...prev, afterImage: "" }))}
+          isProcessing={isUploading}
+        />
       </div>
       <Button onClick={() => onSubmit(formData)} className="w-full" disabled={isUploading}>Save Dog</Button>
     </div>
@@ -152,12 +187,14 @@ function MenuItemForm({ item, onSubmit }: { item: Partial<MenuItem>; onSubmit: (
         <div><Label>Category</Label><Select value={formData.category || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as MenuItem["category"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="starters">Starters</SelectItem><SelectItem value="mains">Mains</SelectItem><SelectItem value="desserts">Desserts</SelectItem><SelectItem value="drinks">Drinks</SelectItem></SelectContent></Select></div>
       </div>
       <div className="flex items-center space-x-2"><Checkbox id="featured" checked={formData.featured || false} onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked as boolean }))} /><Label htmlFor="featured">Featured Item</Label></div>
-      <div className="space-y-2">
-        <Label>Item Image</Label>
-        <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} className="mb-2" />
-        <Input type="text" placeholder="Or paste image URL" value={formData.image?.startsWith('http') ? formData.image : ''} onChange={(e) => setFormData(prev => ({...prev, image: e.target.value}))} />
-        {formData.image && <img src={formData.image} alt="Menu item" className="w-full h-32 object-cover rounded-md mt-2" />}
-      </div>
+      <ImageInput
+        label="Item Image"
+        value={formData.image}
+        onFileChange={handleImageUpload}
+        onUrlChange={(e) => setFormData(prev => ({...prev, image: e.target.value}))}
+        onRemove={() => setFormData(prev => ({...prev, image: ""}))}
+        isProcessing={isUploading}
+      />
       <Button onClick={() => onSubmit(formData)} className="w-full" disabled={isUploading}>Save Menu Item</Button>
     </div>
   );
@@ -364,24 +401,30 @@ export default function Admin() {
                 {isProcessing && <div className="flex items-center justify-center p-4 bg-blue-100 text-blue-700 rounded-lg"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing image... Please wait.</div>}
                 <Card>
                   <CardHeader><CardTitle>Logo Image</CardTitle></CardHeader>
-                  <CardContent className="space-y-2">
-                    <Label>Upload File</Label>
-                    <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => updateSiteContent({ logoImage: base64 }))} disabled={isProcessing}/>
-                    <Label>Or Paste URL</Label>
-                    <Input type="text" placeholder="https://..." value={siteContent.logoImage?.startsWith('http') ? siteContent.logoImage : ''} onChange={(e) => updateSiteContent({ logoImage: e.target.value })}/>
-                    {siteContent.logoImage && <img src={siteContent.logoImage} alt="Logo" className="w-32 h-32 mt-4" />}
+                  <CardContent>
+                    <ImageInput
+                      label="Logo Image"
+                      value={siteContent.logoImage}
+                      onFileChange={handleGenericImageUpload((base64) => updateSiteContent({ logoImage: base64 }))}
+                      onUrlChange={(e) => updateSiteContent({ logoImage: e.target.value })}
+                      onRemove={() => updateSiteContent({ logoImage: "" })}
+                      isProcessing={isProcessing}
+                    />
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader><CardTitle>Hero Images</CardTitle></CardHeader>
                   <CardContent className="grid md:grid-cols-3 gap-4">
                     {(siteContent.heroImages ?? []).map((image, index) => (
-                      <div key={index} className="space-y-2">
-                        <Label>Hero Image {index + 1}</Label>
-                        <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ heroImages: newImages });})} disabled={isProcessing}/>
-                        <Input type="text" placeholder="Or paste URL" value={image.url?.startsWith('http') ? image.url : ''} onChange={(e) => { const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ heroImages: newImages }); }}/>
-                        {image.url && <img src={image.url} alt={image.alt} className="w-full h-32 mt-2 object-cover" />}
-                      </div>
+                      <ImageInput
+                        key={index}
+                        label={`Hero Image ${index + 1}`}
+                        value={image.url}
+                        onFileChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ heroImages: newImages });})}
+                        onUrlChange={(e) => { const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ heroImages: newImages }); }}
+                        onRemove={() => { const newImages = [...siteContent.heroImages]; newImages[index] = {...newImages[index], url: "" }; updateSiteContent({ heroImages: newImages }); }}
+                        isProcessing={isProcessing}
+                      />
                     ))}
                   </CardContent>
                 </Card>
@@ -389,12 +432,15 @@ export default function Admin() {
                     <CardHeader><CardTitle>Welcome Images</CardTitle></CardHeader>
                     <CardContent className="grid md:grid-cols-2 gap-4">
                     {(siteContent.welcomeImages ?? []).map((image, index) => (
-                        <div key={index} className="space-y-2">
-                        <Label>Welcome Image {index + 1}</Label>
-                        <Input type="file" accept="image/*" onChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ welcomeImages: newImages });})} disabled={isProcessing}/>
-                        <Input type="text" placeholder="Or paste URL" value={image.url?.startsWith('http') ? image.url : ''} onChange={(e) => { const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ welcomeImages: newImages }); }}/>
-                        {image.url && <img src={image.url} alt={image.alt} className="w-full h-32 mt-2 object-cover" />}
-                        </div>
+                      <ImageInput
+                        key={index}
+                        label={`Welcome Image ${index + 1}`}
+                        value={image.url}
+                        onFileChange={handleGenericImageUpload((base64) => {const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: base64 }; return updateSiteContent({ welcomeImages: newImages });})}
+                        onUrlChange={(e) => { const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: e.target.value }; updateSiteContent({ welcomeImages: newImages }); }}
+                        onRemove={() => { const newImages = [...siteContent.welcomeImages]; newImages[index] = {...newImages[index], url: "" }; updateSiteContent({ welcomeImages: newImages }); }}
+                        isProcessing={isProcessing}
+                      />
                     ))}
                     </CardContent>
                 </Card>
@@ -402,10 +448,38 @@ export default function Admin() {
                   <CardHeader><CardTitle>About Page Images</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="space-y-2"><Label>Family Photo</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('familyPhoto')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.familyPhoto?.startsWith('http') ? editingImages.familyPhoto : ''} onChange={(e) => setEditingImages(prev => ({...prev, familyPhoto: e.target.value}))} />{editingImages.familyPhoto && <img src={editingImages.familyPhoto} className="w-full h-32 mt-2 object-cover"/>}</div>
-                        <div className="space-y-2"><Label>Original Food Truck</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('originalFoodTruck')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.originalFoodTruck?.startsWith('http') ? editingImages.originalFoodTruck : ''} onChange={(e) => setEditingImages(prev => ({...prev, originalFoodTruck: e.target.value}))} />{editingImages.originalFoodTruck && <img src={editingImages.originalFoodTruck} className="w-full h-32 mt-2 object-cover"/>}</div>
-                        <div className="space-y-2"><Label>First Rescue Dog</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('firstRescueDog')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.firstRescueDog?.startsWith('http') ? editingImages.firstRescueDog : ''} onChange={(e) => setEditingImages(prev => ({...prev, firstRescueDog: e.target.value}))} />{editingImages.firstRescueDog && <img src={editingImages.firstRescueDog} className="w-full h-32 mt-2 object-cover"/>}</div>
-                        <div className="space-y-2"><Label>Restaurant Opens Image</Label><Input type="file" accept="image/*" onChange={handleAboutFormImageUpload('restaurantOpensImage')} disabled={isProcessing}/><Input type="text" placeholder="Or paste URL" value={editingImages.restaurantOpensImage?.startsWith('http') ? editingImages.restaurantOpensImage : ''} onChange={(e) => setEditingImages(prev => ({...prev, restaurantOpensImage: e.target.value}))} />{editingImages.restaurantOpensImage && <img src={editingImages.restaurantOpensImage} className="w-full h-32 mt-2 object-cover"/>}</div>
+                      <ImageInput
+                        label="Family Photo"
+                        value={editingImages.familyPhoto}
+                        onFileChange={handleAboutFormImageUpload('familyPhoto')}
+                        onUrlChange={(e) => setEditingImages(prev => ({...prev, familyPhoto: e.target.value}))}
+                        onRemove={() => setEditingImages(prev => ({...prev, familyPhoto: ""}))}
+                        isProcessing={isProcessing}
+                      />
+                      <ImageInput
+                        label="Original Food Truck"
+                        value={editingImages.originalFoodTruck}
+                        onFileChange={handleAboutFormImageUpload('originalFoodTruck')}
+                        onUrlChange={(e) => setEditingImages(prev => ({...prev, originalFoodTruck: e.target.value}))}
+                        onRemove={() => setEditingImages(prev => ({...prev, originalFoodTruck: ""}))}
+                        isProcessing={isProcessing}
+                      />
+                      <ImageInput
+                        label="First Rescue Dog"
+                        value={editingImages.firstRescueDog}
+                        onFileChange={handleAboutFormImageUpload('firstRescueDog')}
+                        onUrlChange={(e) => setEditingImages(prev => ({...prev, firstRescueDog: e.target.value}))}
+                        onRemove={() => setEditingImages(prev => ({...prev, firstRescueDog: ""}))}
+                        isProcessing={isProcessing}
+                      />
+                      <ImageInput
+                        label="Restaurant Opens Image"
+                        value={editingImages.restaurantOpensImage}
+                        onFileChange={handleAboutFormImageUpload('restaurantOpensImage')}
+                        onUrlChange={(e) => setEditingImages(prev => ({...prev, restaurantOpensImage: e.target.value}))}
+                        onRemove={() => setEditingImages(prev => ({...prev, restaurantOpensImage: ""}))}
+                        isProcessing={isProcessing}
+                      />
                     </div>
                     <Button onClick={handleSaveImages} disabled={isProcessing}><Save className="mr-2 h-4 w-4"/>Save About Images</Button>
                   </CardContent>
