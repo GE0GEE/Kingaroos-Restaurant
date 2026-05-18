@@ -88,7 +88,7 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
   const isUrl = value?.startsWith("http");
 
   // Route URL images through our server proxy to bypass hotlink blocks (e.g. postimg.cc)
-  const PROXY = `/api/image-proxy?url=`;
+  const PROXY = `https://builder-vortex-landing.onrender.com/api/image-proxy?url=`;
   const previewSrc = isUrl
     ? PROXY + encodeURIComponent(value!)
     : value ?? "";
