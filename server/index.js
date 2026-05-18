@@ -380,6 +380,62 @@ app.delete("/api/promotions/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete promotion" });
   }
 });
+
+// Image proxy — fetches external images server-side to bypass hotlink protection
+// Used by the admin panel to preview URLs from hosts like postimg.cc
+app.get('/api/image-proxy', (req, res) => {
+  const { url } = req.query;
+  if (!url) return res.status(400).json({ error: 'Missing url param' });
+
+  let targetUrl;
+  try {
+    targetUrl = new URL(url);
+  } catch {
+    return res.status(400).json({ error: 'Invalid URL' });
+  }
+
+  // Only allow http/https
+  if (!['http:', 'https:'].includes(targetUrl.protocol)) {
+    return res.status(400).json({ error: 'Invalid protocol' });
+  }
+
+  const lib = targetUrl.protocol === 'https:' ? require('https') : require('http');
+
+  const options = {
+    hostname: targetUrl.hostname,
+    path: targetUrl.pathname + targetUrl.search,
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
+      'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+      'Referer': targetUrl.origin + '/',
+    },
+  };
+
+  const proxyReq = lib.request(options, (proxyRes) => {
+    // Follow redirects (postimg uses them)
+    if ([301, 302, 307, 308].includes(proxyRes.statusCode) && proxyRes.headers.location) {
+      return res.redirect('/api/image-proxy?url=' + encodeURIComponent(proxyRes.headers.location));
+    }
+
+    if (proxyRes.statusCode !== 200) {
+      return res.status(proxyRes.statusCode).json({ error: 'Upstream error' });
+    }
+
+    res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    proxyRes.pipe(res);
+  });
+
+  proxyReq.on('error', (err) => {
+    console.error('Image proxy error:', err.message);
+    res.status(500).json({ error: 'Proxy fetch failed' });
+  });
+
+  proxyReq.end();
+});
+
 app.get("/", (req, res) => {
   res.send("Kingaroos Backend is live!");
 });
