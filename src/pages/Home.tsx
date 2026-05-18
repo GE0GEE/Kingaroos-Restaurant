@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/Layout";
 import { useAdmin } from "@/contexts/AdminContext";
+import { KangarooIcon } from "@/components/KangarooIcon";
+import { GoogleReviewsSection } from "@/components/GoogleReviewsSection";
 
 export default function Home() {
   const { siteContent, loading } = useAdmin();
@@ -27,7 +29,7 @@ export default function Home() {
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
           <div className="text-center space-y-4">
-            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <KangarooIcon className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
             <p className="font-body text-brown-600">Loading KINGAROOS...</p>
           </div>
         </div>
@@ -160,6 +162,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Google Reviews & Popular Times */}
+      <GoogleReviewsSection />
 
       {/* Hours & Location */}
       <section className="py-16 px-4">
