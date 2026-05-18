@@ -10,8 +10,6 @@ interface Review {
   relativePublishTimeDescription: string;
 }
 
-const GOOGLE_MAPS_URL =
-  "https://www.google.com/maps/place/Kingaroo%27s+Seaview+Resto+Bar/@9.2472567,123.2949989,15z/data=!4m8!3m7!1s0x33ab69f7f93062cf:0xedaf9d009a9047d0!8m2!3d9.2472567!4d123.2971426!9m1!1b1";
 
 function StarRow({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
@@ -61,10 +59,6 @@ function PopularTimes() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <h4 className="font-heading text-lg font-bold text-brown-800">Popular Times</h4>
-        <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer"
-          className="text-xs text-aussie-orange hover:underline flex items-center gap-1">
-          Live data <ExternalLink size={10} />
-        </a>
       </div>
       <div className="flex gap-1 mb-4 flex-wrap">
         {DAYS.map((d) => (
@@ -91,7 +85,7 @@ function PopularTimes() {
       {selected === todayKey && label(hours[now]) && (
         <p className="mt-2 text-xs font-semibold text-aussie-orange">{label(hours[now])} right now</p>
       )}
-      <p className="mt-1 text-[10px] text-brown-400">Typical visit patterns · not real-time</p>
+      <p className="mt-1 text-[10px] text-brown-400">Based on typical visit patterns</p>
     </div>
   );
 }
@@ -180,7 +174,7 @@ export function GoogleReviewsSection() {
                     </div>
                   ))}
                 </div>
-                <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer"
+                <a href={`https://search.google.com/local/writereview?placeid=${placeId}`} target="_blank" rel="noopener noreferrer"
                   className="mt-5 flex items-center justify-center gap-2 w-full bg-aussie-orange hover:bg-aussie-orange/90 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-colors">
                   Write a Review <ExternalLink size={14} />
                 </a>
@@ -228,7 +222,7 @@ export function GoogleReviewsSection() {
                     </CardContent>
                   </Card>
                 ))}
-                <a href={GOOGLE_MAPS_URL} target="_blank" rel="noopener noreferrer"
+                <a href={`https://www.google.com/maps/place/?q=place_id:${placeId}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 text-sm text-aussie-orange font-semibold hover:underline pt-2">
                   See all reviews on Google <ExternalLink size={14} />
                 </a>
