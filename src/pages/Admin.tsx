@@ -112,11 +112,22 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
       {value && (
         <div className="relative mt-2">
           {imgError ? (
-            <div className="w-full h-20 rounded-md bg-green-50 border border-green-200 flex flex-col items-center justify-center text-center px-3 gap-1">
-              <p className="text-xs font-semibold text-green-700">✓ URL saved</p>
-              <p className="text-[11px] text-gray-500 leading-snug">
-                Preview unavailable for this host. The image will display correctly on the live site.
-              </p>
+            <div className="w-full rounded-md bg-green-50 border border-green-200 flex items-center gap-3 px-3 py-2">
+              <a href={value} target="_blank" rel="noopener noreferrer"
+                className="flex-shrink-0 w-16 h-16 rounded border border-green-200 overflow-hidden bg-white flex items-center justify-center hover:opacity-80 transition-opacity"
+                title="Click to open image in new tab">
+                <img src={value} alt="preview" className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                <span className="text-[10px] text-green-600 font-semibold absolute">↗</span>
+              </a>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-green-700">✓ URL saved</p>
+                <p className="text-[11px] text-gray-500 leading-snug mt-0.5">Preview blocked by host. Click the box to verify the image.</p>
+                <a href={value} target="_blank" rel="noopener noreferrer"
+                  className="text-[11px] text-blue-500 hover:underline truncate block mt-0.5">
+                  Open image ↗
+                </a>
+              </div>
             </div>
           ) : (
             <img
