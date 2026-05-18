@@ -70,14 +70,23 @@ function PopularTimes() {
           </button>
         ))}
       </div>
-      <div className="flex items-end gap-[3px] mb-1" style={{ height: 56 }}>
-        {hours.map((pct, i) => (
-          <div key={i} className="flex-1 flex flex-col justify-end" style={{ height: "100%" }}>
-            <div className={`rounded-sm transition-all ${
-              selected === todayKey && i === now ? "bg-aussie-orange" : pct > 0 ? "bg-aussie-orange/35" : ""
-            }`} style={{ height: pct > 0 ? `${Math.max(pct, 4)}%` : 0 }} />
-          </div>
-        ))}
+      <div className="flex items-end gap-[2px] mb-1" style={{ height: 80 }}>
+        {hours.map((pct, i) => {
+          const isNow = selected === todayKey && i === now;
+          const isEmpty = pct === 0;
+          return (
+            <div key={i} className="flex-1 flex flex-col justify-end" style={{ height: "100%" }}>
+              {isEmpty ? (
+                <div className="rounded-sm bg-gray-200" style={{ height: 3 }} />
+              ) : (
+                <div
+                  className={`rounded-t-sm transition-all ${isNow ? "bg-aussie-orange" : "bg-aussie-orange/40"}`}
+                  style={{ height: `${Math.max(pct, 8)}%` }}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
       <div className="flex justify-between text-[10px] text-brown-400">
         <span>6a</span><span>9a</span><span>12p</span><span>3p</span><span>6p</span><span>9p</span><span>12a</span>
