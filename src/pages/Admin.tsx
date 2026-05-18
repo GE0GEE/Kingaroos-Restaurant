@@ -666,31 +666,132 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="menu">
-              <Card>
-                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Menu</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Item</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Menu Item</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new menu item.</DialogDescription></DialogHeader><MenuItemForm item={{}} onSubmit={async (item) => { await addMenuItem(item as Omit<MenuItem, "id">); alert("Item added!"); }} /></DialogContent></Dialog></CardHeader>
-                <CardContent className="space-y-4">
-                  {["starters", "mains", "desserts", "drinks"].map((cat) => (<div key={cat}><h3 className="font-bold capitalize text-lg mb-2">{cat}</h3><div className="grid md:grid-cols-2 gap-4">{(siteContent.menuItems ?? []).filter((i) => i.category === cat).map((item) => (<Card key={item.id} className="p-4"><h4 className="font-semibold">{item.name}</h4><p>{item.price}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {item.name}</DialogTitle><DialogDescription className="sr-only">Update the details for this menu item.</DialogDescription></DialogHeader><MenuItemForm item={item} onSubmit={async (updates) => { await updateMenuItem(item.id, updates); alert("Item updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteMenuItem(item.id); }}><Trash2 /></Button></div></Card>))}</div></div>))}
-                </CardContent>
+  {/* Existing menu management card */}
+  <Card>
+    <CardHeader className="flex justify-between items-center">
+      <CardTitle>Manage Menu</CardTitle>
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button><Plus /> Add Item</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Menu Item</DialogTitle>
+            <DialogDescription className="sr-only">Fill in the form to add a new menu item.</DialogDescription>
+          </DialogHeader>
+          <MenuItemForm item={{}} onSubmit={async (item) => {
+            await addMenuItem(item as Omit<MenuItem, "id">);
+            alert("Item added!");
+          }} />
+        </DialogContent>
+      </Dialog>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {["starters", "mains", "desserts", "drinks"].map((cat) => (
+        <div key={cat}>
+          <h3 className="font-bold capitalize text-lg mb-2">{cat}</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {(siteContent.menuItems ?? []).filter((i) => i.category === cat).map((item) => (
+              <Card key={item.id} className="p-4">
+                <h4 className="font-semibold">{item.name}</h4>
+                <p>{item.price}</p>
+                <div className="flex gap-2 mt-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm"><Edit /></Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit {item.name}</DialogTitle>
+                        <DialogDescription className="sr-only">Update the details for this menu item.</DialogDescription>
+                      </DialogHeader>
+                      <MenuItemForm item={item} onSubmit={async (updates) => {
+                        await updateMenuItem(item.id, updates);
+                        alert("Item updated!");
+                      }} />
+                    </DialogContent>
+                  </Dialog>
+                  <Button variant="destructive" size="sm" onClick={async () => {
+                    if (confirm("Delete?")) await deleteMenuItem(item.id);
+                  }}>
+                    <Trash2 />
+                  </Button>
+                </div>
               </Card>
-            </TabsContent>
+            ))}
+          </div>
+        </div>
+      ))}
+    </CardContent>
+  </Card>
 
-            <TabsContent value="events">
-              <Card>
-                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new event.</DialogDescription></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }} /></DialogContent></Dialog></CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this event.</DialogDescription></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteEvent(event.id); }}><Trash2 /></Button></div></Card>))}
-                </CardContent>
-              </Card>
-            </TabsContent>
+  {/* NEW: JSON Import Card */}
+  <Card className="mt-8">
+    <CardHeader>
+      <CardTitle>Import Full Menu from JSON</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-4">
+        <p className="text-sm text-gray-600">
+          Upload a <strong>.json</strong> file containing an array of menu items.
+          <br />
+          Format: <code className="text-xs">[{"name, price, category, description, featured, image"}]</code>
+          <br />
+          The current menu will be <strong>replaced</strong> with the imported data.
+        </p>
+        <input
+          type="file"
+          accept="application/json"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
 
-            <TabsContent value="promotions">
-              <Card>
-                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Promotions</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Promotion</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Promotion</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new promotion.</DialogDescription></DialogHeader><PromotionForm promotion={{}} onSubmit={async (promo) => { await addPromotion(promo as Omit<Promotion, "id">); alert("Promotion added!"); }} /></DialogContent></Dialog></CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {(siteContent.promotions ?? []).map((promo) => (<Card key={promo.id} className="p-4"><h3 className="font-bold">{promo.title}</h3><p>{promo.subtitle}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {promo.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this promotion.</DialogDescription></DialogHeader><PromotionForm promotion={promo} onSubmit={async (updates) => { await updatePromotion(promo.id, updates); alert("Promotion updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deletePromotion(promo.id); }}><Trash2 /></Button></div></Card>))}
-                </CardContent>
-              </Card>
-            </TabsContent>
+            // Show a loading indicator (you can set a state if you prefer)
+            const originalButtonText = (e.target.nextElementSibling as HTMLElement)?.innerText;
+            if (e.target.nextElementSibling) {
+              (e.target.nextElementSibling as HTMLElement).innerText = "Importing...";
+            }
+
+            try {
+              const text = await file.text();
+              const imported = JSON.parse(text);
+              if (!Array.isArray(imported)) throw new Error("File must contain an array of menu items.");
+
+              // Validate and normalize each item
+              const validatedItems = imported.map((item, idx) => {
+                if (!item.name || !item.price || !item.category) {
+                  throw new Error(`Item at index ${idx} missing name, price, or category.`);
+                }
+                // Add an id if missing
+                if (!item.id) {
+                  item.id = `import-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 6)}`;
+                }
+                // Ensure optional fields exist
+                if (!item.description) item.description = "";
+                if (!item.image) item.image = "/placeholder.svg";
+                if (typeof item.featured !== "boolean") item.featured = false;
+                return item;
+              });
+
+              // Replace all menu items
+              await updateSiteContent({ menuItems: validatedItems });
+              alert(`✅ Successfully imported ${validatedItems.length} menu items.`);
+            } catch (err: any) {
+              alert(`❌ Import failed: ${err.message}`);
+            } finally {
+              // Reset file input and button text
+              e.target.value = "";
+              if (e.target.nextElementSibling) {
+                (e.target.nextElementSibling as HTMLElement).innerText = originalButtonText || "Import";
+              }
+            }
+          }}
+          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-aussie-orange file:text-white hover:file:bg-aussie-burnt-red"
+        />
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
 
           </Tabs>
         </div>
