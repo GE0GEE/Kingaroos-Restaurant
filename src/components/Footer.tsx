@@ -4,6 +4,7 @@ import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -141,6 +142,9 @@ export function Footer() {
             <DialogTitle className="font-heading text-xl text-brown-800">
               {siteContent.siteTexts.adminLoginTitle}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Enter your admin password to access the admin panel.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
