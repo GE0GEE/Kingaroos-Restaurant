@@ -2,6 +2,7 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Users, Truck, Home } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
+import { KangarooIcon } from "@/components/KangarooIcon";
 
 export default function About() {
   const { siteContent, loading } = useAdmin();
@@ -11,7 +12,7 @@ export default function About() {
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
           <div className="text-center space-y-4">
-            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <KangarooIcon className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
             <p className="font-body text-brown-600">Loading our story...</p>
           </div>
         </div>
