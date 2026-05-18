@@ -84,10 +84,12 @@ interface ImageInputProps {
 function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProcessing }: ImageInputProps) {
   const [urlInput, setUrlInput] = useState(value?.startsWith("http") ? value : "");
   const [imgError, setImgError] = useState(false);
+  const [imgKey, setImgKey] = useState(0);
 
   useEffect(() => {
     if (value?.startsWith("http")) setUrlInput(value);
     setImgError(false);
+    setImgKey((k) => k + 1);
   }, [value]);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +97,11 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
     setImgError(false);
     onUrlChange(e);
   };
+
+  // Proxy the image through a CORS-friendly service to bypass hotlink blocks
+  const proxiedSrc = value?.startsWith("http")
+    ? `https://images.weserv.nl/?url=${encodeURIComponent(value)}&w=400&output=webp`
+    : value ?? "";
 
   return (
     <div className="space-y-2">
@@ -105,18 +112,17 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
         <div className="relative mt-2">
           {imgError ? (
             <div className="w-full h-32 rounded-md bg-gray-100 border border-dashed border-gray-300 flex flex-col items-center justify-center text-center px-3 gap-1">
-              <p className="text-xs font-semibold text-red-500">Image failed to load</p>
+              <p className="text-xs font-semibold text-red-500">Could not preview image</p>
               <p className="text-[11px] text-gray-500 leading-snug">
-                This host blocks direct linking. Try uploading the file instead, or use a direct image URL ending in .jpg or .png.
+                The URL may be private or broken. It will still be saved — check the live site to confirm it displays correctly.
               </p>
             </div>
           ) : (
             <img
-              src={value}
+              key={imgKey}
+              src={proxiedSrc}
               alt={label}
               className="w-full h-32 object-cover rounded-md"
-              referrerPolicy="no-referrer"
-              crossOrigin="anonymous"
               onError={() => setImgError(true)}
             />
           )}
