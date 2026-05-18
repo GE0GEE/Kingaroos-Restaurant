@@ -6,6 +6,7 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DATA_FILE = path.join(__dirname, "data", "content.json");
+const DIST_DIR = path.join(__dirname, "..", "dist");
 
 // Middleware
 app.use(cors());
@@ -436,8 +437,20 @@ app.get('/api/image-proxy', (req, res) => {
   proxyReq.end();
 });
 
-app.get("/", (req, res) => {
-  res.send("Kingaroos Backend is live!");
+// Serve Vite build with correct MIME types
+app.use(express.static(DIST_DIR, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) {
+      res.setHeader("Content-Type", "application/javascript");
+    } else if (filePath.endsWith(".css")) {
+      res.setHeader("Content-Type", "text/css");
+    }
+  }
+}));
+
+// SPA fallback — serve index.html for all non-API routes so React Router works
+app.get("*", (req, res) => {
+  res.sendFile(path.join(DIST_DIR, "index.html"));
 });
 
 // Start server
