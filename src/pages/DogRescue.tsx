@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -147,6 +148,9 @@ export default function DogRescue() {
             <DialogTitle className="font-heading text-3xl font-bold text-brown-800">
               {selectedDog?.name}'s Transformation Story
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              Detailed story and information about {selectedDog?.name}.
+            </DialogDescription>
           </DialogHeader>
 
           {selectedDog && (
