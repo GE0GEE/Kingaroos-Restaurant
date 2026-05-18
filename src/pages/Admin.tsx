@@ -566,6 +566,22 @@ export default function Admin() {
                   </CardContent>
                 </Card>
                 <Card>
+                  <CardHeader>
+                    <CardTitle>Browser Tab Icon (Favicon)</CardTitle>
+                    <p className="text-xs text-gray-500 mt-1">The small icon shown in the browser tab. Use a square PNG for best results.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <ImageInput
+                      label="Favicon"
+                      value={siteContent.faviconImage}
+                      onFileChange={handleGenericImageUpload((base64) => updateSiteContent({ faviconImage: base64 }))}
+                      onUrlChange={(e) => updateSiteContent({ faviconImage: e.target.value })}
+                      onRemove={() => updateSiteContent({ faviconImage: "" })}
+                      isProcessing={isProcessing}
+                    />
+                  </CardContent>
+                </Card>
+                <Card>
                   <CardHeader><CardTitle>Hero Images</CardTitle></CardHeader>
                   <CardContent className="grid md:grid-cols-3 gap-4">
                     {(siteContent.heroImages ?? []).map((image, index) => (
