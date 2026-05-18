@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAdmin } from "@/contexts/AdminContext";
 import { Heart } from "lucide-react";
+import { KangarooIcon } from "@/components/KangarooIcon";
 
 export default function Menu() {
   const { siteContent, loading } = useAdmin();
@@ -12,7 +13,7 @@ export default function Menu() {
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
           <div className="text-center space-y-4">
-            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
+            <KangarooIcon className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
             <p className="font-body text-brown-600">Loading menu...</p>
           </div>
         </div>
