@@ -40,6 +40,7 @@ import {
   Type,
   DatabaseZap,
   Loader2,
+  Upload,
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey } from "@/contexts/AdminContext";
 import imageCompression from "browser-image-compression";
@@ -233,7 +234,7 @@ function MenuItemForm({ item, onSubmit }: { item: Partial<MenuItem>; onSubmit: (
       <div><Label>Description</Label><Textarea value={formData.description || ""} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} /></div>
       <div className="grid grid-cols-2 gap-4">
         <div><Label>Price</Label><Input value={formData.price || ""} onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))} /></div>
-        <div><Label>Category</Label><Select value={formData.category || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as MenuItem["category"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="starters">Starters</SelectItem><SelectItem value="mains">Mains</SelectItem><SelectItem value="desserts">Desserts</SelectItem><SelectItem value="drinks">Drinks</SelectItem></SelectContent></Select></div>
+        <div><Label>Category</Label><Input value={formData.category || ""} onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))} placeholder="e.g., soups, mains, desserts" /></div>
       </div>
       <div className="flex items-center space-x-2"><Checkbox id="featured" checked={formData.featured || false} onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, featured: checked as boolean }))} /><Label htmlFor="featured">Featured Item</Label></div>
       <ImageInput
@@ -310,19 +311,12 @@ export default function Admin() {
   const [editingTexts, setEditingTexts] = useState(siteContent.siteTexts);
   const [editingImages, setEditingImages] = useState(siteContent.aboutImages);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // B5 FIX: Local state for the Settings tab's social links.
-  // Previously each <Input> called updateSiteContent() on every keystroke,
-  // which fired a Firestore write on every character typed (O(n) writes per
-  // field).  Now changes are buffered in editingSettings and only written to
-  // Firestore when the admin explicitly clicks "Save Settings".
+  const [importing, setImporting] = useState(false);
   const [editingSettings, setEditingSettings] = useState(siteContent.socialLinks);
 
   useEffect(() => {
     setEditingTexts(siteContent.siteTexts);
     setEditingImages(siteContent.aboutImages);
-    // B5 FIX: Keep local settings state in sync when Firestore pushes an
-    // update (e.g. another admin session saved different values).
     setEditingSettings(siteContent.socialLinks);
   }, [siteContent]);
 
@@ -346,8 +340,6 @@ export default function Admin() {
     }
   };
 
-  // B5 FIX: Dedicated save handler for the Settings tab — writes to Firestore
-  // once on explicit user action rather than on every keystroke.
   const handleSaveSettings = async () => {
     try {
       await updateSiteContent({ socialLinks: editingSettings });
@@ -388,6 +380,43 @@ export default function Admin() {
     }
   };
 
+  // --- JSON IMPORT HANDLER ---
+  const handleMenuImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const imported = JSON.parse(text);
+      if (!Array.isArray(imported)) throw new Error("File must contain an array of menu items.");
+
+      // Validate each item and normalize
+      const validatedItems = imported.map((item: any, idx: number) => {
+        if (!item.name || !item.price || !item.category) {
+          throw new Error(`Item at index ${idx} missing name, price, or category.`);
+        }
+        // Add id if missing
+        if (!item.id) {
+          item.id = `import-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 8)}`;
+        }
+        // Ensure optional fields
+        if (!item.description) item.description = "";
+        if (!item.image) item.image = "/placeholder.svg";
+        if (typeof item.featured !== "boolean") item.featured = false;
+        return item;
+      });
+
+      await updateSiteContent({ menuItems: validatedItems });
+      alert(`✅ Successfully imported ${validatedItems.length} menu items.`);
+    } catch (err: any) {
+      alert(`❌ Import failed: ${err.message}`);
+    } finally {
+      setImporting(false);
+      event.target.value = ""; // reset input
+    }
+  };
+
   const textGroups = {
     "Header & Navigation": ["siteName", "headerNavHome", "headerNavMenu", "headerNavEvents", "headerNavPromotions", "headerNavAbout", "headerNavDogRescue", "headerNavContact"],
     "Home Page": ["homeTitle", "homeSubtitle", "homeViewMenuButton", "homeLearnMoreButton", "welcomeTitle", "welcomeText1", "welcomeText2", "welcomeImage1Caption", "welcomeImage2Caption", "homeHighlightsTitle", "dogFriendlyTitle", "dogFriendlyText", "aussieFoodTitle", "aussieFoodText", "rescueHelpTitle", "rescueHelpText", "homeVisitTitle", "homeHoursTitle", "homeLocationTitle", "homeAddress", "homePhone", "homeEmail", "googleMapsUrl"],
@@ -400,6 +429,13 @@ export default function Admin() {
     "Footer": ["footerTagline", "footerContactTitle", "footerHoursSocialTitle", "footerCopyright", "footerMondayThursday", "footerFridaySaturday", "footerSunday"],
     "Admin Interface": ["adminLoginTitle", "adminPasswordLabel", "adminPasswordPlaceholder", "adminLoginButton", "adminCancelButton"],
   };
+
+  // Group menu items by category for display (dynamic categories)
+  const menuItemsByCategory = (siteContent.menuItems ?? []).reduce((acc, item) => {
+    if (!acc[item.category]) acc[item.category] = [];
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, MenuItem[]>);
 
   return (
     <Layout>
@@ -455,15 +491,6 @@ export default function Admin() {
               </Card>
             </TabsContent>
 
-            {/*
-              B5 FIX: Settings tab now uses editingSettings (local state) for
-              controlled inputs and only calls updateSiteContent when the admin
-              clicks "Save Settings".  The original code bound each <Input>
-              directly to updateSiteContent via its onChange handler, firing a
-              Firestore write on every single character typed — O(n) writes per
-              field, causing write quota exhaustion, UI jitter, and potential
-              data corruption if two fields were being edited concurrently.
-            */}
             <TabsContent value="settings">
               <Card>
                 <CardHeader><CardTitle>Site Settings</CardTitle></CardHeader>
@@ -472,30 +499,23 @@ export default function Admin() {
                     <Label>Facebook URL</Label>
                     <Input
                       value={editingSettings?.facebook ?? ""}
-                      onChange={(e) =>
-                        setEditingSettings((prev) => ({ ...prev, facebook: e.target.value }))
-                      }
+                      onChange={(e) => setEditingSettings((prev) => ({ ...prev, facebook: e.target.value }))}
                     />
                   </div>
                   <div>
                     <Label>Instagram URL</Label>
                     <Input
                       value={editingSettings?.instagram ?? ""}
-                      onChange={(e) =>
-                        setEditingSettings((prev) => ({ ...prev, instagram: e.target.value }))
-                      }
+                      onChange={(e) => setEditingSettings((prev) => ({ ...prev, instagram: e.target.value }))}
                     />
                   </div>
                   <div>
                     <Label>Twitter URL</Label>
                     <Input
                       value={editingSettings?.twitter ?? ""}
-                      onChange={(e) =>
-                        setEditingSettings((prev) => ({ ...prev, twitter: e.target.value }))
-                      }
+                      onChange={(e) => setEditingSettings((prev) => ({ ...prev, twitter: e.target.value }))}
                     />
                   </div>
-                  {/* B5 FIX: Explicit Save button — Firestore write happens once here */}
                   <div className="flex justify-start pt-2">
                     <Button onClick={handleSaveSettings}>
                       <Save className="mr-2 h-4 w-4" />Save Settings
@@ -504,8 +524,7 @@ export default function Admin() {
                 </CardContent>
               </Card>
 
-              {/* Google Reviews API Key */}
-              <Card>
+              <Card className="mt-6">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
@@ -666,132 +685,111 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="menu">
-  {/* Existing menu management card */}
-  <Card>
-    <CardHeader className="flex justify-between items-center">
-      <CardTitle>Manage Menu</CardTitle>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button><Plus /> Add Item</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Menu Item</DialogTitle>
-            <DialogDescription className="sr-only">Fill in the form to add a new menu item.</DialogDescription>
-          </DialogHeader>
-          <MenuItemForm item={{}} onSubmit={async (item) => {
-            await addMenuItem(item as Omit<MenuItem, "id">);
-            alert("Item added!");
-          }} />
-        </DialogContent>
-      </Dialog>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      {["starters", "mains", "desserts", "drinks"].map((cat) => (
-        <div key={cat}>
-          <h3 className="font-bold capitalize text-lg mb-2">{cat}</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            {(siteContent.menuItems ?? []).filter((i) => i.category === cat).map((item) => (
-              <Card key={item.id} className="p-4">
-                <h4 className="font-semibold">{item.name}</h4>
-                <p>{item.price}</p>
-                <div className="flex gap-2 mt-2">
+              {/* Existing menu management card */}
+              <Card>
+                <CardHeader className="flex justify-between items-center">
+                  <CardTitle>Manage Menu</CardTitle>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm"><Edit /></Button>
+                      <Button><Plus /> Add Item</Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Edit {item.name}</DialogTitle>
-                        <DialogDescription className="sr-only">Update the details for this menu item.</DialogDescription>
+                        <DialogTitle>Add Menu Item</DialogTitle>
+                        <DialogDescription className="sr-only">Fill in the form to add a new menu item.</DialogDescription>
                       </DialogHeader>
-                      <MenuItemForm item={item} onSubmit={async (updates) => {
-                        await updateMenuItem(item.id, updates);
-                        alert("Item updated!");
+                      <MenuItemForm item={{}} onSubmit={async (item) => {
+                        await addMenuItem(item as Omit<MenuItem, "id">);
+                        alert("Item added!");
                       }} />
                     </DialogContent>
                   </Dialog>
-                  <Button variant="destructive" size="sm" onClick={async () => {
-                    if (confirm("Delete?")) await deleteMenuItem(item.id);
-                  }}>
-                    <Trash2 />
-                  </Button>
-                </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Object.entries(menuItemsByCategory).map(([category, items]) => (
+                    <div key={category}>
+                      <h3 className="font-bold capitalize text-lg mb-2">{category}</h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {items.map((item) => (
+                          <Card key={item.id} className="p-4">
+                            <h4 className="font-semibold">{item.name}</h4>
+                            <p>{item.price}</p>
+                            <div className="flex gap-2 mt-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm"><Edit /></Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Edit {item.name}</DialogTitle>
+                                    <DialogDescription className="sr-only">Update the details for this menu item.</DialogDescription>
+                                  </DialogHeader>
+                                  <MenuItemForm item={item} onSubmit={async (updates) => {
+                                    await updateMenuItem(item.id, updates);
+                                    alert("Item updated!");
+                                  }} />
+                                </DialogContent>
+                              </Dialog>
+                              <Button variant="destructive" size="sm" onClick={async () => {
+                                if (confirm("Delete?")) await deleteMenuItem(item.id);
+                              }}>
+                                <Trash2 />
+                              </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
-      ))}
-    </CardContent>
-  </Card>
 
-  {/* NEW: JSON Import Card */}
-  <Card className="mt-8">
-    <CardHeader>
-      <CardTitle>Import Full Menu from JSON</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-4">
-        <p className="text-sm text-gray-600">
-          Upload a <strong>.json</strong> file containing an array of menu items.
-          <br />
-          Format: <code className="text-xs">[{"name, price, category, description, featured, image"}]</code>
-          <br />
-          The current menu will be <strong>replaced</strong> with the imported data.
-        </p>
-        <input
-          type="file"
-          accept="application/json"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
+              {/* NEW: JSON Import Card */}
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle>Import Full Menu from JSON</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      Upload a <strong>.json</strong> file containing an array of menu items.
+                      <br />
+                      Format: <code className="text-xs">[{"name, price, category, description, featured, image"}]</code>
+                      <br />
+                      The current menu will be <strong>replaced</strong> with the imported data.
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="file"
+                        accept="application/json"
+                        onChange={handleMenuImport}
+                        disabled={importing}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-aussie-orange file:text-white hover:file:bg-aussie-burnt-red disabled:opacity-50"
+                      />
+                      {importing && <Loader2 className="h-5 w-5 animate-spin text-aussie-orange" />}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-            // Show a loading indicator (you can set a state if you prefer)
-            const originalButtonText = (e.target.nextElementSibling as HTMLElement)?.innerText;
-            if (e.target.nextElementSibling) {
-              (e.target.nextElementSibling as HTMLElement).innerText = "Importing...";
-            }
+            <TabsContent value="events">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new event.</DialogDescription></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }} /></DialogContent></Dialog></CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this event.</DialogDescription></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteEvent(event.id); }}><Trash2 /></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-            try {
-              const text = await file.text();
-              const imported = JSON.parse(text);
-              if (!Array.isArray(imported)) throw new Error("File must contain an array of menu items.");
-
-              // Validate and normalize each item
-              const validatedItems = imported.map((item, idx) => {
-                if (!item.name || !item.price || !item.category) {
-                  throw new Error(`Item at index ${idx} missing name, price, or category.`);
-                }
-                // Add an id if missing
-                if (!item.id) {
-                  item.id = `import-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 6)}`;
-                }
-                // Ensure optional fields exist
-                if (!item.description) item.description = "";
-                if (!item.image) item.image = "/placeholder.svg";
-                if (typeof item.featured !== "boolean") item.featured = false;
-                return item;
-              });
-
-              // Replace all menu items
-              await updateSiteContent({ menuItems: validatedItems });
-              alert(`✅ Successfully imported ${validatedItems.length} menu items.`);
-            } catch (err: any) {
-              alert(`❌ Import failed: ${err.message}`);
-            } finally {
-              // Reset file input and button text
-              e.target.value = "";
-              if (e.target.nextElementSibling) {
-                (e.target.nextElementSibling as HTMLElement).innerText = originalButtonText || "Import";
-              }
-            }
-          }}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-aussie-orange file:text-white hover:file:bg-aussie-burnt-red"
-        />
-      </div>
-    </CardContent>
-  </Card>
-</TabsContent>
+            <TabsContent value="promotions">
+              <Card>
+                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Promotions</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Promotion</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Promotion</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new promotion.</DialogDescription></DialogHeader><PromotionForm promotion={{}} onSubmit={async (promo) => { await addPromotion(promo as Omit<Promotion, "id">); alert("Promotion added!"); }} /></DialogContent></Dialog></CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-4">
+                  {(siteContent.promotions ?? []).map((promo) => (<Card key={promo.id} className="p-4"><h3 className="font-bold">{promo.title}</h3><p>{promo.subtitle}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {promo.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this promotion.</DialogDescription></DialogHeader><PromotionForm promotion={promo} onSubmit={async (updates) => { await updatePromotion(promo.id, updates); alert("Promotion updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deletePromotion(promo.id); }}><Trash2 /></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           </Tabs>
         </div>
