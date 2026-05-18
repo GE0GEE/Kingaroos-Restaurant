@@ -455,6 +455,50 @@ export default function Admin() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Google Reviews API Key */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                    Google Reviews
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-brown-500">
+                    Paste your <strong>Google Places API key</strong> here to show live reviews on the home page.
+                    Get one at{" "}
+                    <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer"
+                      className="text-aussie-orange underline">console.cloud.google.com</a>
+                    {" "}— enable the <em>Places API (New)</em>.
+                  </p>
+                  <div>
+                    <Label>API Key</Label>
+                    <Input
+                      type="password"
+                      placeholder="AIza..."
+                      value={editingTexts?.googleApiKey ?? ""}
+                      onChange={(e) => setEditingTexts((prev) => ({ ...prev, googleApiKey: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Place ID</Label>
+                    <Input
+                      placeholder="ChIJ..."
+                      value={editingTexts?.googlePlaceId ?? "ChIJz2IwupfmnzMR0EeQmgCd79o"}
+                      onChange={(e) => setEditingTexts((prev) => ({ ...prev, googlePlaceId: e.target.value }))}
+                    />
+                    <p className="text-xs text-brown-400 mt-1">
+                      Pre-filled with Kingaroo's Place ID. Find yours at{" "}
+                      <a href="https://developers.google.com/maps/documentation/javascript/place-id" target="_blank" rel="noopener noreferrer"
+                        className="text-aussie-orange underline">Place ID Finder</a>.
+                    </p>
+                  </div>
+                  <Button onClick={handleSaveTexts}>
+                    <Save className="mr-2 h-4 w-4" />Save &amp; Activate
+                  </Button>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="images">
