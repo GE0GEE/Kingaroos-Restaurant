@@ -53,6 +53,7 @@ export interface Promotion { id: string; title: string; subtitle: string; detail
 
 export interface SiteContent {
   logoImage: string;
+  faviconImage: string;
   theme: "light" | "dark";
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
@@ -75,6 +76,7 @@ export interface SiteContent {
 // --- CORRECTED defaultSiteContent with 3 HERO IMAGES ---
 const defaultSiteContent: SiteContent = {
   logoImage: "/placeholder.svg",
+  faviconImage: "",
   theme: "light",
   socialLinks: { facebook: "#", instagram: "#", twitter: "#" },
   heroImages: [
@@ -217,6 +219,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
                 serverContent.welcomeImages && serverContent.welcomeImages.length > 0
                   ? serverContent.welcomeImages
                   : defaultSiteContent.welcomeImages,
+              faviconImage: serverContent.faviconImage ?? defaultSiteContent.faviconImage,
               aboutImages: { ...defaultSiteContent.aboutImages, ...(serverContent.aboutImages || {}) },
               siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
               siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
