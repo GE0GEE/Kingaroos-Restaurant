@@ -82,19 +82,49 @@ interface ImageInputProps {
 }
 
 function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProcessing }: ImageInputProps) {
+  const [urlInput, setUrlInput] = useState(value?.startsWith("http") ? value : "");
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    if (value?.startsWith("http")) setUrlInput(value);
+    setImgError(false);
+  }, [value]);
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUrlInput(e.target.value);
+    setImgError(false);
+    onUrlChange(e);
+  };
+
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
       <Input type="file" accept="image/*" onChange={onFileChange} disabled={isProcessing} />
-      <Input type="text" placeholder="Or paste image URL" value={value?.startsWith("http") ? value : ""} onChange={onUrlChange} />
+      <Input type="text" placeholder="Or paste image URL" value={urlInput} onChange={handleUrlChange} />
       {value && (
         <div className="relative mt-2">
-          <img src={value} alt={label} className="w-full h-32 object-cover rounded-md" />
+          {imgError ? (
+            <div className="w-full h-32 rounded-md bg-gray-100 border border-dashed border-gray-300 flex flex-col items-center justify-center text-center px-3 gap-1">
+              <p className="text-xs font-semibold text-red-500">Image failed to load</p>
+              <p className="text-[11px] text-gray-500 leading-snug">
+                This host blocks direct linking. Try uploading the file instead, or use a direct image URL ending in .jpg or .png.
+              </p>
+            </div>
+          ) : (
+            <img
+              src={value}
+              alt={label}
+              className="w-full h-32 object-cover rounded-md"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={() => setImgError(true)}
+            />
+          )}
           <Button
             variant="destructive"
             size="icon"
             className="absolute top-1 right-1 h-7 w-7"
-            onClick={onRemove}
+            onClick={() => { onRemove(); setUrlInput(""); setImgError(false); }}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
