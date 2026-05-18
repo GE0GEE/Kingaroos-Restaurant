@@ -70,12 +70,12 @@ function PopularTimes() {
           </button>
         ))}
       </div>
-      <div className="flex items-end gap-[3px] h-14 mb-1">
+      <div className="flex items-end gap-[3px] mb-1" style={{ height: 56 }}>
         {hours.map((pct, i) => (
-          <div key={i} className="flex-1 flex flex-col justify-end">
+          <div key={i} className="flex-1 flex flex-col justify-end" style={{ height: "100%" }}>
             <div className={`rounded-sm transition-all ${
               selected === todayKey && i === now ? "bg-aussie-orange" : pct > 0 ? "bg-aussie-orange/35" : ""
-            }`} style={{ height: `${pct}%` }} />
+            }`} style={{ height: pct > 0 ? `${Math.max(pct, 4)}%` : 0 }} />
           </div>
         ))}
       </div>
@@ -222,7 +222,7 @@ export function GoogleReviewsSection() {
                     </CardContent>
                   </Card>
                 ))}
-                <a href={`https://www.google.com/maps/place/?q=place_id:${placeId}`} target="_blank" rel="noopener noreferrer"
+                <a href={`https://www.google.com/maps/search/?api=1&query=Kingaroo%27s+Seaview+Resto+Bar&query_place_id=${placeId}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 text-sm text-aussie-orange font-semibold hover:underline pt-2">
                   See all reviews on Google <ExternalLink size={14} />
                 </a>
