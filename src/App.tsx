@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,22 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Dynamically updates the browser tab icon from Firebase
+function FaviconUpdater() {
+  const { siteContent } = useAdmin();
+  useEffect(() => {
+    if (!siteContent.faviconImage) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = siteContent.faviconImage;
+  }, [siteContent.faviconImage]);
+  return null;
+}
+
 function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
   const { isLoggedIn } = useAdmin();
   return isLoggedIn ? <>{children}</> : <Navigate to="/contact" replace />;
@@ -27,6 +44,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AdminProvider>
+        <FaviconUpdater />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
