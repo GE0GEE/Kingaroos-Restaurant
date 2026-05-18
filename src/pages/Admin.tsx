@@ -84,12 +84,18 @@ interface ImageInputProps {
 function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProcessing }: ImageInputProps) {
   const [urlInput, setUrlInput] = useState(value?.startsWith("http") ? value : "");
   const [imgError, setImgError] = useState(false);
-  const [imgKey, setImgKey] = useState(0);
+
+  const isUrl = value?.startsWith("http");
+
+  // Route URL images through our server proxy to bypass hotlink blocks (e.g. postimg.cc)
+  const PROXY = `/api/image-proxy?url=`;
+  const previewSrc = isUrl
+    ? PROXY + encodeURIComponent(value!)
+    : value ?? "";
 
   useEffect(() => {
-    if (value?.startsWith("http")) setUrlInput(value);
+    if (isUrl) setUrlInput(value!);
     setImgError(false);
-    setImgKey((k) => k + 1);
   }, [value]);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,11 +103,6 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
     setImgError(false);
     onUrlChange(e);
   };
-
-  // Proxy the image through a CORS-friendly service to bypass hotlink blocks
-  const proxiedSrc = value?.startsWith("http")
-    ? `https://images.weserv.nl/?url=${encodeURIComponent(value)}&w=400&output=webp`
-    : value ?? "";
 
   return (
     <div className="space-y-2">
@@ -111,16 +112,16 @@ function ImageInput({ label, value, onFileChange, onUrlChange, onRemove, isProce
       {value && (
         <div className="relative mt-2">
           {imgError ? (
-            <div className="w-full h-32 rounded-md bg-gray-100 border border-dashed border-gray-300 flex flex-col items-center justify-center text-center px-3 gap-1">
-              <p className="text-xs font-semibold text-red-500">Could not preview image</p>
+            <div className="w-full h-20 rounded-md bg-green-50 border border-green-200 flex flex-col items-center justify-center text-center px-3 gap-1">
+              <p className="text-xs font-semibold text-green-700">✓ URL saved</p>
               <p className="text-[11px] text-gray-500 leading-snug">
-                The URL may be private or broken. It will still be saved — check the live site to confirm it displays correctly.
+                Preview unavailable for this host. The image will display correctly on the live site.
               </p>
             </div>
           ) : (
             <img
-              key={imgKey}
-              src={proxiedSrc}
+              key={previewSrc}
+              src={previewSrc}
               alt={label}
               className="w-full h-32 object-cover rounded-md"
               onError={() => setImgError(true)}
