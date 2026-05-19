@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
 import {
   Dialog,
@@ -15,7 +15,6 @@ export function Footer() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const isContactPage = location.pathname === "/contact";
 
@@ -30,23 +29,9 @@ export function Footer() {
     setLoading(true);
     setError("");
     try {
-      const success = await login();
-      if (success) {
-        setShowLoginDialog(false);
-        navigate("/admin");
-      } else {
-        setError("Access denied. Your Google account is not authorised for this admin panel.");
-      }
+      await login(); // sets sessionStorage flag then redirects — page navigates away
     } catch (err: any) {
-      const code = err?.code ?? "";
-      if (code === "auth/popup-blocked") {
-        setError("Popup was blocked. Please allow popups for this site and try again.");
-      } else if (code === "auth/popup-closed-by-user") {
-        setError("Sign-in cancelled.");
-      } else {
-        setError(`Sign-in failed: ${err?.message ?? code ?? "Please try again."}`);
-      }
-    } finally {
+      setError(err?.message ?? "Sign-in failed. Please try again.");
       setLoading(false);
     }
   };
@@ -168,7 +153,7 @@ export function Footer() {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
               )}
-              {loading ? "Signing in…" : "Sign in with Google"}
+              {loading ? "Redirecting to Google…" : "Sign in with Google"}
             </Button>
 
             {error && (
