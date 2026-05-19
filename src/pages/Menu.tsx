@@ -1,170 +1,309 @@
-import { Layout } from "@/components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useAdmin } from "@/contexts/AdminContext";
-import { Heart } from "lucide-react";
-import { FoodIcon } from "@/components/FoodIcon";
+import { useState, useMemo } from "react";
 
-export default function Menu() {
-  const { siteContent, loading } = useAdmin();
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface MenuItem {
+  id: string;
+  category: string;
+  name: string;
+  price: string;
+  description: string;
+  featured: boolean;
+  image: string;
+}
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <FoodIcon className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading menu...</p>
-          </div>
+interface MenuPageProps {
+  menuItems: MenuItem[];
+}
+
+// ─── Category Config ──────────────────────────────────────────────────────────
+const MAIN_CATEGORIES = [
+  { id: "food", label: "Food" },
+  { id: "drinks", label: "Drinks" },
+] as const;
+
+type MainCategoryId = "food" | "drinks";
+
+interface SubCategory {
+  id: string;
+  label: string;
+  categories: string[];
+}
+
+const SUB_CATEGORIES: Record<MainCategoryId, SubCategory[]> = {
+  food: [
+    { id: "all-food", label: "All Food", categories: ["soups", "appetizers", "sizzlers", "salads", "mains", "noodles", "breakfast", "desserts"] },
+    { id: "soups", label: "Soups", categories: ["soups"] },
+    { id: "appetizers", label: "Appetizers", categories: ["appetizers", "sizzlers", "salads"] },
+    { id: "mains", label: "Mains", categories: ["mains", "noodles", "breakfast"] },
+    { id: "desserts", label: "Desserts", categories: ["desserts"] },
+  ],
+  drinks: [
+    { id: "all-drinks", label: "All Drinks", categories: ["cocktails", "shots", "beers", "wines", "liquor", "non-alcoholic", "hot-drinks"] },
+    { id: "cocktails", label: "Cocktails", categories: ["cocktails"] },
+    { id: "shots", label: "Shots & Spirits", categories: ["shots"] },
+    { id: "beers", label: "Beers", categories: ["beers"] },
+    { id: "wines", label: "Wines", categories: ["wines"] },
+    { id: "liquor", label: "Liquor", categories: ["liquor"] },
+    { id: "non-alcoholic", label: "Non-Alcoholic", categories: ["non-alcoholic", "hot-drinks"] },
+  ],
+};
+
+// ─── Card Component ───────────────────────────────────────────────────────────
+function MenuCard({ item }: { item: MenuItem }) {
+  return (
+    <div className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-stone-100">
+      {/* Image */}
+      <div className="relative h-44 overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src =
+              "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop";
+          }}
+        />
+        {item.featured && (
+          <span className="absolute top-3 left-3 bg-amber-400 text-amber-900 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow">
+            ★ Featured
+          </span>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-stone-800 text-[15px] leading-snug flex-1">
+            {item.name}
+          </h3>
+          <span className="text-amber-600 font-bold text-[15px] whitespace-nowrap">
+            {item.price}
+          </span>
         </div>
-      </Layout>
-    );
-  }
-
-  const groupedItems = siteContent.menuItems.reduce(
-    (acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
-      }
-      acc[item.category].push(item);
-      return acc;
-    },
-    {} as Record<string, typeof siteContent.menuItems>,
+        <p className="mt-1.5 text-stone-500 text-[13px] leading-relaxed line-clamp-2">
+          {item.description}
+        </p>
+      </div>
+    </div>
   );
+}
 
-  const sectionTitles = {
-    starters: "Starters",
-    mains: "Mains",
-    desserts: "Desserts",
-    drinks: "Drinks",
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function MenuPage({ menuItems }: MenuPageProps) {
+  const [search, setSearch] = useState("");
+  const [activeMain, setActiveMain] = useState<MainCategoryId>("food");
+  const [activeSub, setActiveSub] = useState("all-food");
+
+  // When switching main category, reset sub to "all-*"
+  const handleMainChange = (main: MainCategoryId) => {
+    setActiveMain(main);
+    setActiveSub(main === "food" ? "all-food" : "all-drinks");
+    setSearch("");
   };
 
-  return (
-    <Layout>
-      {/* Header */}
-      <section className="bg-gradient-to-r from-sand-200 to-brown-200 py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="font-heading text-5xl font-bold text-brown-800 mb-4">
-            {siteContent.siteTexts.menuPageTitle}
-          </h1>
-          <p className="font-body text-xl text-brown-600 max-w-2xl mx-auto">
-            {siteContent.siteTexts.menuPageSubtitle}
-          </p>
-        </div>
-      </section>
+  const subCategories = SUB_CATEGORIES[activeMain];
 
-      {/* Menu Navigation */}
-      <section className="bg-cream-100 py-8 sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-4">
-            {Object.entries(sectionTitles).map(([key, title]) => (
-              <a
-                key={key}
-                href={`#${key}`}
-                className="font-body font-semibold text-brown-700 hover:text-aussie-orange transition-colors px-4 py-2 rounded-full hover:bg-sand-200"
+  const currentSubCategories =
+    subCategories.find((s) => s.id === activeSub)?.categories ?? [];
+
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return menuItems.filter((item) => {
+      const inSub = currentSubCategories.includes(item.category);
+      if (!inSub) return false;
+      if (!q) return true;
+      return (
+        item.name.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q)
+      );
+    });
+  }, [menuItems, currentSubCategories, search]);
+
+  // Group by raw category for display when "all" is active
+  const isAllActive =
+    activeSub === "all-food" || activeSub === "all-drinks";
+
+  const categoryLabel: Record<string, string> = {
+    soups: "Soups",
+    appetizers: "Appetizers",
+    sizzlers: "Sizzlers",
+    salads: "Salads",
+    mains: "Main Dishes",
+    noodles: "Noodles & Pasta",
+    breakfast: "Breakfast",
+    desserts: "Desserts",
+    cocktails: "Cocktails",
+    shots: "Shots & Spirits",
+    beers: "Beers",
+    wines: "Wines",
+    liquor: "Liquor",
+    "non-alcoholic": "Non-Alcoholic",
+    "hot-drinks": "Hot & Cold Drinks",
+  };
+
+  // Group items by category
+  const grouped = useMemo(() => {
+    const map = new Map<string, MenuItem[]>();
+    for (const item of filteredItems) {
+      if (!map.has(item.category)) map.set(item.category, []);
+      map.get(item.category)!.push(item);
+    }
+    // Preserve the order of currentSubCategories
+    const ordered = new Map<string, MenuItem[]>();
+    for (const cat of currentSubCategories) {
+      if (map.has(cat)) ordered.set(cat, map.get(cat)!);
+    }
+    return ordered;
+  }, [filteredItems, currentSubCategories]);
+
+  return (
+    <div className="min-h-screen bg-stone-50">
+      {/* ── Hero / Header ── */}
+      <div className="relative bg-stone-900 text-white py-16 px-4 text-center overflow-hidden">
+        {/* decorative blobs */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
+          <div className="absolute -top-16 -left-16 w-80 h-80 rounded-full bg-amber-400 blur-3xl" />
+          <div className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-amber-600 blur-3xl" />
+        </div>
+        <h1 className="relative text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
+          Our Menu
+        </h1>
+        <p className="relative text-stone-400 text-base md:text-lg max-w-md mx-auto">
+          Fresh ingredients, bold flavors, unforgettable drinks.
+        </p>
+
+        {/* Search */}
+        <div className="relative mt-8 max-w-md mx-auto">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search dishes or drinks…"
+            className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition text-sm backdrop-blur-sm"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white transition"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Sticky Category Bar ── */}
+      <div className="sticky top-0 z-20 bg-white shadow-sm border-b border-stone-100">
+        {/* Main tabs */}
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex gap-1 pt-3">
+            {MAIN_CATEGORIES.map((main) => (
+              <button
+                key={main.id}
+                onClick={() => handleMainChange(main.id)}
+                className={`px-6 py-2.5 text-sm font-semibold rounded-t-lg transition-all duration-200 ${
+                  activeMain === main.id
+                    ? "bg-stone-900 text-white"
+                    : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+                }`}
               >
-                {title}
-              </a>
+                {main.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Sub-category pills */}
+          <div className="flex gap-2 py-3 overflow-x-auto scrollbar-hide">
+            {subCategories.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => {
+                  setActiveSub(sub.id);
+                  setSearch("");
+                }}
+                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 flex-shrink-0 ${
+                  activeSub === sub.id
+                    ? "bg-amber-400 text-amber-900 shadow-sm"
+                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                }`}
+              >
+                {sub.label}
+              </button>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Menu Sections */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto space-y-16">
-          {Object.entries(sectionTitles).map(([category, title]) => {
-            const items = groupedItems[category] || [];
-            if (items.length === 0) return null;
-
-            return (
-              <div key={category} id={category} className="scroll-mt-32">
-                <h2 className="font-heading text-4xl font-bold text-brown-800 text-center mb-12">
-                  {title}
-                </h2>
-                <div className="grid gap-8">
-                  {items.map((item) => (
-                    <Card
-                      key={item.id}
-                      className={`border-sand-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden ${
-                        item.featured ? "ring-2 ring-aussie-orange" : ""
-                      }`}
-                    >
-                      <div className="flex flex-col md:flex-row gap-4">
-                        {/* Compact Image Section */}
-                        <div className="flex-shrink-0">
-                          <div className="w-full md:w-32 h-24 md:h-32">
-                            {item.image && item.image !== "/placeholder.svg" ? (
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-full h-full object-cover rounded-md border border-sand-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-sand-200 flex items-center justify-center rounded-md border border-sand-300">
-                                <div className="text-center">
-                                  <Heart className="h-6 w-6 text-brown-400 mx-auto" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Content Section */}
-                        <CardContent className="flex-1 p-6 flex flex-col justify-center">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <h3 className="font-heading text-2xl font-bold text-brown-800">
-                                  {item.name}
-                                </h3>
-                                {item.featured && (
-                                  <Badge className="bg-aussie-orange text-white font-body text-xs">
-                                    House Special
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="font-body text-brown-600 leading-relaxed text-lg">
-                                {item.description}
-                              </p>
-                            </div>
-                            <div className="ml-6 text-right">
-                              <span className="font-heading text-2xl font-bold text-aussie-orange">
-                                {item.price}
-                              </span>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="bg-aussie-orange py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-white mb-4">
-            {siteContent.siteTexts.menuReadyToDineTitle}
-          </h2>
-          <p className="font-body text-xl text-cream-100 mb-8">
-            {siteContent.siteTexts.menuReadyToDineText}
+      {/* ── Content ── */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Search results label */}
+        {search && (
+          <p className="text-stone-500 text-sm mb-6">
+            {filteredItems.length === 0
+              ? `No results for "${search}"`
+              : `${filteredItems.length} result${filteredItems.length !== 1 ? "s" : ""} for "${search}"`}
           </p>
-          <div className="space-y-4">
-            <p className="font-body text-cream-100">
-              📞 {siteContent.siteTexts.menuCallText}{" "}
-              <span className="font-semibold">{siteContent.siteTexts.homePhone}</span>
-            </p>
-            <p className="font-body text-cream-100">
-              📍 {siteContent.siteTexts.menuAddressText}
-            </p>
+        )}
+
+        {filteredItems.length === 0 && (
+          <div className="text-center py-24 text-stone-400">
+            <div className="text-5xl mb-4">🍽️</div>
+            <p className="text-lg font-medium">Nothing found</p>
+            <p className="text-sm mt-1">Try a different search or category.</p>
           </div>
-        </div>
-      </section>
-    </Layout>
+        )}
+
+        {/* Grouped sections */}
+        {isAllActive || search ? (
+          // Grouped by raw category
+          Array.from(grouped.entries()).map(([cat, items]) => (
+            <section key={cat} className="mb-12">
+              <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-3">
+                <span>{categoryLabel[cat] ?? cat}</span>
+                <span className="text-[13px] font-normal text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">
+                  {items.length}
+                </span>
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {items.map((item) => (
+                  <MenuCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+          ))
+        ) : (
+          // Single subcategory — flat grid, still grouped by raw cat
+          Array.from(grouped.entries()).map(([cat, items]) => (
+            <section key={cat} className="mb-12">
+              {/* Only show sub-header if the sub-cat spans multiple raw cats */}
+              {subCategories.find((s) => s.id === activeSub)!.categories.length > 1 && (
+                <h2 className="text-xl font-bold text-stone-800 mb-4 flex items-center gap-3">
+                  <span>{categoryLabel[cat] ?? cat}</span>
+                  <span className="text-[13px] font-normal text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">
+                    {items.length}
+                  </span>
+                </h2>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {items.map((item) => (
+                  <MenuCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </div>
+
+      {/* ── Footer note ── */}
+      <div className="text-center text-stone-400 text-xs pb-10">
+        Prices are in Philippine Peso (₱) and subject to change.
+      </div>
+    </div>
   );
 }
