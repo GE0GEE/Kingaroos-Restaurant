@@ -29,9 +29,15 @@ export function Footer() {
     setLoading(true);
     setError("");
     try {
-      await login(); // sets sessionStorage flag then redirects — page navigates away
+      await login();
     } catch (err: any) {
-      setError(err?.message ?? "Sign-in failed. Please try again.");
+      const code = err?.code ?? "";
+      const msg = err?.message ?? "";
+      if (code === "auth/unauthorized-domain") {
+        setError("This domain is not authorised in Firebase. Add it to Authentication → Settings → Authorized domains in the Firebase Console.");
+      } else {
+        setError(code ? `${code}: ${msg}` : msg || "Sign-in failed. Please try again.");
+      }
       setLoading(false);
     }
   };
