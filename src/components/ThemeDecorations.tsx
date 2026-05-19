@@ -1,9 +1,10 @@
 import { useTheme } from "@/contexts/ThemeContext";
 
 /**
- * Subtle SVG-based corner/edge decorations per theme.
- * No emojis, no falling content — just tasteful accents that frame the page
- * without interfering with readability.
+ * Subtle decorations per theme.
+ * Valentine's, Easter, Christmas = small static emojis scattered in corners (like the stars style)
+ * Others = SVG shapes in corners/edges
+ * Nothing moves across the screen. Nothing blocks text.
  */
 export function ThemeDecorations() {
   const { currentTheme } = useTheme();
@@ -18,9 +19,9 @@ export function ThemeDecorations() {
       <style>{decorationStyles}</style>
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
         {pattern === "fireworks" && <FireworksAccent primary={primary} secondary={secondary} accent={accent} />}
-        {pattern === "hearts" && <HeartsAccent primary={primary} secondary={secondary} />}
+        {pattern === "hearts" && <HeartsEmoji />}
         {pattern === "flowers" && <FlowersAccent primary={primary} secondary={secondary} accent={accent} />}
-        {pattern === "eggs" && <PastelAccent primary={primary} secondary={secondary} accent={accent} />}
+        {pattern === "eggs" && <EasterEmoji />}
         {pattern === "sun" && <SunAccent primary={primary} secondary={secondary} />}
         {pattern === "waves" && <WavesAccent primary={primary} secondary={secondary} />}
         {pattern === "stars" && <StarsAccent primary={primary} secondary={secondary} accent={accent} />}
@@ -28,13 +29,13 @@ export function ThemeDecorations() {
         {pattern === "books" && <SchoolAccent primary={primary} secondary={secondary} />}
         {pattern === "spooky" && <SpookyAccent primary={primary} secondary={secondary} />}
         {pattern === "harvest" && <HarvestAccent primary={primary} secondary={secondary} />}
-        {pattern === "snowflakes" && <SnowAccent primary={primary} secondary={secondary} />}
+        {pattern === "snowflakes" && <ChristmasEmoji />}
       </div>
     </>
   );
 }
 
-// === Animations (subtle, slow) ===
+// === Animations (subtle, slow — only for SVG accents) ===
 const decorationStyles = `
   @keyframes drift-slow {
     0%, 100% { transform: translate(0, 0) rotate(0deg); }
@@ -63,7 +64,103 @@ const decorationStyles = `
   .deco-twinkle { animation: twinkle-soft 3s ease-in-out infinite; }
 `;
 
-// === Reusable corner wrapper ===
+// =============================================================
+// EMOJI-BASED DECORATIONS (static, small, corners only)
+// Same style as "stars" — scattered in corners, transparent, no movement
+// =============================================================
+
+// 💕 Valentine's — small hearts scattered in corner regions
+function HeartsEmoji() {
+  const items = [
+    { top: "4%", left: "3%", size: 14 },
+    { top: "10%", left: "8%", size: 10 },
+    { top: "7%", left: "14%", size: 12 },
+    { top: "16%", left: "5%", size: 9 },
+    { top: "5%", right: "5%", size: 13 },
+    { top: "12%", right: "10%", size: 10 },
+    { top: "8%", right: "16%", size: 11 },
+    { top: "18%", right: "7%", size: 9 },
+    { bottom: "6%", left: "4%", size: 12 },
+    { bottom: "12%", left: "10%", size: 10 },
+    { bottom: "8%", left: "16%", size: 11 },
+    { bottom: "5%", right: "5%", size: 14 },
+    { bottom: "13%", right: "12%", size: 10 },
+    { bottom: "9%", right: "18%", size: 9 },
+  ];
+  return (
+    <>
+      {items.map((pos, i) => (
+        <div key={i} className="absolute" style={{ ...pos, opacity: 0.2, fontSize: `${pos.size}px` }}>
+          ♥
+        </div>
+      ))}
+    </>
+  );
+}
+
+// 🥚 Easter — small eggs scattered in corner regions
+function EasterEmoji() {
+  const items = [
+    { top: "4%", left: "4%", size: 14 },
+    { top: "11%", left: "9%", size: 11 },
+    { top: "6%", left: "15%", size: 12 },
+    { top: "17%", left: "6%", size: 10 },
+    { top: "5%", right: "6%", size: 13 },
+    { top: "13%", right: "11%", size: 10 },
+    { top: "8%", right: "17%", size: 11 },
+    { bottom: "5%", left: "5%", size: 13 },
+    { bottom: "12%", left: "11%", size: 10 },
+    { bottom: "7%", left: "17%", size: 11 },
+    { bottom: "6%", right: "4%", size: 14 },
+    { bottom: "14%", right: "10%", size: 10 },
+    { bottom: "9%", right: "16%", size: 12 },
+  ];
+  return (
+    <>
+      {items.map((pos, i) => (
+        <div key={i} className="absolute" style={{ ...pos, opacity: 0.18, fontSize: `${pos.size}px` }}>
+          {i % 2 === 0 ? "🥚" : "🐣"}
+        </div>
+      ))}
+    </>
+  );
+}
+
+// ❄️ Christmas — small snowflakes scattered in corner regions
+function ChristmasEmoji() {
+  const items = [
+    { top: "3%", left: "4%", size: 16 },
+    { top: "10%", left: "10%", size: 12 },
+    { top: "6%", left: "17%", size: 14 },
+    { top: "15%", left: "6%", size: 10 },
+    { top: "20%", left: "14%", size: 11 },
+    { top: "4%", right: "5%", size: 15 },
+    { top: "11%", right: "12%", size: 12 },
+    { top: "7%", right: "19%", size: 13 },
+    { top: "17%", right: "7%", size: 10 },
+    { bottom: "4%", left: "5%", size: 14 },
+    { bottom: "11%", left: "12%", size: 11 },
+    { bottom: "7%", left: "19%", size: 13 },
+    { bottom: "5%", right: "4%", size: 16 },
+    { bottom: "12%", right: "11%", size: 12 },
+    { bottom: "8%", right: "18%", size: 10 },
+    { bottom: "18%", right: "6%", size: 11 },
+  ];
+  return (
+    <>
+      {items.map((pos, i) => (
+        <div key={i} className="absolute" style={{ ...pos, opacity: 0.2, fontSize: `${pos.size}px` }}>
+          ❄
+        </div>
+      ))}
+    </>
+  );
+}
+
+// =============================================================
+// SVG-BASED DECORATIONS (corners/edges only)
+// =============================================================
+
 type Corner = "tl" | "tr" | "bl" | "br";
 const cornerClasses: Record<Corner, string> = {
   tl: "top-0 left-0",
@@ -119,36 +216,6 @@ function Burst({ color, size, flipped = false }: { color: string; size: number; 
   );
 }
 
-// === Valentine's — soft heart silhouettes in corners ===
-function HeartsAccent({ primary, secondary }: any) {
-  return (
-    <>
-      <CornerSlot corner="tl" className="deco-drift">
-        <Heart color={primary} size={120} />
-      </CornerSlot>
-      <CornerSlot corner="br" className="deco-drift">
-        <Heart color={secondary} size={160} />
-      </CornerSlot>
-      <CornerSlot corner="tr" className="deco-pulse">
-        <Heart color={primary} size={80} />
-      </CornerSlot>
-      <CornerSlot corner="bl" className="deco-pulse">
-        <Heart color={secondary} size={100} />
-      </CornerSlot>
-    </>
-  );
-}
-function Heart({ color, size }: { color: string; size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={{ opacity: 0.12 }}>
-      <path
-        d="M12 21s-7-4.5-9.5-9C1 9 2 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c4 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"
-        fill={color}
-      />
-    </svg>
-  );
-}
-
 // === Spring — floral wreath silhouettes ===
 function FlowersAccent({ primary, secondary, accent }: any) {
   return (
@@ -177,30 +244,6 @@ function Flower({ color, size }: { color: string; size: number }) {
         />
       ))}
       <circle cx="0" cy="0" r="8" fill={color} opacity="0.6" />
-    </svg>
-  );
-}
-
-// === Easter — pastel egg-shaped blobs ===
-function PastelAccent({ primary, secondary, accent }: any) {
-  return (
-    <>
-      <CornerSlot corner="tl" className="deco-drift">
-        <Egg color={primary} size={130} />
-      </CornerSlot>
-      <CornerSlot corner="br" className="deco-drift">
-        <Egg color={secondary} size={170} />
-      </CornerSlot>
-      <CornerSlot corner="tr" className="deco-pulse">
-        <Egg color={accent} size={90} />
-      </CornerSlot>
-    </>
-  );
-}
-function Egg({ color, size }: { color: string; size: number }) {
-  return (
-    <svg width={size} height={size * 1.3} viewBox="0 0 100 130" style={{ opacity: 0.12 }}>
-      <ellipse cx="50" cy="70" rx="40" ry="55" fill={color} />
     </svg>
   );
 }
@@ -246,18 +289,12 @@ function WavesAccent({ primary, secondary }: any) {
     <>
       <div className="absolute bottom-0 left-0 right-0 deco-wave" style={{ opacity: 0.15 }}>
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-32">
-          <path
-            d="M0,60 C150,100 350,0 600,60 C850,120 1050,20 1200,60 L1200,120 L0,120 Z"
-            fill={primary}
-          />
+          <path d="M0,60 C150,100 350,0 600,60 C850,120 1050,20 1200,60 L1200,120 L0,120 Z" fill={primary} />
         </svg>
       </div>
       <div className="absolute bottom-0 left-0 right-0 deco-wave" style={{ opacity: 0.2, animationDelay: "1.5s" }}>
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-24">
-          <path
-            d="M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z"
-            fill={secondary}
-          />
+          <path d="M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z" fill={secondary} />
         </svg>
       </div>
     </>
@@ -289,10 +326,7 @@ function StarsAccent({ primary, secondary, accent }: any) {
 function Star({ color, size }: { color: string; size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24">
-      <path
-        d="M12 2 L14.5 9 L22 9.5 L16 14 L18 21 L12 17 L6 21 L8 14 L2 9.5 L9.5 9 Z"
-        fill={color}
-      />
+      <path d="M12 2 L14.5 9 L22 9.5 L16 14 L18 21 L12 17 L6 21 L8 14 L2 9.5 L9.5 9 Z" fill={color} />
     </svg>
   );
 }
@@ -316,16 +350,13 @@ function LeavesAccent({ primary, secondary }: any) {
 function Leaf({ color, size }: { color: string; size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" style={{ opacity: 0.13 }}>
-      <path
-        d="M50 10 C20 20, 10 50, 20 80 C40 70, 70 50, 80 20 C70 15, 60 12, 50 10 Z"
-        fill={color}
-      />
+      <path d="M50 10 C20 20, 10 50, 20 80 C40 70, 70 50, 80 20 C70 15, 60 12, 50 10 Z" fill={color} />
       <path d="M50 10 C40 40, 30 60, 20 80" stroke={color} strokeWidth="1" fill="none" opacity="0.5" />
     </svg>
   );
 }
 
-// === Back to School — abstract notebook lines & pencil shapes ===
+// === Back to School — notebook lines & pencil ===
 function SchoolAccent({ primary, secondary }: any) {
   return (
     <>
@@ -352,7 +383,7 @@ function Pencil({ color, size }: { color: string; size: number }) {
   );
 }
 
-// === Halloween — spider webs in corners + crescent moon ===
+// === Halloween — spider webs + moon + bat ===
 function SpookyAccent({ primary, secondary }: any) {
   return (
     <>
@@ -375,22 +406,10 @@ function SpiderWeb({ color, size, flipped = false }: { color: string; size: numb
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" style={{ opacity: 0.18, transform: flipped ? "scaleX(-1)" : undefined }}>
       {[0, 22.5, 45, 67.5, 90].map((angle) => (
-        <line
-          key={angle}
-          x1="0" y1="0"
-          x2={Math.cos((angle * Math.PI) / 180) * 100}
-          y2={Math.sin((angle * Math.PI) / 180) * 100}
-          stroke={color} strokeWidth="0.8"
-        />
+        <line key={angle} x1="0" y1="0" x2={Math.cos((angle * Math.PI) / 180) * 100} y2={Math.sin((angle * Math.PI) / 180) * 100} stroke={color} strokeWidth="0.8" />
       ))}
       {[20, 40, 60, 80].map((r) => (
-        <path
-          key={r}
-          d={`M ${r} 0 A ${r} ${r} 0 0 1 0 ${r}`}
-          stroke={color}
-          strokeWidth="0.8"
-          fill="none"
-        />
+        <path key={r} d={`M ${r} 0 A ${r} ${r} 0 0 1 0 ${r}`} stroke={color} strokeWidth="0.8" fill="none" />
       ))}
     </svg>
   );
@@ -405,10 +424,7 @@ function Moon({ color, size }: { color: string; size: number }) {
 function Bat({ color, size }: { color: string; size: number }) {
   return (
     <svg width={size} height={size / 2} viewBox="0 0 100 50" style={{ opacity: 0.2 }}>
-      <path
-        d="M50 25 C40 10, 20 5, 5 15 C15 20, 20 30, 30 28 C35 30, 45 30, 50 35 C55 30, 65 30, 70 28 C80 30, 85 20, 95 15 C80 5, 60 10, 50 25 Z"
-        fill={color}
-      />
+      <path d="M50 25 C40 10, 20 5, 5 15 C15 20, 20 30, 30 28 C35 30, 45 30, 50 35 C55 30, 65 30, 70 28 C80 30, 85 20, 95 15 C80 5, 60 10, 50 25 Z" fill={color} />
     </svg>
   );
 }
@@ -433,60 +449,6 @@ function Wheat({ color, size, flipped = false }: { color: string; size: number; 
       {[20, 30, 40, 50, 60, 70].map((y, i) => (
         <g key={y}>
           <ellipse cx={i % 2 === 0 ? 18 : 32} cy={y} rx="4" ry="7" fill={color} transform={`rotate(${i % 2 === 0 ? -20 : 20} ${i % 2 === 0 ? 18 : 32} ${y})`} />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-// === Christmas — snowflakes scattered in corners + decorative pine sprig ===
-function SnowAccent({ primary, secondary }: any) {
-  const snowflakes = [
-    { top: "5%", left: "8%", size: 48, color: primary, delay: "0s" },
-    { top: "15%", left: "20%", size: 32, color: primary, delay: "1s" },
-    { top: "8%", right: "12%", size: 56, color: primary, delay: "0.5s" },
-    { top: "22%", right: "8%", size: 28, color: primary, delay: "1.5s" },
-    { bottom: "10%", left: "10%", size: 40, color: primary, delay: "0.7s" },
-    { bottom: "20%", left: "20%", size: 28, color: primary, delay: "1.3s" },
-    { bottom: "8%", right: "10%", size: 52, color: primary, delay: "0.3s" },
-    { bottom: "22%", right: "20%", size: 36, color: primary, delay: "1.8s" },
-  ];
-  return (
-    <>
-      {snowflakes.map((s, i) => (
-        <div key={i} className="absolute deco-twinkle" style={{ ...s, animationDelay: s.delay }}>
-          <Snowflake color={s.color as string} size={s.size as number} />
-        </div>
-      ))}
-      <CornerSlot corner="bl" className="deco-drift">
-        <PineSprig color={secondary} size={200} />
-      </CornerSlot>
-    </>
-  );
-}
-function Snowflake({ color, size }: { color: string; size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="-50 -50 100 100">
-      {[0, 60, 120].map((angle) => (
-        <g key={angle} transform={`rotate(${angle})`}>
-          <line x1="0" y1="-40" x2="0" y2="40" stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <line x1="-10" y1="-30" x2="0" y2="-40" stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <line x1="10" y1="-30" x2="0" y2="-40" stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <line x1="-10" y1="30" x2="0" y2="40" stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <line x1="10" y1="30" x2="0" y2="40" stroke={color} strokeWidth="2" strokeLinecap="round" />
-        </g>
-      ))}
-    </svg>
-  );
-}
-function PineSprig({ color, size }: { color: string; size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" style={{ opacity: 0.2, transform: "rotate(45deg)" }}>
-      <line x1="20" y1="80" x2="80" y2="20" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      {[25, 35, 45, 55, 65, 75].map((t) => (
-        <g key={t}>
-          <line x1={t} y1={100 - t} x2={t - 12} y2={100 - t - 12} stroke={color} strokeWidth="2" strokeLinecap="round" />
-          <line x1={t} y1={100 - t} x2={t + 12} y2={100 - t + 12} stroke={color} strokeWidth="2" strokeLinecap="round" />
         </g>
       ))}
     </svg>
