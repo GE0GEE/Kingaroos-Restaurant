@@ -27,6 +27,12 @@ body {
 .theme-text { color: var(--theme-text); }
 .theme-bg-text { background-color: var(--theme-text); }
 
+/* Banner shimmer animation (global so it works on first paint) */
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
