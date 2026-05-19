@@ -8,7 +8,8 @@ import {
 } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut,
   User,
@@ -133,7 +134,9 @@ const defaultSiteContent: SiteContent = {
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  login: () => Promise<boolean>;
+  justLoggedIn: boolean;
+  clearJustLoggedIn: () => void;
+  login: () => Promise<void>;
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
@@ -159,11 +162,30 @@ const MAX_SNAPSHOT_RETRIES = 3;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
   const [authReady, setAuthReady] = useState(false);
   const [dataReady, setDataReady] = useState(false);
   const loading = !authReady || !dataReady;
   const userRef = useRef<User | null>(null);
+
+  // --- Handle redirect result from signInWithRedirect ---
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          const email = result.user.email ?? "";
+          if (!ALLOWED_EMAILS.includes(email)) {
+            signOut(auth);
+          } else {
+            setJustLoggedIn(true);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Redirect result error:", error);
+      });
+  }, []);
 
   // --- Auth listener ---
   useEffect(() => {
@@ -246,22 +268,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Google Sign-In ---
-  const login = async (): Promise<boolean> => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user.email ?? "";
-      if (!ALLOWED_EMAILS.includes(email)) {
-        // Not on the allowlist — sign out immediately
-        await signOut(auth);
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      return false;
-    }
+  // --- Google Sign-In (redirect flow) ---
+  const login = async (): Promise<void> => {
+    await signInWithRedirect(auth, googleProvider);
+    // Page navigates away; execution does not continue here
   };
+
+  const clearJustLoggedIn = () => setJustLoggedIn(false);
 
   const logout = async () => { await signOut(auth); };
 
@@ -296,6 +309,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     <AdminContext.Provider
       value={{
         isLoggedIn: !!user,
+        justLoggedIn,
+        clearJustLoggedIn,
         login,
         logout,
         siteContent,
