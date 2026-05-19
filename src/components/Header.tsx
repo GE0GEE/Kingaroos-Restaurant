@@ -19,6 +19,7 @@ export function Header() {
     headerNavAbout: "About",
     headerNavDogRescue: "Rescue",
     headerNavContact: "Contact",
+    headerNavMerch: "Shop",
     siteName: "KINGAROOS",
     ...siteContent.siteTexts,
   };
@@ -27,6 +28,7 @@ export function Header() {
     { name: headerNavTexts.headerNavHome, href: "/" },
     { name: headerNavTexts.headerNavMenu, href: "/menu" },
     { name: headerNavTexts.headerNavEvents, href: "/events" },
+    { name: headerNavTexts.headerNavMerch, href: "/merch" },
     { name: headerNavTexts.headerNavPromotions, href: "/promotions" },
     { name: headerNavTexts.headerNavAbout, href: "/about" },
     { name: headerNavTexts.headerNavDogRescue, href: "/dog-rescue" },
