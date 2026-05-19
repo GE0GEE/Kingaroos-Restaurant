@@ -67,6 +67,15 @@ export interface SiteContent {
     forcedThemeId?: string | null;
     monthlyThemeEnabled?: Record<number, boolean>;
   };
+  customBanner?: {
+    enabled?: boolean;
+    text?: string;
+    subtitle?: string;
+    colorFrom?: string;
+    colorTo?: string;
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
 const defaultSiteContent: SiteContent = {
@@ -102,6 +111,15 @@ const defaultSiteContent: SiteContent = {
       0: true, 1: true, 2: true, 3: true, 4: true, 5: true,
       6: true, 7: true, 8: true, 9: true, 10: true, 11: true,
     },
+  },
+  customBanner: {
+    enabled: false,
+    text: "",
+    subtitle: "",
+    colorFrom: "#E67E22",
+    colorTo: "#C0392B",
+    startDate: "",
+    endDate: "",
   },
 };
 

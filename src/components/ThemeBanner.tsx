@@ -1,4 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAdmin } from "@/contexts/AdminContext";
 import { useState } from "react";
 import { X } from "lucide-react";
 
@@ -55,10 +56,28 @@ const THEME_MESSAGES: Record<string, { title: string; subtitle: string }> = {
 
 export function ThemeBanner() {
   const { currentTheme } = useTheme();
+  const { siteContent } = useAdmin();
+
+  // Check for custom banner first
+  const customBanner = siteContent.customBanner;
+
+  const now = new Date();
+  const isCustomBannerActive = customBanner?.enabled &&
+    customBanner.text &&
+    (!customBanner.startDate || new Date(customBanner.startDate) <= now) &&
+    (!customBanner.endDate || new Date(customBanner.endDate) >= now);
+
+  // Determine banner content and colors
+  const bannerTitle = isCustomBannerActive ? customBanner!.text! : THEME_MESSAGES[currentTheme.id]?.title;
+  const bannerSubtitle = isCustomBannerActive ? (customBanner!.subtitle || "") : (THEME_MESSAGES[currentTheme.id]?.subtitle || "");
+  const colorFrom = isCustomBannerActive ? (customBanner!.colorFrom || "#E67E22") : currentTheme.colors.primary;
+  const colorTo = isCustomBannerActive ? (customBanner!.colorTo || "#C0392B") : currentTheme.colors.secondary;
 
   // Use sessionStorage so dismiss persists across page navigation
   // but resets when the user refreshes the browser
-  const storageKey = `theme-banner-dismissed-${currentTheme.id}`;
+  const storageKey = isCustomBannerActive
+    ? "theme-banner-dismissed-custom"
+    : `theme-banner-dismissed-${currentTheme.id}`;
   const [dismissed, setDismissed] = useState(() => {
     try {
       return sessionStorage.getItem(storageKey) === "true";
@@ -76,10 +95,8 @@ export function ThemeBanner() {
     }
   };
 
-  const message = THEME_MESSAGES[currentTheme.id];
-
-  // Don't show for default theme or if dismissed
-  if (!message || currentTheme.id === "default" || dismissed) {
+  // Don't show if no content or dismissed
+  if (!bannerTitle || (!isCustomBannerActive && currentTheme.id === "default") || dismissed) {
     return null;
   }
 
@@ -87,21 +104,16 @@ export function ThemeBanner() {
     <div
       className="relative w-full text-white text-center py-2 px-4 text-sm font-body font-semibold shadow-md z-30 overflow-hidden"
       style={{
-        background: `linear-gradient(90deg, ${currentTheme.colors.primary}, ${currentTheme.colors.secondary}, ${currentTheme.colors.primary})`,
+        background: `linear-gradient(90deg, ${colorFrom}, ${colorTo}, ${colorFrom})`,
         backgroundSize: "200% 100%",
         animation: "shimmer 3s ease-in-out infinite",
       }}
     >
-      <style>{`
-        @keyframes shimmer {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-      `}</style>
-
       <div className="flex items-center justify-center gap-2 max-w-7xl mx-auto">
-        <span className="font-bold tracking-wide">{message.title}</span>
-        <span className="hidden sm:inline opacity-90">— {message.subtitle}</span>
+        <span className="font-bold tracking-wide">{bannerTitle}</span>
+        {bannerSubtitle && (
+          <span className="hidden sm:inline opacity-90">— {bannerSubtitle}</span>
+        )}
       </div>
 
       <button

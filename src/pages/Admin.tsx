@@ -691,6 +691,201 @@ function ThemesPanel() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Custom Banner */}
+      <Card>
+        <CardHeader>
+          <CardTitle>📢 Custom Banner</CardTitle>
+          <p className="text-sm text-brown-500">
+            Create a custom banner with your own text and colors. When active, it overrides the monthly theme banner. Set start and end dates to schedule it.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <CustomBannerForm />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// --- CUSTOM BANNER FORM ---
+const COLOR_PRESETS = [
+  { name: "Orange Fire", from: "#E67E22", to: "#C0392B" },
+  { name: "Ocean Blue", from: "#3B82F6", to: "#0EA5E9" },
+  { name: "Green Fresh", from: "#22C55E", to: "#16A34A" },
+  { name: "Purple Glow", from: "#8B5CF6", to: "#EC4899" },
+  { name: "Red Alert", from: "#EF4444", to: "#B91C1C" },
+  { name: "Gold Shine", from: "#EAB308", to: "#D97706" },
+  { name: "Teal Calm", from: "#14B8A6", to: "#0891B2" },
+  { name: "Pink Love", from: "#EC4899", to: "#F43F5E" },
+  { name: "Dark Night", from: "#374151", to: "#111827" },
+  { name: "Sunset", from: "#F97316", to: "#DB2777" },
+];
+
+function CustomBannerForm() {
+  const { siteContent, updateSiteContent } = useAdmin();
+  const banner = (siteContent as any).customBanner || {
+    enabled: false, text: "", subtitle: "", colorFrom: "#E67E22", colorTo: "#C0392B", startDate: "", endDate: "",
+  };
+
+  const [form, setForm] = useState(banner);
+
+  // Sync form state when Firebase data changes
+  useEffect(() => {
+    const updated = (siteContent as any).customBanner;
+    if (updated) setForm(updated);
+  }, [(siteContent as any).customBanner]);
+
+  const handleSave = async () => {
+    await updateSiteContent({ customBanner: form } as any);
+    alert("✅ Custom banner saved!");
+  };
+
+  const handleDisable = async () => {
+    await updateSiteContent({ customBanner: { ...form, enabled: false } } as any);
+    setForm((prev: any) => ({ ...prev, enabled: false }));
+    alert("✅ Custom banner disabled.");
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Preview */}
+      {form.text && (
+        <div className="rounded-lg overflow-hidden shadow-sm">
+          <p className="text-xs text-brown-400 mb-1 font-body">Preview:</p>
+          <div
+            className="relative w-full text-white text-center py-2 px-4 text-sm font-body font-semibold rounded-lg"
+            style={{
+              background: `linear-gradient(90deg, ${form.colorFrom}, ${form.colorTo}, ${form.colorFrom})`,
+              backgroundSize: "200% 100%",
+              animation: "shimmer 3s ease-in-out infinite",
+            }}
+          >
+            <span className="font-bold tracking-wide">{form.text}</span>
+            {form.subtitle && <span className="hidden sm:inline opacity-90"> — {form.subtitle}</span>}
+          </div>
+        </div>
+      )}
+
+      {/* Enable toggle */}
+      <div className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
+        <div>
+          <p className="font-body font-semibold text-brown-800 text-sm">Enable Custom Banner</p>
+          <p className="font-body text-xs text-brown-500">When enabled, this overrides the monthly theme banner</p>
+        </div>
+        <Switch checked={form.enabled || false} onCheckedChange={(val) => setForm((prev: any) => ({ ...prev, enabled: val }))} />
+      </div>
+
+      {/* Text fields */}
+      <div>
+        <Label>Banner Text *</Label>
+        <Input
+          value={form.text || ""}
+          placeholder="e.g. Grand Opening This Weekend!"
+          onChange={(e) => setForm((prev: any) => ({ ...prev, text: e.target.value }))}
+        />
+      </div>
+      <div>
+        <Label>Subtitle (optional)</Label>
+        <Input
+          value={form.subtitle || ""}
+          placeholder="e.g. 20% off all items"
+          onChange={(e) => setForm((prev: any) => ({ ...prev, subtitle: e.target.value }))}
+        />
+      </div>
+
+      {/* Color Presets */}
+      <div>
+        <Label className="mb-2 block">Color Preset</Label>
+        <div className="grid grid-cols-5 gap-2">
+          {COLOR_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => setForm((prev: any) => ({ ...prev, colorFrom: preset.from, colorTo: preset.to }))}
+              className={`rounded-lg h-10 border-2 transition-all ${
+                form.colorFrom === preset.from && form.colorTo === preset.to
+                  ? "border-brown-800 ring-2 ring-brown-400 scale-105"
+                  : "border-transparent hover:border-brown-300"
+              }`}
+              style={{ background: `linear-gradient(90deg, ${preset.from}, ${preset.to})` }}
+              title={preset.name}
+            />
+          ))}
+        </div>
+        <p className="text-xs text-brown-400 mt-1 font-body">Or set custom colors below:</p>
+      </div>
+
+      {/* Custom color pickers */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Color From</Label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={form.colorFrom || "#E67E22"}
+              onChange={(e) => setForm((prev: any) => ({ ...prev, colorFrom: e.target.value }))}
+              className="w-10 h-10 rounded border border-sand-200 cursor-pointer"
+            />
+            <Input
+              value={form.colorFrom || ""}
+              onChange={(e) => setForm((prev: any) => ({ ...prev, colorFrom: e.target.value }))}
+              className="flex-1"
+              placeholder="#E67E22"
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Color To</Label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={form.colorTo || "#C0392B"}
+              onChange={(e) => setForm((prev: any) => ({ ...prev, colorTo: e.target.value }))}
+              className="w-10 h-10 rounded border border-sand-200 cursor-pointer"
+            />
+            <Input
+              value={form.colorTo || ""}
+              onChange={(e) => setForm((prev: any) => ({ ...prev, colorTo: e.target.value }))}
+              className="flex-1"
+              placeholder="#C0392B"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Date range */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Start Date (optional)</Label>
+          <Input
+            type="date"
+            value={form.startDate || ""}
+            onChange={(e) => setForm((prev: any) => ({ ...prev, startDate: e.target.value }))}
+          />
+          <p className="text-xs text-brown-400 mt-0.5">Leave empty = starts immediately</p>
+        </div>
+        <div>
+          <Label>End Date (optional)</Label>
+          <Input
+            type="date"
+            value={form.endDate || ""}
+            onChange={(e) => setForm((prev: any) => ({ ...prev, endDate: e.target.value }))}
+          />
+          <p className="text-xs text-brown-400 mt-0.5">Leave empty = no expiry</p>
+        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-3 pt-2">
+        <Button onClick={handleSave} className="flex-1 bg-aussie-orange hover:bg-aussie-burnt-red">
+          <Save className="h-4 w-4 mr-2" /> Save Banner
+        </Button>
+        {form.enabled && (
+          <Button onClick={handleDisable} variant="outline" className="text-red-600 border-red-200 hover:bg-red-50">
+            Disable Banner
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
