@@ -1260,32 +1260,30 @@ export default function Admin() {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-cream-50 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
+      <div className="min-h-screen bg-cream-50 py-4 sm:py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
             <div>
-              <h1 className="font-heading text-4xl font-bold text-brown-800">KINGAROOS Admin Panel</h1>
+              <h1 className="font-heading text-2xl sm:text-4xl font-bold text-brown-800">KINGAROOS Admin Panel</h1>
               <div className="flex items-center space-x-1 text-green-600 mt-2">
                 <DatabaseZap className="h-4 w-4" />
                 <span className="text-sm font-body">Live Sync with Firebase</span>
               </div>
             </div>
-            <Button onClick={handleLogout} variant="outline" className="text-brown-600"><LogOut className="h-4 w-4 mr-2" />Logout</Button>
+            <Button onClick={handleLogout} variant="outline" className="text-brown-600 self-start sm:self-auto"><LogOut className="h-4 w-4 mr-2" />Logout</Button>
           </div>
 
           <Tabs defaultValue="texts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-9 gap-1">
-              <TabsTrigger value="texts">All Text Content</TabsTrigger>
-              <TabsTrigger value="images">Images</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-              <TabsTrigger value="themes">🎨 Themes</TabsTrigger>
-              <TabsTrigger value="dogs">Dogs</TabsTrigger>
-              <TabsTrigger value="menu">Menu</TabsTrigger>
-              <TabsTrigger value="events">Events</TabsTrigger>
-              <TabsTrigger value="merch">
-                <ShoppingBag className="h-4 w-4 mr-1" />Merch
-              </TabsTrigger>
-              <TabsTrigger value="promotions">Promotions</TabsTrigger>
+            <TabsList className="flex w-full overflow-x-auto gap-1 pb-1 no-scrollbar">
+              <TabsTrigger value="texts" className="shrink-0">All Text</TabsTrigger>
+              <TabsTrigger value="images" className="shrink-0">Images</TabsTrigger>
+              <TabsTrigger value="settings" className="shrink-0">Settings</TabsTrigger>
+              <TabsTrigger value="themes" className="shrink-0">Themes</TabsTrigger>
+              <TabsTrigger value="dogs" className="shrink-0">Dogs</TabsTrigger>
+              <TabsTrigger value="menu" className="shrink-0">Menu</TabsTrigger>
+              <TabsTrigger value="events" className="shrink-0">Events</TabsTrigger>
+              <TabsTrigger value="merch" className="shrink-0">Merch</TabsTrigger>
+              <TabsTrigger value="promotions" className="shrink-0">Promos</TabsTrigger>
             </TabsList>
 
             <TabsContent value="texts">
