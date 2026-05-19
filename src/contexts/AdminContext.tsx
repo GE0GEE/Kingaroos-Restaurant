@@ -8,7 +8,7 @@ import {
 } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
-  signInWithRedirect,
+  signInWithPopup,
   onAuthStateChanged,
   signOut,
   User,
@@ -100,7 +100,6 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 const siteContentRef = doc(db, "content", "main");
 const MAX_SNAPSHOT_RETRIES = 3;
-const LOGIN_PENDING_KEY = "adminLoginPending";
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -124,12 +123,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       setUser(allowed);
       userRef.current = allowed;
       setAuthReady(true);
-
-      // If we set a pending flag before the redirect, navigate to /admin on return
-      if (allowed && sessionStorage.getItem(LOGIN_PENDING_KEY)) {
-        sessionStorage.removeItem(LOGIN_PENDING_KEY);
-        setJustLoggedIn(true);
-      }
     });
     return () => unsubscribeAuth();
   }, []);
@@ -187,13 +180,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Google Sign-In via redirect ---
+  // --- Google Sign-In via popup ---
   const login = async (): Promise<void> => {
-    sessionStorage.setItem(LOGIN_PENDING_KEY, "1");
     try {
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      if (result.user) {
+        setJustLoggedIn(true);
+      }
     } catch (err: any) {
-      sessionStorage.removeItem(LOGIN_PENDING_KEY);
       console.error("LOGIN ERROR:", err?.code, err?.message, err);
       throw err;
     }
