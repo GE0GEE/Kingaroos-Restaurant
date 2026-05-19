@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AdminProvider, useAdmin } from "./contexts/AdminContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
 import Merch from "./pages/Merch";
@@ -50,35 +51,44 @@ function RedirectAfterLogin() {
   return null;
 }
 
+function AppContent() {
+  const { siteContent } = useAdmin();
+  return (
+    <ThemeProvider themeSettings={siteContent.themeSettings}>
+      <FaviconUpdater />
+      <BrowserRouter>
+        <RedirectAfterLogin />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/merch" element={<Merch />} />
+          <Route path="/dog-rescue" element={<DogRescue />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/promotions" element={<Promotions />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedAdminRoute>
+                <Admin />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <AdminProvider>
-        <FaviconUpdater />
-        <BrowserRouter>
-          <RedirectAfterLogin />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/merch" element={<Merch />} />
-            <Route path="/dog-rescue" element={<DogRescue />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/promotions" element={<Promotions />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedAdminRoute>
-                  <Admin />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AppContent />
       </AdminProvider>
     </TooltipProvider>
   </QueryClientProvider>

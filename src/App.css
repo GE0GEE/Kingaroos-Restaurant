@@ -1,4 +1,32 @@
 
+/* Theme Variables */
+:root {
+  --theme-primary: rgb(217, 119, 6);
+  --theme-secondary: rgb(180, 83, 9);
+  --theme-accent: rgb(52, 168, 83);
+  --theme-background: rgb(254, 252, 232);
+  --theme-text: rgb(68, 64, 60);
+  --theme-card-bg: rgb(255, 255, 255);
+  --theme-header-bg: rgb(28, 25, 23);
+}
+
+/* Apply theme to body */
+body {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Utility classes for theme colors */
+.theme-primary { color: var(--theme-primary); }
+.theme-bg-primary { background-color: var(--theme-primary); }
+.theme-secondary { color: var(--theme-secondary); }
+.theme-bg-secondary { background-color: var(--theme-secondary); }
+.theme-accent { color: var(--theme-accent); }
+.theme-bg-accent { background-color: var(--theme-accent); }
+.theme-text { color: var(--theme-text); }
+.theme-bg-text { background-color: var(--theme-text); }
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

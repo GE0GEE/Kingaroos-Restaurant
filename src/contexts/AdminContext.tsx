@@ -63,6 +63,10 @@ export interface SiteContent {
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
   dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[]; merch: MerchItem[]; holidayStatuses: Record<string, boolean>; eventTypeImages: Record<string, string>;
+  themeSettings?: {
+    forcedThemeId?: string | null;
+    monthlyThemeEnabled?: Record<number, boolean>;
+  };
 }
 
 const defaultSiteContent: SiteContent = {
@@ -92,6 +96,13 @@ const defaultSiteContent: SiteContent = {
     homePhone: "(02) 1234 5678", homeEmail: "hello@kingaroos.com", homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
   dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [], merch: [], holidayStatuses: {}, eventTypeImages: {},
+  themeSettings: {
+    forcedThemeId: null,
+    monthlyThemeEnabled: {
+      0: true, 1: true, 2: true, 3: true, 4: true, 5: true,
+      6: true, 7: true, 8: true, 9: true, 10: true, 11: true,
+    },
+  },
 };
 
 interface AdminContextType {
@@ -179,6 +190,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
               physicalMenuImages: serverContent.physicalMenuImages ?? [],
               merch: serverContent.merch ?? [],
+              themeSettings: { ...defaultSiteContent.themeSettings, ...(serverContent.themeSettings || {}) },
             };
             liveContentRef.current = mergedContent;
             setSiteContent(mergedContent);
