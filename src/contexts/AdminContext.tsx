@@ -34,6 +34,24 @@ export interface PhysicalMenuImage { id: string; url: string; caption: string; }
 export interface Event { id: string; title: string; date: string; time: string; description: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
 export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; category: PromotionCategoryKey; }
 
+export interface MerchSection {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  link: string;
+  linkLabel: string;
+}
+
+export interface MerchItem {
+  id: string;
+  name: string;
+  category: string;
+  tagline: string;
+  sections: MerchSection[];
+}
+
 export interface SiteContent {
   logoImage: string; faviconImage: string; theme: "light" | "dark";
   socialLinks: { facebook: string; instagram: string; twitter: string; };
@@ -42,7 +60,7 @@ export interface SiteContent {
   aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
-  dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[];
+  dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[]; merch: MerchItem[];
 }
 
 const defaultSiteContent: SiteContent = {
@@ -71,7 +89,7 @@ const defaultSiteContent: SiteContent = {
     eventsCallText: "Call for reservations:", eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant", eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
     homePhone: "(02) 1234 5678", homeEmail: "hello@kingaroos.com", homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
-  dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [],
+  dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [], merch: [],
 };
 
 interface AdminContextType {
@@ -95,6 +113,9 @@ interface AdminContextType {
   addPromotion: (promo: Omit<Promotion, "id">) => Promise<void>;
   updatePromotion: (id: string, promo: Partial<Promotion>) => Promise<void>;
   deletePromotion: (id: string) => Promise<void>;
+  addMerchItem: (item: Omit<MerchItem, "id">) => Promise<void>;
+  updateMerchItem: (id: string, item: Partial<MerchItem>) => Promise<void>;
+  deleteMerchItem: (id: string) => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -150,6 +171,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
               siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
               physicalMenuImages: serverContent.physicalMenuImages ?? [],
+              merch: serverContent.merch ?? [],
             };
             setSiteContent(mergedContent);
           } else {
@@ -222,6 +244,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const menuItemOps  = createCrudOperations<MenuItem>("menuItems");
   const eventOps     = createCrudOperations<Event>("events");
   const promotionOps = createCrudOperations<Promotion>("promotions");
+  const merchOps     = createCrudOperations<MerchItem>("merch");
 
   return (
     <AdminContext.Provider
@@ -238,6 +261,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         addMenuItem: menuItemOps.add, updateMenuItem: menuItemOps.update, deleteMenuItem: menuItemOps.remove,
         addEvent: eventOps.add, updateEvent: eventOps.update, deleteEvent: eventOps.remove,
         addPromotion: promotionOps.add, updatePromotion: promotionOps.update, deletePromotion: promotionOps.remove,
+        addMerchItem: merchOps.add, updateMerchItem: merchOps.update, deleteMerchItem: merchOps.remove,
       }}
     >
       {children}
