@@ -66,6 +66,10 @@ export interface SiteContent {
   themeSettings?: {
     forcedThemeId?: string | null;
     monthlyThemeEnabled?: Record<number, boolean>;
+    /** Per-theme banner duration: "month" | "weeks" | "week" | "days" */
+    bannerDurations?: Record<string, string>;
+    /** Per-theme custom banner title/subtitle override */
+    bannerMessages?: Record<string, { title?: string; subtitle?: string }>;
   };
   customBanner?: {
     enabled?: boolean;
@@ -76,6 +80,8 @@ export interface SiteContent {
     startDate?: string;
     endDate?: string;
   };
+  /** Free-form text key/value store — admin can add any text they want here */
+  customTexts?: Record<string, string>;
 }
 
 const defaultSiteContent: SiteContent = {
@@ -121,6 +127,7 @@ const defaultSiteContent: SiteContent = {
     startDate: "",
     endDate: "",
   },
+  customTexts: {},
 };
 
 interface AdminContextType {

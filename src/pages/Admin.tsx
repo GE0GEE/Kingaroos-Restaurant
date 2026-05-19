@@ -692,6 +692,33 @@ function ThemesPanel() {
         </CardContent>
       </Card>
 
+      {/* Banner Duration Per Theme */}
+      <Card>
+        <CardHeader>
+          <CardTitle>⏱️ Holiday Banner Duration</CardTitle>
+          <p className="text-sm text-brown-500">
+            Choose how long each holiday banner is shown around the actual holiday date.
+            The theme colors stay for the whole month — only the banner is restricted to this window.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <BannerDurationPanel />
+        </CardContent>
+      </Card>
+
+      {/* Per-Theme Banner Messages */}
+      <Card>
+        <CardHeader>
+          <CardTitle>✏️ Edit Holiday Banner Text</CardTitle>
+          <p className="text-sm text-brown-500">
+            Override the title and subtitle of each holiday banner. Leave blank to keep the defaults.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <BannerMessagesPanel />
+        </CardContent>
+      </Card>
+
       {/* Custom Banner */}
       <Card>
         <CardHeader>
@@ -704,6 +731,264 @@ function ThemesPanel() {
           <CustomBannerForm />
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// --- BANNER DURATION PANEL ---
+const DATED_HOLIDAYS = [
+  { id: "new-year",     name: "New Year",          date: "Jan 1"  },
+  { id: "valentines",   name: "Valentine's Day",   date: "Feb 14" },
+  { id: "easter",       name: "Easter",            date: "Apr 12 (approx)" },
+  { id: "independence", name: "Independence Day",  date: "Jul 4"  },
+  { id: "halloween",    name: "Halloween",         date: "Oct 31" },
+  { id: "thanksgiving", name: "Thanksgiving",      date: "Nov 27 (approx)" },
+  { id: "christmas",    name: "Christmas",         date: "Dec 25" },
+];
+
+const DURATION_CHOICES = [
+  { value: "month", label: "Whole month" },
+  { value: "weeks", label: "2-3 weeks (±10 days)" },
+  { value: "week",  label: "Whole week (±3 days)" },
+  { value: "days",  label: "2-3 days from holiday" },
+];
+
+function BannerDurationPanel() {
+  const { siteContent, updateSiteContent } = useAdmin();
+  const themeSettings = siteContent.themeSettings || {};
+  const durations = themeSettings.bannerDurations || {};
+
+  const handleChange = async (themeId: string, value: string) => {
+    const updated = { ...durations, [themeId]: value };
+    await updateSiteContent({
+      themeSettings: { ...themeSettings, bannerDurations: updated },
+    });
+  };
+
+  return (
+    <div className="space-y-3">
+      {DATED_HOLIDAYS.map((h) => {
+        const current = durations[h.id] || "month";
+        return (
+          <div key={h.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-sand-200 bg-cream-50">
+            <div className="flex-1">
+              <p className="font-body font-semibold text-brown-800 text-sm">{h.name}</p>
+              <p className="font-body text-xs text-brown-500">Holiday: {h.date}</p>
+            </div>
+            <div className="sm:w-56">
+              <Select value={current} onValueChange={(val) => handleChange(h.id, val)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DURATION_CHOICES.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        );
+      })}
+      <p className="text-xs text-brown-400 font-body pt-2">
+        Note: Themes without a fixed date (Spring, Summer, Mid Year, Autumn, Back to School)
+        always show their banner for the whole month.
+      </p>
+    </div>
+  );
+}
+
+// --- PER-THEME BANNER MESSAGES PANEL ---
+const ALL_THEME_IDS_FOR_MESSAGES = [
+  { id: "new-year",       name: "New Year",          defTitle: "Happy New Year",        defSub: "Cheers to new beginnings" },
+  { id: "valentines",     name: "Valentine's Day",   defTitle: "Happy Valentine's Day", defSub: "Spread the love with great food" },
+  { id: "spring",         name: "Spring",            defTitle: "Spring is Here",        defSub: "Fresh flavors blooming" },
+  { id: "easter",         name: "Easter",            defTitle: "Happy Easter",          defSub: "Hop in for a treat" },
+  { id: "summer",         name: "Summer",            defTitle: "Summer Vibes",          defSub: "Cool drinks, hot food" },
+  { id: "mid-year",       name: "Mid Year",          defTitle: "Mid-Year Special",      defSub: "Make a splash this season" },
+  { id: "independence",   name: "Independence Day",  defTitle: "Independence Day",      defSub: "Celebrate with us" },
+  { id: "autumn",         name: "Autumn",            defTitle: "Autumn Season",         defSub: "Cozy meals for cool days" },
+  { id: "back-to-school", name: "Back to School",    defTitle: "Back to School",        defSub: "Family meals to fuel the new year" },
+  { id: "halloween",      name: "Halloween",         defTitle: "Spooky Season",         defSub: "Tricks, treats and tasty eats" },
+  { id: "thanksgiving",   name: "Thanksgiving",      defTitle: "Happy Thanksgiving",    defSub: "Gratitude on every plate" },
+  { id: "christmas",      name: "Christmas",         defTitle: "Merry Christmas",       defSub: "Holiday cheer awaits" },
+];
+
+function BannerMessagesPanel() {
+  const { siteContent, updateSiteContent } = useAdmin();
+  const themeSettings = siteContent.themeSettings || {};
+  const initialMessages = themeSettings.bannerMessages || {};
+  const [drafts, setDrafts] = useState<Record<string, { title?: string; subtitle?: string }>>(initialMessages);
+
+  useEffect(() => {
+    setDrafts(themeSettings.bannerMessages || {});
+  }, [themeSettings.bannerMessages]);
+
+  const handleSave = async () => {
+    await updateSiteContent({
+      themeSettings: { ...themeSettings, bannerMessages: drafts },
+    });
+    alert("✅ Banner messages saved!");
+  };
+
+  const update = (id: string, field: "title" | "subtitle", value: string) => {
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+  };
+
+  return (
+    <div className="space-y-3">
+      {ALL_THEME_IDS_FOR_MESSAGES.map((t) => {
+        const draft = drafts[t.id] || {};
+        return (
+          <div key={t.id} className="p-3 rounded-lg border border-sand-200 bg-cream-50 space-y-2">
+            <p className="font-body font-semibold text-brown-800 text-sm">{t.name}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Title</Label>
+                <Input
+                  value={draft.title ?? ""}
+                  placeholder={t.defTitle}
+                  onChange={(e) => update(t.id, "title", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Subtitle</Label>
+                <Input
+                  value={draft.subtitle ?? ""}
+                  placeholder={t.defSub}
+                  onChange={(e) => update(t.id, "subtitle", e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <Button onClick={handleSave} className="bg-aussie-orange hover:bg-aussie-burnt-red">
+        <Save className="h-4 w-4 mr-2" /> Save All Banner Messages
+      </Button>
+    </div>
+  );
+}
+
+// --- CUSTOM TEXTS PANEL ---
+// Free-form key/value text manager. Admin can add any number of arbitrary
+// text fields with any key they choose. Stored under siteContent.customTexts
+// in Firebase as a Record<string, string>.
+function CustomTextsPanel() {
+  const { siteContent, updateSiteContent } = useAdmin();
+  const initial = siteContent.customTexts || {};
+  const [drafts, setDrafts] = useState<Record<string, string>>(initial);
+  const [newKey, setNewKey] = useState("");
+  const [newValue, setNewValue] = useState("");
+
+  useEffect(() => {
+    setDrafts(siteContent.customTexts || {});
+  }, [siteContent.customTexts]);
+
+  const handleAdd = () => {
+    const key = newKey.trim();
+    if (!key) {
+      alert("Please enter a key name (e.g. specialOfferText, holidayNote, etc.)");
+      return;
+    }
+    if (drafts[key] !== undefined) {
+      alert("That key already exists — edit it below or pick a different name.");
+      return;
+    }
+    setDrafts((prev) => ({ ...prev, [key]: newValue }));
+    setNewKey("");
+    setNewValue("");
+  };
+
+  const handleUpdate = (key: string, value: string) => {
+    setDrafts((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleDelete = (key: string) => {
+    if (!confirm(`Delete "${key}"?`)) return;
+    setDrafts((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const handleSaveAll = async () => {
+    await updateSiteContent({ customTexts: drafts } as any);
+    alert("✅ Custom texts saved!");
+  };
+
+  const entries = Object.entries(drafts).sort(([a], [b]) => a.localeCompare(b));
+
+  return (
+    <div className="space-y-5">
+      {/* Add new */}
+      <div className="border-2 border-dashed border-sand-300 rounded-lg p-4 space-y-3 bg-cream-50">
+        <p className="font-body font-semibold text-brown-700 text-sm">+ Add a new custom text</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-1">
+            <Label className="text-xs">Key (no spaces)</Label>
+            <Input
+              value={newKey}
+              placeholder="e.g. specialNote"
+              onChange={(e) => setNewKey(e.target.value.replace(/\s+/g, ""))}
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <Label className="text-xs">Value (the actual text)</Label>
+            <Input
+              value={newValue}
+              placeholder="e.g. Closed for renovations Dec 24"
+              onChange={(e) => setNewValue(e.target.value)}
+            />
+          </div>
+        </div>
+        <Button onClick={handleAdd} variant="outline" size="sm">
+          <Plus className="h-4 w-4 mr-1" /> Add Text
+        </Button>
+      </div>
+
+      {/* Existing entries */}
+      {entries.length === 0 ? (
+        <p className="text-center py-6 text-brown-400 font-body text-sm border border-dashed border-sand-300 rounded-lg">
+          No custom texts yet. Add one above.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {entries.map(([key, value]) => (
+            <div key={key} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-start p-3 rounded-lg border border-sand-200 bg-white">
+              <div className="sm:col-span-3">
+                <Label className="text-xs font-semibold text-brown-600">{key}</Label>
+              </div>
+              <div className="sm:col-span-8">
+                {value.length > 80 ? (
+                  <Textarea
+                    value={value}
+                    rows={2}
+                    onChange={(e) => handleUpdate(key, e.target.value)}
+                  />
+                ) : (
+                  <Input
+                    value={value}
+                    onChange={(e) => handleUpdate(key, e.target.value)}
+                  />
+                )}
+              </div>
+              <div className="sm:col-span-1 flex justify-end">
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(key)}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-center pt-2">
+        <Button onClick={handleSaveAll} size="lg" className="bg-aussie-orange hover:bg-aussie-burnt-red">
+          <Save className="h-4 w-4 mr-2" /> Save Custom Texts
+        </Button>
+      </div>
     </div>
   );
 }
@@ -1312,6 +1597,20 @@ export default function Admin() {
                     ))}
                   </Accordion>
                   <div className="flex justify-center pt-6"><Button onClick={handleSaveTexts} size="lg"><Save className="mr-2 h-4 w-4" />Save All Text</Button></div>
+                </CardContent>
+              </Card>
+
+              {/* Custom Texts — admin can add ANY arbitrary text key/value pair */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2"><Type /> <span>Custom Texts (Add Anything)</span></CardTitle>
+                  <p className="text-sm text-brown-500 mt-1">
+                    Add custom text fields with any name you want. Use these for anything not covered by the standard fields above —
+                    promotions copy, special announcements, footer notes, anything.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <CustomTextsPanel />
                 </CardContent>
               </Card>
             </TabsContent>

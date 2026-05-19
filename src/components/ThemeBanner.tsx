@@ -2,8 +2,9 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useState } from "react";
 import { X } from "lucide-react";
+import { isBannerInDurationWindow, getThemeById, BannerDuration } from "@/config/themes";
 
-const THEME_MESSAGES: Record<string, { title: string; subtitle: string }> = {
+const DEFAULT_THEME_MESSAGES: Record<string, { title: string; subtitle: string }> = {
   "new-year": {
     title: "Happy New Year",
     subtitle: "Cheers to new beginnings",
@@ -58,23 +59,40 @@ export function ThemeBanner() {
   const { currentTheme } = useTheme();
   const { siteContent } = useAdmin();
 
-  // Check for custom banner first
   const customBanner = siteContent.customBanner;
+  const themeSettings = siteContent.themeSettings || {};
+  const bannerDurations = themeSettings.bannerDurations || {};
+  const bannerMessages = themeSettings.bannerMessages || {};
 
   const now = new Date();
-  const isCustomBannerActive = customBanner?.enabled &&
+
+  // ---- Custom banner takes priority if enabled and within date range ----
+  const isCustomBannerActive = !!(
+    customBanner?.enabled &&
     customBanner.text &&
     (!customBanner.startDate || new Date(customBanner.startDate) <= now) &&
-    (!customBanner.endDate || new Date(customBanner.endDate) >= now);
+    (!customBanner.endDate || new Date(customBanner.endDate) >= now)
+  );
 
-  // Determine banner content and colors
-  const bannerTitle = isCustomBannerActive ? customBanner!.text! : THEME_MESSAGES[currentTheme.id]?.title;
-  const bannerSubtitle = isCustomBannerActive ? (customBanner!.subtitle || "") : (THEME_MESSAGES[currentTheme.id]?.subtitle || "");
+  // ---- For theme banner, check if we're inside the duration window ----
+  const themeForBanner = getThemeById(currentTheme.id);
+  const themeDuration = (bannerDurations[currentTheme.id] as BannerDuration) || "month";
+  const isInDurationWindow = currentTheme.id === "default"
+    ? false
+    : isBannerInDurationWindow(themeForBanner, themeDuration);
+
+  // ---- Resolve title / subtitle: custom override -> default ----
+  const themeMsgOverride = bannerMessages[currentTheme.id] || {};
+  const defaultMsg = DEFAULT_THEME_MESSAGES[currentTheme.id];
+  const themeTitle = themeMsgOverride.title || defaultMsg?.title;
+  const themeSubtitle = themeMsgOverride.subtitle ?? defaultMsg?.subtitle ?? "";
+
+  const bannerTitle = isCustomBannerActive ? customBanner!.text! : themeTitle;
+  const bannerSubtitle = isCustomBannerActive ? (customBanner!.subtitle || "") : themeSubtitle;
   const colorFrom = isCustomBannerActive ? (customBanner!.colorFrom || "#E67E22") : currentTheme.colors.primary;
   const colorTo = isCustomBannerActive ? (customBanner!.colorTo || "#C0392B") : currentTheme.colors.secondary;
 
-  // Use sessionStorage so dismiss persists across page navigation
-  // but resets when the user refreshes the browser
+  // ---- Persist dismiss across page navigation, reset on browser refresh ----
   const storageKey = isCustomBannerActive
     ? "theme-banner-dismissed-custom"
     : `theme-banner-dismissed-${currentTheme.id}`;
@@ -95,9 +113,14 @@ export function ThemeBanner() {
     }
   };
 
-  // Don't show if no content or dismissed
-  if (!bannerTitle || (!isCustomBannerActive && currentTheme.id === "default") || dismissed) {
-    return null;
+  // Decide whether to show the banner
+  if (dismissed) return null;
+  if (!bannerTitle) return null;
+  if (isCustomBannerActive) {
+    // custom banner always shows when active (regardless of theme window)
+  } else {
+    // theme banner only shows if we're inside the configured duration window
+    if (!isInDurationWindow) return null;
   }
 
   return (
