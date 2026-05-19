@@ -40,20 +40,21 @@ export default function Merch() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="bg-gradient-to-r from-aussie-orange/20 to-brown-200 py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <ShoppingBag className="h-10 w-10 text-aussie-orange" />
-            <h1 className="font-heading text-5xl font-bold text-brown-800">
-              Merch &amp; Shop
-            </h1>
-          </div>
-          <p className="font-body text-xl text-brown-600 max-w-2xl mx-auto">
-            Take a piece of Kingaroos home — from our iconic Vegemite Beef Jerky to
-            branded cups, mugs, cup holders &amp; more.
-          </p>
+      <div className="relative bg-stone-900 text-white py-20 px-4 text-center overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
+          <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-amber-400 blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-amber-600 blur-3xl" />
         </div>
-      </section>
+        <p className="relative font-body text-amber-400 text-xs font-bold uppercase tracking-[0.25em] mb-3">
+          Kingaroos Restaurant
+        </p>
+        <h1 className="relative font-heading text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
+          Merch &amp; Shop
+        </h1>
+        <p className="relative font-body text-stone-400 text-base md:text-lg max-w-md mx-auto leading-relaxed">
+          Take a piece of Kingaroos home — from our iconic Vegemite Beef Jerky to branded cups, mugs, cup holders &amp; more.
+        </p>
+      </div>
 
       {/* Category filter bar */}
       {categories.length > 1 && (
@@ -82,33 +83,21 @@ export default function Merch() {
           {filtered.length === 0 ? (
             <div className="text-center py-24">
               <Package className="h-16 w-16 text-brown-300 mx-auto mb-4" />
-              <p className="font-body text-brown-500 text-lg">
-                No merch here yet — check back soon!
-              </p>
+              <p className="font-body text-brown-500 text-lg">No merch here yet — check back soon!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filtered.map((item) => (
-                <Card
-                  key={item.id}
-                  className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden"
-                >
-                  {/* Card header */}
+                <Card key={item.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
                   <div className="bg-gradient-to-br from-sand-100 to-cream-200 px-5 pt-5 pb-4">
                     {item.category && (
-                      <Badge className="bg-aussie-orange text-white font-body mb-2">
-                        {item.category}
-                      </Badge>
+                      <Badge className="bg-aussie-orange text-white font-body mb-2">{item.category}</Badge>
                     )}
-                    <h2 className="font-heading text-xl font-bold text-brown-800 leading-tight">
-                      {item.name}
-                    </h2>
+                    <h2 className="font-heading text-xl font-bold text-brown-800 leading-tight">{item.name}</h2>
                     {item.tagline && (
                       <p className="font-body text-sm text-brown-600 mt-1">{item.tagline}</p>
                     )}
                   </div>
-
-                  {/* Sections */}
                   <CardContent className="p-0 divide-y divide-sand-100">
                     {(item.sections ?? []).map((section, idx) => {
                       const key = `${item.id}-${section.id}`;
@@ -119,16 +108,13 @@ export default function Merch() {
                             onClick={() => toggleSection(key)}
                             className="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-cream-100 transition-colors"
                           >
-                            <span className="font-body font-semibold text-brown-700 text-sm">
-                              {section.title}
-                            </span>
+                            <span className="font-body font-semibold text-brown-700 text-sm">{section.title}</span>
                             {open ? (
                               <ChevronUp className="h-4 w-4 text-brown-400 shrink-0" />
                             ) : (
                               <ChevronDown className="h-4 w-4 text-brown-400 shrink-0" />
                             )}
                           </button>
-
                           {open && (
                             <div className="px-5 pb-5 space-y-3">
                               {section.imageUrl && (
@@ -139,14 +125,10 @@ export default function Merch() {
                                 />
                               )}
                               {section.description && (
-                                <p className="font-body text-sm text-brown-600 leading-relaxed">
-                                  {section.description}
-                                </p>
+                                <p className="font-body text-sm text-brown-600 leading-relaxed">{section.description}</p>
                               )}
                               {section.price && (
-                                <p className="font-heading font-bold text-aussie-orange text-lg">
-                                  {section.price}
-                                </p>
+                                <p className="font-heading font-bold text-aussie-orange text-lg">{section.price}</p>
                               )}
                               {section.link && (
                                 <a
@@ -164,11 +146,8 @@ export default function Merch() {
                         </div>
                       );
                     })}
-
                     {(item.sections ?? []).length === 0 && (
-                      <div className="px-5 py-6 text-center text-brown-400 font-body text-sm">
-                        Details coming soon!
-                      </div>
+                      <div className="px-5 py-6 text-center text-brown-400 font-body text-sm">Details coming soon!</div>
                     )}
                   </CardContent>
                 </Card>
@@ -181,9 +160,7 @@ export default function Merch() {
       {/* CTA */}
       <section className="bg-brown-800 py-14">
         <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-cream-50 mb-4">
-            Want to stock Kingaroos merch?
-          </h2>
+          <h2 className="font-heading text-3xl font-bold text-cream-50 mb-4">Want to stock Kingaroos merch?</h2>
           <p className="font-body text-cream-200 text-lg mb-6">
             Reach out to us for wholesale or bulk orders — we'd love to hear from you!
           </p>
