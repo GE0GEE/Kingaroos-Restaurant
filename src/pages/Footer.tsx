@@ -30,14 +30,35 @@ export function Footer() {
     setError("");
     try {
       await login();
+      // Success — dialog will close via navigation, but reset loading just in case
+      setLoading(false);
     } catch (err: any) {
-      const code = err?.code ?? "";
-      const msg = err?.message ?? "";
-      if (code === "auth/unauthorized-domain") {
-        setError("This domain is not authorised in Firebase. Add it to Authentication → Settings → Authorized domains in the Firebase Console.");
+      console.error("Login error full object:", err);
+      const code: string = err?.code ?? "";
+      const msg: string = err?.message ?? "";
+
+      if (code === "auth/popup-blocked") {
+        setError(
+          "Popup was blocked by your browser. Please click the popup icon in your address bar to allow popups for this site, then try again."
+        );
+      } else if (code === "auth/popup-closed-by-user") {
+        setError("Sign-in was cancelled. Please try again.");
+      } else if (code === "auth/unauthorized-domain") {
+        setError(
+          "This domain is not authorised in Firebase. Add it to Authentication → Settings → Authorized domains in the Firebase Console."
+        );
+      } else if (code === "auth/operation-not-allowed") {
+        setError(
+          "Google sign-in is not enabled. Go to Firebase Console → Authentication → Sign-in method and enable Google."
+        );
+      } else if (code) {
+        setError(`${code}: ${msg}`);
+      } else if (msg) {
+        setError(msg);
       } else {
-        setError(code ? `${code}: ${msg}` : msg || "Sign-in failed. Please try again.");
+        setError("Sign-in failed. Please check the browser console for details.");
       }
+
       setLoading(false);
     }
   };
@@ -129,7 +150,7 @@ export function Footer() {
       </div>
 
       {/* Admin Login Dialog */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+      <Dialog open={showLoginDialog} onOpenChange={(open) => { setShowLoginDialog(open); if (!open) { setError(""); setLoading(false); } }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-brown-800">
@@ -159,7 +180,7 @@ export function Footer() {
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
               )}
-              {loading ? "Redirecting to Google…" : "Sign in with Google"}
+              {loading ? "Opening Google sign-in…" : "Sign in with Google"}
             </Button>
 
             {error && (
@@ -168,7 +189,7 @@ export function Footer() {
 
             <Button
               variant="ghost"
-              onClick={() => { setShowLoginDialog(false); setError(""); }}
+              onClick={() => { setShowLoginDialog(false); setError(""); setLoading(false); }}
               className="w-full text-gray-400 hover:text-gray-600"
             >
               Cancel
