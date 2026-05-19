@@ -48,6 +48,7 @@ export interface MerchItem {
   id: string;
   name: string;
   price: string;
+  imageUrl: string;
   category: string;
   tagline: string;
   sections: MerchSection[];
