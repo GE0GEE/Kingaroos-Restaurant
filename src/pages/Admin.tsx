@@ -41,8 +41,10 @@ import {
   DatabaseZap,
   Loader2,
   Upload,
+  ShoppingBag,
+  GripVertical,
 } from "lucide-react";
-import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey } from "@/contexts/AdminContext";
+import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection } from "@/contexts/AdminContext";
 import imageCompression from "browser-image-compression";
 
 // --- HELPER FUNCTION FOR IMAGE COMPRESSION AND CONVERSION ---
@@ -296,6 +298,232 @@ function PromotionForm({ promotion, onSubmit }: { promotion: Partial<Promotion>;
   );
 }
 
+// --- MERCH SECTION EDITOR ---
+
+function MerchSectionEditor({
+  section,
+  onChange,
+  onDelete,
+}: {
+  section: MerchSection;
+  onChange: (s: MerchSection) => void;
+  onDelete: () => void;
+}) {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const base64 = await handleFileAndCompress(file);
+      onChange({ ...section, imageUrl: base64 });
+    } catch {
+      alert("Image upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="border border-sand-200 rounded-lg bg-cream-50 p-4 space-y-3">
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-semibold text-sm text-brown-700 flex items-center gap-1">
+          <GripVertical className="h-4 w-4 text-brown-300" />
+          Section
+        </span>
+        <Button variant="destructive" size="sm" onClick={onDelete}>
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+      <div>
+        <Label>Section Title *</Label>
+        <Input
+          value={section.title}
+          placeholder="e.g. Flavours, Sizing, How to Order"
+          onChange={(e) => onChange({ ...section, title: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={section.description}
+          placeholder="Describe this section..."
+          onChange={(e) => onChange({ ...section, description: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label>Price (optional)</Label>
+        <Input
+          value={section.price}
+          placeholder="e.g. $12.00"
+          onChange={(e) => onChange({ ...section, price: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label>Photo URL or Upload</Label>
+        <Input
+          type="file"
+          accept="image/*"
+          onChange={handleImageFile}
+          disabled={isUploading}
+        />
+        <Input
+          className="mt-1"
+          placeholder="Or paste image URL"
+          value={section.imageUrl?.startsWith("http") ? section.imageUrl : ""}
+          onChange={(e) => onChange({ ...section, imageUrl: e.target.value })}
+        />
+        {isUploading && (
+          <div className="flex items-center gap-2 text-xs text-blue-600 mt-1">
+            <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+          </div>
+        )}
+        {section.imageUrl && (
+          <div className="relative mt-2">
+            <img
+              src={section.imageUrl}
+              alt="preview"
+              className="w-full h-28 object-cover rounded-md"
+              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => onChange({ ...section, imageUrl: "" })}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Link URL (optional)</Label>
+          <Input
+            value={section.link}
+            placeholder="https://..."
+            onChange={(e) => onChange({ ...section, link: e.target.value })}
+          />
+        </div>
+        <div>
+          <Label>Link Label</Label>
+          <Input
+            value={section.linkLabel}
+            placeholder="e.g. Buy Now"
+            onChange={(e) => onChange({ ...section, linkLabel: e.target.value })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- MERCH ITEM FORM ---
+
+const newSection = (): MerchSection => ({
+  id: `sec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+  title: "",
+  description: "",
+  imageUrl: "",
+  price: "",
+  link: "",
+  linkLabel: "",
+});
+
+function MerchItemForm({
+  item,
+  onSubmit,
+}: {
+  item: Partial<MerchItem>;
+  onSubmit: (item: Partial<MerchItem>) => void;
+}) {
+  const [formData, setFormData] = useState<Partial<MerchItem>>({
+    sections: [],
+    ...item,
+  });
+
+  const updateSection = (idx: number, s: MerchSection) =>
+    setFormData((prev) => ({
+      ...prev,
+      sections: (prev.sections ?? []).map((sec, i) => (i === idx ? s : sec)),
+    }));
+
+  const deleteSection = (idx: number) =>
+    setFormData((prev) => ({
+      ...prev,
+      sections: (prev.sections ?? []).filter((_, i) => i !== idx),
+    }));
+
+  const addSection = () =>
+    setFormData((prev) => ({
+      ...prev,
+      sections: [...(prev.sections ?? []), newSection()],
+    }));
+
+  return (
+    <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>Product Name *</Label>
+          <Input
+            value={formData.name || ""}
+            placeholder="e.g. Vegemite Beef Jerky"
+            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label>Category *</Label>
+          <Input
+            value={formData.category || ""}
+            placeholder="e.g. Food, Apparel, Drinkware"
+            onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
+          />
+        </div>
+      </div>
+      <div>
+        <Label>Tagline (optional)</Label>
+        <Input
+          value={formData.tagline || ""}
+          placeholder="e.g. The ultimate Aussie snack"
+          onChange={(e) => setFormData((prev) => ({ ...prev, tagline: e.target.value }))}
+        />
+      </div>
+
+      {/* Sections */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-semibold">Sections</Label>
+          <Button size="sm" variant="outline" onClick={addSection}>
+            <Plus className="h-4 w-4 mr-1" /> Add Section
+          </Button>
+        </div>
+        {(formData.sections ?? []).length === 0 && (
+          <p className="text-sm text-brown-400 text-center py-4 border border-dashed border-sand-300 rounded-lg">
+            No sections yet — add one above
+          </p>
+        )}
+        {(formData.sections ?? []).map((section, idx) => (
+          <MerchSectionEditor
+            key={section.id}
+            section={section}
+            onChange={(s) => updateSection(idx, s)}
+            onDelete={() => deleteSection(idx)}
+          />
+        ))}
+      </div>
+
+      <Button
+        className="w-full bg-aussie-orange hover:bg-aussie-burnt-red text-white"
+        onClick={() => onSubmit(formData)}
+      >
+        <Save className="h-4 w-4 mr-2" /> Save Merch Item
+      </Button>
+    </div>
+  );
+}
+
 // --- MAIN ADMIN COMPONENT ---
 
 export default function Admin() {
@@ -306,6 +534,7 @@ export default function Admin() {
     addMenuItem, updateMenuItem, deleteMenuItem,
     addEvent, updateEvent, deleteEvent,
     addPromotion, updatePromotion, deletePromotion,
+    addMerchItem, updateMerchItem, deleteMerchItem,
   } = useAdmin();
 
   const [editingTexts, setEditingTexts] = useState(siteContent.siteTexts);
@@ -453,13 +682,16 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="texts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 gap-1">
+            <TabsList className="grid w-full grid-cols-8 gap-1">
               <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="dogs">Dogs</TabsTrigger>
               <TabsTrigger value="menu">Menu</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="merch">
+                <ShoppingBag className="h-4 w-4 mr-1" />Merch
+              </TabsTrigger>
               <TabsTrigger value="promotions">Promotions</TabsTrigger>
             </TabsList>
 
@@ -873,6 +1105,114 @@ export default function Admin() {
                 <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new event.</DialogDescription></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }} /></DialogContent></Dialog></CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-4">
                   {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this event.</DialogDescription></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteEvent(event.id); }}><Trash2 /></Button></div></Card>))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="merch">
+              <Card>
+                <CardHeader className="flex flex-row justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingBag className="h-5 w-5 text-aussie-orange" />
+                      Manage Merch
+                    </CardTitle>
+                    <p className="text-sm text-brown-500 mt-1">
+                      Add product cards with multiple sections — each section can have its own description, photo and buy link.
+                    </p>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red text-white shrink-0">
+                        <Plus className="h-4 w-4 mr-1" /> Add Item
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add Merch Item</DialogTitle>
+                        <DialogDescription>
+                          Create a product card. Add sections for different variants, flavours or details.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <MerchItemForm
+                        item={{}}
+                        onSubmit={async (item) => {
+                          await addMerchItem(item as Omit<MerchItem, "id">);
+                          alert("Merch item added!");
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  {(siteContent as any).merch?.length === 0 || !(siteContent as any).merch ? (
+                    <div className="text-center py-16 border-2 border-dashed border-sand-200 rounded-xl">
+                      <ShoppingBag className="h-12 w-12 text-brown-300 mx-auto mb-3" />
+                      <p className="font-body text-brown-400">No merch items yet.</p>
+                      <p className="text-sm text-brown-300">Click "Add Item" to get started.</p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {((siteContent as any).merch as MerchItem[]).map((item) => (
+                        <Card key={item.id} className="border-sand-200 overflow-hidden">
+                          <div className="bg-gradient-to-br from-sand-100 to-cream-100 px-4 pt-4 pb-3">
+                            {item.category && (
+                              <span className="text-xs font-semibold text-aussie-orange uppercase tracking-wide">
+                                {item.category}
+                              </span>
+                            )}
+                            <h3 className="font-heading font-bold text-brown-800 text-lg leading-tight mt-0.5">
+                              {item.name}
+                            </h3>
+                            {item.tagline && (
+                              <p className="text-xs text-brown-500 mt-0.5">{item.tagline}</p>
+                            )}
+                          </div>
+                          <CardContent className="p-4">
+                            <p className="text-xs text-brown-400 mb-3">
+                              {(item.sections ?? []).length} section{(item.sections ?? []).length !== 1 ? "s" : ""}
+                              {(item.sections ?? []).length > 0 && (
+                                <span className="ml-2 text-brown-300">
+                                  — {(item.sections ?? []).map((s) => s.title).filter(Boolean).join(", ")}
+                                </span>
+                              )}
+                            </p>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="flex-1">
+                                    <Edit className="h-3 w-3 mr-1" /> Edit
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Edit {item.name}</DialogTitle>
+                                    <DialogDescription className="sr-only">Update this merch item.</DialogDescription>
+                                  </DialogHeader>
+                                  <MerchItemForm
+                                    item={item}
+                                    onSubmit={async (updates) => {
+                                      await updateMerchItem(item.id, updates);
+                                      alert("Merch item updated!");
+                                    }}
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={async () => {
+                                  if (confirm(`Delete "${item.name}"?`)) await deleteMerchItem(item.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
