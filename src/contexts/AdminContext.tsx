@@ -31,7 +31,7 @@ export type PromotionCategoryKey = keyof typeof promotionCategories;
 export interface Dog { id: string; name: string; breed: string; age: string; personality: string; beforeImage: string; afterImage: string; rescueStory: string; }
 export interface MenuItem { id: string; name: string; description: string; price: string; image: string; featured?: boolean; category: string; }
 export interface PhysicalMenuImage { id: string; url: string; caption: string; }
-export interface Event { id: string; title: string; date: string; time: string; description: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
+export interface Event { id: string; title: string; date: string; time: string; description: string; imageUrl?: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
 export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; category: PromotionCategoryKey; }
 
 export interface MerchSection {
