@@ -94,6 +94,9 @@ export default function Merch() {
                       <Badge className="bg-aussie-orange text-white font-body mb-2">{item.category}</Badge>
                     )}
                     <h2 className="font-heading text-xl font-bold text-brown-800 leading-tight">{item.name}</h2>
+                    {(item as any).price && (
+                      <p className="font-heading font-bold text-aussie-orange text-lg mt-1">{(item as any).price}</p>
+                    )}
                     {item.tagline && (
                       <p className="font-body text-sm text-brown-600 mt-1">{item.tagline}</p>
                     )}
@@ -126,9 +129,6 @@ export default function Merch() {
                               )}
                               {section.description && (
                                 <p className="font-body text-sm text-brown-600 leading-relaxed">{section.description}</p>
-                              )}
-                              {section.price && (
-                                <p className="font-heading font-bold text-aussie-orange text-lg">{section.price}</p>
                               )}
                               {section.link && (
                                 <a
