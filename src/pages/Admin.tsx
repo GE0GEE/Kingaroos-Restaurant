@@ -532,6 +532,169 @@ function PromotionForm({ promotion, onSubmit }: { promotion: Partial<Promotion>;
   );
 }
 
+// --- THEMES PANEL ---
+function ThemesPanel() {
+  const { siteContent, updateSiteContent } = useAdmin();
+  const themeSettings = siteContent.themeSettings || { forcedThemeId: null, monthlyThemeEnabled: {} };
+  const [selectedForceTheme, setSelectedForceTheme] = useState<string>(themeSettings.forcedThemeId || "none");
+
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  // Import themes dynamically
+  const THEMES = [
+    { id: "default", name: "Default (Aussie)", month: -1 },
+    { id: "new-year", name: "New Year", month: 0 },
+    { id: "valentines", name: "Valentine's Day", month: 1 },
+    { id: "spring", name: "Spring", month: 2 },
+    { id: "easter", name: "Easter", month: 3 },
+    { id: "summer", name: "Summer", month: 4 },
+    { id: "mid-year", name: "Mid Year", month: 5 },
+    { id: "independence", name: "Independence Day", month: 6 },
+    { id: "autumn", name: "Autumn", month: 7 },
+    { id: "back-to-school", name: "Back to School", month: 8 },
+    { id: "halloween", name: "Halloween", month: 9 },
+    { id: "thanksgiving", name: "Thanksgiving", month: 10 },
+    { id: "christmas", name: "Christmas", month: 11 },
+  ];
+
+  const currentMonth = new Date().getMonth();
+  const currentTheme = THEMES.find((t) => t.month === currentMonth);
+
+  const handleToggleMonthlyTheme = async (month: number, enabled: boolean) => {
+    const updated = { ...themeSettings.monthlyThemeEnabled, [month]: enabled };
+    await updateSiteContent({
+      themeSettings: { ...themeSettings, monthlyThemeEnabled: updated },
+    });
+  };
+
+  const handleForceTheme = async () => {
+    if (selectedForceTheme === "none") {
+      await updateSiteContent({
+        themeSettings: { ...themeSettings, forcedThemeId: null },
+      });
+      alert("✅ Force theme removed. Themes will now auto-switch by month.");
+    } else {
+      await updateSiteContent({
+        themeSettings: { ...themeSettings, forcedThemeId: selectedForceTheme },
+      });
+      const themeName = THEMES.find((t) => t.id === selectedForceTheme)?.name || selectedForceTheme;
+      alert(`✅ Force theme set to: ${themeName}`);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Current Theme Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🎨 Current Theme Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {themeSettings.forcedThemeId && themeSettings.forcedThemeId !== "none" ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-amber-800">
+                  🔒 Force Mode Active
+                </p>
+                <p className="text-sm text-amber-700 mt-1">
+                  Theme: <strong>{THEMES.find((t) => t.id === themeSettings.forcedThemeId)?.name || "Unknown"}</strong>
+                </p>
+                <p className="text-xs text-amber-600 mt-2">
+                  This theme will be used regardless of the current month.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm font-semibold text-green-800">
+                  ✅ Auto-Switching Mode
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  Current Month: <strong>{MONTH_NAMES[currentMonth]}</strong>
+                </p>
+                {currentTheme && (
+                  <p className="text-sm text-green-700">
+                    Active Theme: <strong>{currentTheme.name}</strong>
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Force Theme Control */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🔒 Force Theme Override</CardTitle>
+          <p className="text-sm text-brown-500">
+            Override the auto-switching and force a specific theme to be active, even when it's not that month.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Select Theme to Force</Label>
+            <Select value={selectedForceTheme} onValueChange={setSelectedForceTheme}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a theme..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">🚫 None (Auto-Switch by Month)</SelectItem>
+                {THEMES.map((theme) => (
+                  <SelectItem key={theme.id} value={theme.id}>
+                    {theme.name} {theme.month >= 0 ? `(${MONTH_NAMES[theme.month]})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleForceTheme} className="w-full bg-aussie-orange hover:bg-aussie-burnt-red">
+            {selectedForceTheme === "none" ? "Remove Force Theme" : "Force This Theme"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Monthly Theme Toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle>📅 Monthly Theme Settings</CardTitle>
+          <p className="text-sm text-brown-500">
+            Enable or disable automatic theme switching for specific months. Enabled by default.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {THEMES.filter((t) => t.month >= 0).map((theme) => {
+              const isEnabled = themeSettings.monthlyThemeEnabled?.[theme.month] !== false;
+              return (
+                <div
+                  key={theme.id}
+                  className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50"
+                >
+                  <div className="flex-1">
+                    <p className="font-body font-semibold text-brown-800 text-sm">{theme.name}</p>
+                    <p className="font-body text-xs text-brown-500">{MONTH_NAMES[theme.month]}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`font-body text-xs font-semibold ${isEnabled ? "text-green-600" : "text-red-500"}`}>
+                      {isEnabled ? "Enabled" : "Disabled"}
+                    </span>
+                    <Switch
+                      checked={isEnabled}
+                      onCheckedChange={(val) => handleToggleMonthlyTheme(theme.month, val)}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // --- MERCH SECTION EDITOR ---
 
 function MerchSectionEditor({
@@ -916,10 +1079,11 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="texts" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8 gap-1">
+            <TabsList className="grid w-full grid-cols-9 gap-1">
               <TabsTrigger value="texts">All Text Content</TabsTrigger>
               <TabsTrigger value="images">Images</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="themes">🎨 Themes</TabsTrigger>
               <TabsTrigger value="dogs">Dogs</TabsTrigger>
               <TabsTrigger value="menu">Menu</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
@@ -1495,6 +1659,10 @@ export default function Admin() {
                   {(siteContent.promotions ?? []).map((promo) => (<Card key={promo.id} className="p-4"><h3 className="font-bold">{promo.title}</h3><p>{promo.subtitle}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {promo.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this promotion.</DialogDescription></DialogHeader><PromotionForm promotion={promo} onSubmit={async (updates) => { await updatePromotion(promo.id, updates); alert("Promotion updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deletePromotion(promo.id); }}><Trash2 /></Button></div></Card>))}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="themes">
+              <ThemesPanel />
             </TabsContent>
 
           </Tabs>
