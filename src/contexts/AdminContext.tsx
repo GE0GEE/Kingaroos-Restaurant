@@ -8,12 +8,19 @@ import {
 } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
-  signInWithEmailAndPassword,
+  signInWithPopup,
   onAuthStateChanged,
   signOut,
   User,
 } from "firebase/auth";
-import { db, auth } from "../firebase-config";
+import { db, auth, googleProvider } from "../firebase-config";
+
+// ─── ALLOWED ADMIN ACCOUNTS ────────────────────────────────────────────────────
+// Add or remove Google account emails here. Only these accounts can log in.
+const ALLOWED_EMAILS: string[] = [
+  "youremail@gmail.com",
+  // "anotherperson@gmail.com",
+];
 
 // --- PROMOTION CATEGORIES ---
 export const promotionCategories = {
@@ -59,12 +66,6 @@ export interface SiteContent {
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
   welcomeImages: Array<{ url: string; alt: string; }>;
-  // B6 FIX: Renamed `Images` → `aboutImages` to match the field name used
-  // everywhere in defaultSiteContent, Admin.tsx, and any component that reads
-  // siteContent.aboutImages. The old `Images` key was a dead field that caused
-  // TypeScript to silently allow the real `aboutImages` writes while the
-  // interface said they didn't exist, leading to type drift and potential
-  // runtime mismatches.
   aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
@@ -75,7 +76,6 @@ export interface SiteContent {
   promotions: Promotion[];
 }
 
-// --- CORRECTED defaultSiteContent with 3 HERO IMAGES ---
 const defaultSiteContent: SiteContent = {
   logoImage: "/placeholder.svg",
   faviconImage: "",
@@ -111,18 +111,15 @@ const defaultSiteContent: SiteContent = {
     footerMondayThursday: "Mon - Thu: 11am - 9pm",
     footerFridaySaturday: "Fri - Sat: 11am - 10pm",
     footerSunday: "Sun: 10am - 8pm",
-    // For Menu Page CTA
     menuReadyToDineTitle: "Ready to Dine With Us?",
     menuReadyToDineText: "Book your table today and help us make a difference for rescue dogs!",
     menuCallText: "Call us at",
     menuAddressText: "123 Outback Lane, Sydney, NSW 2000",
-    // For Events Page CTA
     eventsDontMissTitle: "Don't Miss Out!",
     eventsDontMissText: "Follow us on social media or call ahead to secure your spot at our special events. Some events may have limited seating!",
     eventsCallText: "Call for reservations:",
     eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant",
     eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
-    // General info used across pages
     homePhone: "(02) 1234 5678",
     homeEmail: "hello@kingaroos.com",
     homeAddress: "123 Outback Lane, Sydney, NSW 2000",
@@ -136,7 +133,7 @@ const defaultSiteContent: SiteContent = {
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  login: (password: string) => Promise<boolean>;
+  login: () => Promise<boolean>;
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
@@ -158,38 +155,30 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 const siteContentRef = doc(db, "content", "main");
 
-// Maximum number of automatic retry attempts after a Firestore snapshot error.
 const MAX_SNAPSHOT_RETRIES = 3;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
-
-  // B4 FIX: Separate readiness flags for auth and Firestore so that `loading`
-  // is only cleared once *both* subsystems have reported their initial state.
-  // Previously only Firestore set loading=false, so a slow auth response could
-  // cause the app to render with stale/default content before user was known.
   const [authReady, setAuthReady] = useState(false);
   const [dataReady, setDataReady] = useState(false);
-
-  // Derived loading flag — the app is considered loading until both auth *and*
-  // the first Firestore snapshot (or exhausted retries) have resolved.
   const loading = !authReady || !dataReady;
-
-  // B1/B2 FIX: Keep a ref to the latest user so the Firestore effect closure
-  // always reads the current auth state without needing `user` as a dependency
-  // (which would needlessly re-subscribe on every sign-in/sign-out).
   const userRef = useRef<User | null>(null);
 
   // --- Auth listener ---
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      // B1 FIX (supporting): keep userRef in sync so snapshot handler can
-      // check auth without capturing a stale closure value.
-      userRef.current = currentUser;
-      // B4 FIX: Mark auth as resolved on first callback (fired even when
-      // signed-out, so this always runs quickly).
+      // Only treat the user as logged in if their email is on the allowlist
+      const allowed =
+        currentUser && ALLOWED_EMAILS.includes(currentUser.email ?? "")
+          ? currentUser
+          : null;
+      if (currentUser && !allowed) {
+        // Signed in but not allowed — sign them back out silently
+        signOut(auth);
+      }
+      setUser(allowed);
+      userRef.current = allowed;
       setAuthReady(true);
     });
     return () => unsubscribeAuth();
@@ -205,9 +194,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       unsubscribeSnapshot = onSnapshot(
         siteContentRef,
         (snapshot) => {
-          // Reset retry counter on any successful delivery.
           retryCount = 0;
-
           if (snapshot.exists()) {
             const serverContent = snapshot.data() as Partial<SiteContent>;
             const mergedContent: SiteContent = {
@@ -226,43 +213,26 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               aboutImages: { ...defaultSiteContent.aboutImages, ...(serverContent.aboutImages || {}) },
               siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
               siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
+              physicalMenuImages: serverContent.physicalMenuImages ?? [],
             };
             setSiteContent(mergedContent);
           } else {
-            // B1 FIX: Only seed the document when a user is authenticated.
-            // Previously this ran unconditionally, which caused anonymous reads
-            // to attempt a write and fail with permission-denied in production,
-            // AND it was missing { merge: true } so it could clobber partial
-            // server data if the snapshot arrived mid-write.
             if (userRef.current) {
               setDoc(siteContentRef, defaultSiteContent, { merge: true });
             }
             setSiteContent(defaultSiteContent);
           }
-
-          // B4 FIX: Signal that the first Firestore delivery has completed.
           setDataReady(true);
         },
         (error) => {
           console.error("Firebase Snapshot Error:", error);
-
-          // B2 FIX: Instead of silently setting loading=false and leaving the
-          // app stuck on placeholder defaults, attempt exponential back-off
-          // retries before giving up.  Only after MAX_SNAPSHOT_RETRIES
-          // exhausted do we unblock the UI (showing defaults is better than a
-          // permanent spinner).
           if (retryCount < MAX_SNAPSHOT_RETRIES) {
-            const delayMs = Math.pow(2, retryCount) * 1000; // 1 s, 2 s, 4 s
-            console.warn(
-              `Firestore snapshot failed — retrying in ${delayMs}ms (attempt ${retryCount + 1}/${MAX_SNAPSHOT_RETRIES})`
-            );
+            const delayMs = Math.pow(2, retryCount) * 1000;
+            console.warn(`Firestore snapshot failed — retrying in ${delayMs}ms (attempt ${retryCount + 1}/${MAX_SNAPSHOT_RETRIES})`);
             retryCount += 1;
             retryTimer = setTimeout(subscribe, delayMs);
           } else {
-            console.error(
-              "Firestore snapshot failed after maximum retries — showing cached/default content."
-            );
-            // Unblock the UI so users aren't stuck on a loading screen.
+            console.error("Firestore snapshot failed after maximum retries — showing cached/default content.");
             setDataReady(true);
           }
         }
@@ -270,19 +240,25 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
 
     subscribe();
-
     return () => {
       if (unsubscribeSnapshot) unsubscribeSnapshot();
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, []); // Intentionally empty: we use userRef for auth checks inside the
-          // effect to avoid re-subscribing on every sign-in/sign-out.
+  }, []);
 
-  const login = async (password: string): Promise<boolean> => {
+  // --- Google Sign-In ---
+  const login = async (): Promise<boolean> => {
     try {
-      await signInWithEmailAndPassword(auth, "admin@kingaroos.com", password);
+      const result = await signInWithPopup(auth, googleProvider);
+      const email = result.user.email ?? "";
+      if (!ALLOWED_EMAILS.includes(email)) {
+        // Not on the allowlist — sign out immediately
+        await signOut(auth);
+        return false;
+      }
       return true;
     } catch (error) {
+      console.error("Google sign-in error:", error);
       return false;
     }
   };
@@ -311,10 +287,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return { add, update, remove };
   };
 
-  const dogOps = createCrudOperations<Dog>("dogs");
-  const menuItemOps = createCrudOperations<MenuItem>("menuItems");
-  const eventOps = createCrudOperations<Event>("events");
-  const promotionOps = createCrudOperations<Promotion>("promotions");
+  const dogOps        = createCrudOperations<Dog>("dogs");
+  const menuItemOps   = createCrudOperations<MenuItem>("menuItems");
+  const eventOps      = createCrudOperations<Event>("events");
+  const promotionOps  = createCrudOperations<Promotion>("promotions");
 
   return (
     <AdminContext.Provider
