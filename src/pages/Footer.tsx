@@ -35,10 +35,17 @@ export function Footer() {
         setShowLoginDialog(false);
         navigate("/admin");
       } else {
-        // Redirect flow kicked in — page navigating away, keep loading
+        setError("Access denied. Your Google account is not authorised for this admin panel.");
       }
     } catch (err: any) {
-      setError(err?.message ?? "Sign-in failed. Please try again.");
+      const code = err?.code ?? "";
+      if (code === "auth/popup-blocked") {
+        setError("Popup was blocked. Please allow popups for this site and try again.");
+      } else if (code === "auth/popup-closed-by-user") {
+        setError("Sign-in cancelled.");
+      } else {
+        setError(`Sign-in failed: ${err?.message ?? code ?? "Please try again."}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -148,7 +155,6 @@ export function Footer() {
               disabled={loading}
               className="w-full flex items-center justify-center gap-3 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 shadow-sm font-medium"
             >
-              {/* Google logo SVG */}
               {loading ? (
                 <svg className="animate-spin h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
