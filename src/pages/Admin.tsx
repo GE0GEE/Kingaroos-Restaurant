@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
   AccordionContent,
@@ -248,6 +249,170 @@ function MenuItemForm({ item, onSubmit }: { item: Partial<MenuItem>; onSubmit: (
         isProcessing={isUploading}
       />
       <Button onClick={() => onSubmit(formData)} className="w-full" disabled={isUploading}>Save Menu Item</Button>
+    </div>
+  );
+}
+
+// --- EVENT TYPE IMAGES PANEL ---
+const EVENT_TYPES = [
+  { key: "music",   label: "Live Music",     color: "bg-aussie-orange"      },
+  { key: "dogs",    label: "Dog Events",     color: "bg-aussie-eucalyptus"  },
+  { key: "family",  label: "Family Fun",     color: "bg-brown-600"          },
+  { key: "special", label: "Special Events", color: "bg-aussie-burnt-red"   },
+  { key: "food",    label: "Food Events",    color: "bg-sand-600"           },
+];
+
+function EventTypeImagesPanel({
+  images,
+  onUpdate,
+}: {
+  images: Record<string, string>;
+  onUpdate: (key: string, value: string) => void;
+}) {
+  const [uploading, setUploading] = useState<string | null>(null);
+
+  const handleFile = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(key);
+    try {
+      const base64 = await handleFileAndCompress(file);
+      onUpdate(key, base64);
+    } catch {
+      alert("Image upload failed.");
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {EVENT_TYPES.map(({ key, label, color }) => {
+        const img = images[key] || "";
+        const isUploading = uploading === key;
+        return (
+          <div key={key} className="border border-sand-200 rounded-lg bg-cream-50 p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 ${color} rounded-full shrink-0`} />
+              <span className="font-body font-semibold text-brown-800 text-sm">{label}</span>
+            </div>
+            {img && (
+              <div className="relative">
+                <img
+                  src={img}
+                  alt={label}
+                  className="w-full h-32 object-cover rounded-lg border border-sand-200"
+                  onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                />
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-1 right-1 h-6 w-6"
+                  onClick={() => onUpdate(key, "")}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            <div className="space-y-1">
+              <Input
+                type="file"
+                accept="image/*"
+                disabled={isUploading}
+                onChange={(e) => handleFile(key, e)}
+              />
+              <Input
+                placeholder="Or paste image URL"
+                value={img.startsWith("http") ? img : ""}
+                onChange={(e) => onUpdate(key, e.target.value)}
+              />
+              {isUploading && (
+                <div className="flex items-center gap-2 text-xs text-blue-600">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+// month is 0-indexed (0 = January)
+const ALL_HOLIDAYS: { key: string; name: string; month: number; day: number; }[] = [
+  // Philippine National Holidays
+  { key: "ph-newyear",       name: "New Year's Day",              month: 0,  day: 1  },
+  { key: "ph-edsa",          name: "EDSA People Power Revolution", month: 1,  day: 25 },
+  { key: "ph-araw-ng-kagitingan", name: "Araw ng Kagitingan (Day of Valor)", month: 3, day: 9 },
+  { key: "ph-maundy",        name: "Maundy Thursday",             month: 3,  day: 17 }, // approximate, changes yearly
+  { key: "ph-goodfriday",    name: "Good Friday",                 month: 3,  day: 18 }, // approximate
+  { key: "ph-blacksaturday", name: "Black Saturday",              month: 3,  day: 19 }, // approximate
+  { key: "ph-labor",         name: "Labor Day",                   month: 4,  day: 1  },
+  { key: "ph-independence",  name: "Independence Day",            month: 5,  day: 12 },
+  { key: "ph-ninoy",         name: "Ninoy Aquino Day",            month: 7,  day: 21 },
+  { key: "ph-nationalheroes",name: "National Heroes Day",         month: 7,  day: 25 }, // last Monday of August
+  { key: "ph-allsaints",     name: "All Saints' Day",             month: 10, day: 1  },
+  { key: "ph-allsouls",      name: "All Souls' Day",              month: 10, day: 2  },
+  { key: "ph-bonifacio",     name: "Bonifacio Day",               month: 10, day: 30 },
+  { key: "ph-rizal",         name: "Rizal Day",                   month: 11, day: 30 },
+  { key: "ph-christmas-eve", name: "Christmas Eve",               month: 11, day: 24 },
+  { key: "ph-christmas",     name: "Christmas Day",               month: 11, day: 25 },
+  { key: "ph-newyeareve",    name: "New Year's Eve",              month: 11, day: 31 },
+  // Philippine Special Non-Working Holidays
+  { key: "ph-chineseny",     name: "Chinese New Year",            month: 1,  day: 10 }, // approximate
+  { key: "ph-eidalfitr",     name: "Eid'l Fitr",                  month: 3,  day: 10 }, // approximate, Islamic calendar
+  { key: "ph-eidaladha",     name: "Eid'l Adha",                  month: 5,  day: 28 }, // approximate
+  { key: "ph-eidalmawlid",   name: "Mawlid (Prophet's Birthday)", month: 8,  day: 15 }, // approximate
+  // Well-Known International / Family Holidays
+  { key: "valentines",       name: "Valentine's Day",             month: 1,  day: 14 },
+  { key: "mothers-day",      name: "Mother's Day",                month: 4,  day: 11 }, // 2nd Sunday of May (approx)
+  { key: "fathers-day",      name: "Father's Day",                month: 5,  day: 15 }, // 3rd Sunday of June (approx)
+  { key: "halloween",        name: "Halloween",                   month: 9,  day: 31 },
+  { key: "thanksgiving",     name: "Thanksgiving",                month: 10, day: 28 }, // 4th Thursday of November (approx)
+];
+
+function HolidayHoursPanel({ statuses, onToggle }: { statuses: Record<string, boolean>; onToggle: (key: string, value: boolean) => void; }) {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const thisMonthHolidays = ALL_HOLIDAYS.filter((h) => h.month === currentMonth);
+
+  if (thisMonthHolidays.length === 0) {
+    return (
+      <div className="text-center py-8 text-brown-400 font-body text-sm">
+        No holidays this month.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {thisMonthHolidays.map((holiday) => {
+        const statusKey = `${currentYear}-${holiday.key}`;
+        const isOpen = statuses[statusKey] !== false; // default open
+        return (
+          <div key={holiday.key} className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
+            <div>
+              <p className="font-body font-semibold text-brown-800 text-sm">{holiday.name}</p>
+              <p className="font-body text-xs text-brown-500">
+                {new Date(currentYear, holiday.month, holiday.day).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`font-body text-xs font-semibold ${isOpen ? "text-green-600" : "text-red-500"}`}>
+                {isOpen ? "Open" : "Closed"}
+              </span>
+              <Switch
+                checked={isOpen}
+                onCheckedChange={(val) => onToggle(statusKey, val)}
+              />
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -1101,12 +1266,49 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="events">
-              <Card>
-                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new event.</DialogDescription></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }} /></DialogContent></Dialog></CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this event.</DialogDescription></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteEvent(event.id); }}><Trash2 /></Button></div></Card>))}
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                {/* Manage Events */}
+                <Card>
+                  <CardHeader className="flex justify-between items-center"><CardTitle>Manage Events</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Event</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Event</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new event.</DialogDescription></DialogHeader><EventForm event={{}} onSubmit={async (event) => { await addEvent(event as Omit<Event, "id">); alert("Event added!"); }} /></DialogContent></Dialog></CardHeader>
+                  <CardContent className="grid md:grid-cols-2 gap-4">
+                    {(siteContent.events ?? []).map((event) => (<Card key={event.id} className="p-4"><h3 className="font-bold">{event.title}</h3><p>{event.date} at {event.time}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {event.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this event.</DialogDescription></DialogHeader><EventForm event={event} onSubmit={async (updates) => { await updateEvent(event.id, updates); alert("Event updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deleteEvent(event.id); }}><Trash2 /></Button></div></Card>))}
+                  </CardContent>
+                </Card>
+
+                {/* Event Type Images */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Event Type Images</CardTitle>
+                    <p className="text-sm text-brown-500">Upload a banner image for each event type. These appear on event cards and the legend.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <EventTypeImagesPanel
+                      images={(siteContent as any).eventTypeImages ?? {}}
+                      onUpdate={async (key, value) => {
+                        const updated = { ...((siteContent as any).eventTypeImages ?? {}), [key]: value };
+                        await updateSiteContent({ eventTypeImages: updated } as any);
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Holiday Hours */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Holiday Hours — {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}</CardTitle>
+                    <p className="text-sm text-brown-500">Toggle open/closed for each holiday this month. Defaults to open.</p>
+                  </CardHeader>
+                  <CardContent>
+                    <HolidayHoursPanel
+                      statuses={(siteContent as any).holidayStatuses ?? {}}
+                      onToggle={async (key, value) => {
+                        const updated = { ...((siteContent as any).holidayStatuses ?? {}), [key]: value };
+                        await updateSiteContent({ holidayStatuses: updated } as any);
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="merch">
