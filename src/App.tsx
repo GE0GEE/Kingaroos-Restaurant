@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AdminProvider, useAdmin } from "./contexts/AdminContext";
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
@@ -17,7 +17,6 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Dynamically updates the browser tab icon from Firebase
 function FaviconUpdater() {
   const { siteContent } = useAdmin();
   useEffect(() => {
@@ -38,19 +37,6 @@ function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
   return isLoggedIn ? <>{children}</> : <Navigate to="/contact" replace />;
 }
 
-// After a successful signInWithRedirect, navigate to /admin
-function RedirectAfterLogin() {
-  const { isLoggedIn, justLoggedIn, clearJustLoggedIn } = useAdmin();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (isLoggedIn && justLoggedIn) {
-      clearJustLoggedIn();
-      navigate("/admin", { replace: true });
-    }
-  }, [isLoggedIn, justLoggedIn]);
-  return null;
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -59,7 +45,6 @@ const App = () => (
       <AdminProvider>
         <FaviconUpdater />
         <BrowserRouter>
-          <RedirectAfterLogin />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu />} />
