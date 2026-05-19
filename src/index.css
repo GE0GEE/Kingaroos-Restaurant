@@ -101,3 +101,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+/* Banner shimmer animation - must be in global CSS for first-paint */
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
