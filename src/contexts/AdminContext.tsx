@@ -47,6 +47,7 @@ export interface MerchSection {
 export interface MerchItem {
   id: string;
   name: string;
+  price: string;
   category: string;
   tagline: string;
   sections: MerchSection[];
