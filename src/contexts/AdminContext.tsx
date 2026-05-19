@@ -8,6 +8,7 @@ import {
 } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -136,7 +137,7 @@ interface AdminContextType {
   isLoggedIn: boolean;
   justLoggedIn: boolean;
   clearJustLoggedIn: () => void;
-  login: () => Promise<void>;
+  login: () => Promise<boolean>;
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
@@ -268,10 +269,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Google Sign-In (redirect flow) ---
-  const login = async (): Promise<void> => {
-    await signInWithRedirect(auth, googleProvider);
-    // Page navigates away; execution does not continue here
+  // --- Google Sign-In (popup first, redirect fallback) ---
+  const login = async (): Promise<boolean> => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const email = result.user.email ?? "";
+      if (!ALLOWED_EMAILS.includes(email)) {
+        await signOut(auth);
+        return false;
+      }
+      return true;
+    } catch (error: any) {
+      // Popup was blocked or closed — fall back to redirect
+      const popupErrors = [
+        "auth/popup-blocked",
+        "auth/popup-closed-by-user",
+        "auth/cancelled-popup-request",
+      ];
+      if (popupErrors.includes(error?.code)) {
+        await signInWithRedirect(auth, googleProvider);
+        return false; // page navigates away
+      }
+      // Surface the real Firebase error to the caller
+      throw new Error(error?.message ?? "Google sign-in failed");
+    }
   };
 
   const clearJustLoggedIn = () => setJustLoggedIn(false);
