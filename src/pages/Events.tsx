@@ -26,8 +26,37 @@ const getEventColor = (type: string) => {
   }
 };
 
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  music: "Live Music",
+  dogs: "Dog Events",
+  family: "Family Fun",
+  special: "Special Events",
+  food: "Food Events",
+};
+
+function EventTypeBadge({ type, images, size = "sm" }: { type: string; images: Record<string, string>; size?: "sm" | "lg" }) {
+  const img = images[type];
+  const Icon = getEventIcon(type);
+  const color = getEventColor(type);
+  const dim = size === "lg" ? "w-16 h-16" : "w-12 h-12";
+  const iconDim = size === "lg" ? "h-8 w-8" : "h-6 w-6";
+  if (img) {
+    return (
+      <div className={`${dim} rounded-full overflow-hidden border-2 border-white shadow shrink-0`}>
+        <img src={img} alt={type} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
+  return (
+    <div className={`${dim} ${color} rounded-full flex items-center justify-center shrink-0`}>
+      <Icon className={`${iconDim} text-white`} />
+    </div>
+  );
+}
+
 export default function Events() {
   const { siteContent, loading } = useAdmin();
+  const eventTypeImages: Record<string, string> = (siteContent as any).eventTypeImages ?? {};
 
   if (loading) {
     return (
@@ -79,14 +108,11 @@ export default function Events() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {thisWeekEvents.map((event) => {
-                const IconComponent = getEventIcon(event.type);
                 return (
                   <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow">
                     <CardHeader className="pb-4">
                       <div className="flex items-center justify-between">
-                        <div className={`w-12 h-12 ${getEventColor(event.type)} rounded-full flex items-center justify-center`}>
-                          <IconComponent className="h-6 w-6 text-white" />
-                        </div>
+                        <EventTypeBadge type={event.type} images={eventTypeImages} size="sm" />
                         <Badge className="bg-aussie-orange text-white font-body">This Week</Badge>
                       </div>
                       <CardTitle className="font-heading text-xl text-brown-800">{event.title}</CardTitle>
@@ -121,14 +147,11 @@ export default function Events() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {comingSoonEvents.map((event) => {
-                const IconComponent = getEventIcon(event.type);
                 return (
                   <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow">
                     <CardContent className="p-6">
                       <div className="flex space-x-4">
-                        <div className={`w-16 h-16 ${getEventColor(event.type)} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                          <IconComponent className="h-8 w-8 text-white" />
-                        </div>
+                        <EventTypeBadge type={event.type} images={eventTypeImages} size="lg" />
                         <div className="flex-1 space-y-3">
                           <div className="flex items-start justify-between">
                             <h3 className="font-heading text-xl font-bold text-brown-800">{event.title}</h3>
@@ -158,17 +181,26 @@ export default function Events() {
           <h3 className="font-heading text-2xl font-bold text-center text-brown-800 mb-8">Event Types</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { color: "bg-aussie-orange", label: "Live Music" },
-              { color: "bg-aussie-eucalyptus", label: "Dog Events" },
-              { color: "bg-brown-600", label: "Family Fun" },
-              { color: "bg-aussie-burnt-red", label: "Special Events" },
-              { color: "bg-sand-600", label: "Food Events" },
-            ].map(({ color, label }) => (
-              <div key={label} className="flex items-center space-x-2">
-                <div className={`w-4 h-4 ${color} rounded-full`} />
-                <span className="font-body text-brown-600 text-sm">{label}</span>
-              </div>
-            ))}
+              { key: "music",   color: "bg-aussie-orange",     label: "Live Music"     },
+              { key: "dogs",    color: "bg-aussie-eucalyptus", label: "Dog Events"     },
+              { key: "family",  color: "bg-brown-600",         label: "Family Fun"     },
+              { key: "special", color: "bg-aussie-burnt-red",  label: "Special Events" },
+              { key: "food",    color: "bg-sand-600",          label: "Food Events"    },
+            ].map(({ key, color, label }) => {
+              const img = eventTypeImages[key];
+              return (
+                <div key={key} className="flex flex-col items-center gap-2 text-center">
+                  {img ? (
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
+                      <img src={img} alt={label} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className={`w-16 h-16 ${color} rounded-full`} />
+                  )}
+                  <span className="font-body text-brown-600 text-sm">{label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
