@@ -89,7 +89,14 @@ export default function Merch() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filtered.map((item) => (
                 <Card key={item.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
-                  <div className="bg-gradient-to-br from-sand-100 to-cream-200 px-5 pt-5 pb-4">
+                  {(item as any).imageUrl && (
+                    <img
+                      src={(item as any).imageUrl}
+                      alt={item.name}
+                      className="w-full h-52 object-cover"
+                    />
+                  )}
+                  <div className="bg-gradient-to-br from-sand-100 to-cream-200 px-5 pt-4 pb-4">
                     {item.category && (
                       <Badge className="bg-aussie-orange text-white font-body mb-2">{item.category}</Badge>
                     )}
