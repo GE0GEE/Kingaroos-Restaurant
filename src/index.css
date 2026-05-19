@@ -101,3 +101,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+/* Banner shimmer animation - in global CSS so it works on first paint.
+   The banner uses `animation: shimmer 3s ease-in-out infinite` to slide
+   its gradient back and forth. Keyframes MUST be defined globally
+   (not inside a React component <style> tag) for the animation to
+   start immediately on the first render of the banner. */
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
