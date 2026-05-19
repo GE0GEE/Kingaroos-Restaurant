@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { AdminProvider, useAdmin } from "./contexts/AdminContext";
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
+import Merch from "./pages/Merch";
 import DogRescue from "./pages/DogRescue";
 import Events from "./pages/Events";
 import Promotions from "./pages/Promotions";
@@ -61,6 +62,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<Menu />} />
+            <Route path="/merch" element={<Merch />} />
             <Route path="/dog-rescue" element={<DogRescue />} />
             <Route path="/events" element={<Events />} />
             <Route path="/promotions" element={<Promotions />} />
