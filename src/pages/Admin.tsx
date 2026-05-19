@@ -744,6 +744,101 @@ export default function Admin() {
                 </CardContent>
               </Card>
 
+              {/* Physical Menu Images Card */}
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle>Physical Menu Gallery</CardTitle>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Upload photographs of your physical menus. These appear as an elegant gallery on the Menu page so guests can browse the printed menus before they arrive.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Existing images */}
+                  {(siteContent.physicalMenuImages ?? []).length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {(siteContent.physicalMenuImages ?? []).map((img, idx) => (
+                        <div key={img.id} className="relative group">
+                          <img
+                            src={img.url}
+                            alt={img.caption || `Menu page ${idx + 1}`}
+                            className="w-full aspect-[3/4] object-cover rounded-lg border border-gray-200"
+                          />
+                          <div className="mt-1">
+                            <Input
+                              value={img.caption}
+                              placeholder="Caption (optional)"
+                              className="text-xs h-7"
+                              onChange={async (e) => {
+                                const updated = (siteContent.physicalMenuImages ?? []).map((m) =>
+                                  m.id === img.id ? { ...m, caption: e.target.value } : m
+                                );
+                                await updateSiteContent({ physicalMenuImages: updated });
+                              }}
+                            />
+                          </div>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={async () => {
+                              if (confirm("Remove this menu photo?")) {
+                                const updated = (siteContent.physicalMenuImages ?? []).filter((m) => m.id !== img.id);
+                                await updateSiteContent({ physicalMenuImages: updated });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload new */}
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center space-y-3">
+                    <Upload className="h-8 w-8 text-gray-300 mx-auto" />
+                    <div>
+                      <p className="text-sm font-semibold text-gray-600">Upload Menu Photos</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Select one or multiple images. They will be added to the gallery.</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      disabled={isProcessing}
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files ?? []);
+                        if (!files.length) return;
+                        setIsProcessing(true);
+                        try {
+                          const newImages = await Promise.all(
+                            files.map(async (file) => ({
+                              id: `pmenu-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                              url: await handleFileAndCompress(file),
+                              caption: "",
+                            }))
+                          );
+                          const existing = siteContent.physicalMenuImages ?? [];
+                          await updateSiteContent({ physicalMenuImages: [...existing, ...newImages] });
+                          alert(`✅ ${newImages.length} photo${newImages.length !== 1 ? "s" : ""} added to the gallery.`);
+                        } catch {
+                          alert("Image upload failed. Please try again.");
+                        } finally {
+                          setIsProcessing(false);
+                          e.target.value = "";
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-aussie-orange file:text-white hover:file:bg-aussie-burnt-red disabled:opacity-50 cursor-pointer"
+                    />
+                    {isProcessing && (
+                      <div className="flex items-center justify-center text-sm text-blue-600">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing images…
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* NEW: JSON Import Card */}
               <Card className="mt-8">
                 <CardHeader>
