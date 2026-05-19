@@ -8,19 +8,17 @@ import {
 } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
-  signInWithPopup,
+  signInWithRedirect,
   onAuthStateChanged,
   signOut,
   User,
 } from "firebase/auth";
 import { db, auth, googleProvider } from "../firebase-config";
 
-// ─── ALLOWED ADMIN ACCOUNTS ────────────────────────────────────────────────────
 const ALLOWED_EMAILS: string[] = [
   "gorhamgeorge70@gmail.com",
 ];
 
-// --- PROMOTION CATEGORIES ---
 export const promotionCategories = {
   happyHour: { name: "Happy Hour", badge: "Limited Time", colorClasses: "from-aussie-orange to-aussie-burnt-red" },
   dogSpecial: { name: "Dog Special", badge: "Pawsome Deal", colorClasses: "from-aussie-eucalyptus to-green-700" },
@@ -30,7 +28,6 @@ export const promotionCategories = {
 };
 export type PromotionCategoryKey = keyof typeof promotionCategories;
 
-// --- INTERFACES ---
 export interface Dog { id: string; name: string; breed: string; age: string; personality: string; beforeImage: string; afterImage: string; rescueStory: string; }
 export interface MenuItem { id: string; name: string; description: string; price: string; image: string; featured?: boolean; category: string; }
 export interface PhysicalMenuImage { id: string; url: string; caption: string; }
@@ -38,26 +35,18 @@ export interface Event { id: string; title: string; date: string; time: string; 
 export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; category: PromotionCategoryKey; }
 
 export interface SiteContent {
-  logoImage: string;
-  faviconImage: string;
-  theme: "light" | "dark";
+  logoImage: string; faviconImage: string; theme: "light" | "dark";
   socialLinks: { facebook: string; instagram: string; twitter: string; };
   heroImages: Array<{ url: string; alt: string; }>;
   welcomeImages: Array<{ url: string; alt: string; }>;
   aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
-  dogs: Dog[];
-  menuItems: MenuItem[];
-  physicalMenuImages: PhysicalMenuImage[];
-  events: Event[];
-  promotions: Promotion[];
+  dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[];
 }
 
 const defaultSiteContent: SiteContent = {
-  logoImage: "/placeholder.svg",
-  faviconImage: "",
-  theme: "light",
+  logoImage: "/placeholder.svg", faviconImage: "", theme: "light",
   socialLinks: { facebook: "#", instagram: "#", twitter: "#" },
   heroImages: [
     { url: "/placeholder.svg", alt: "Kingaroos food hero 1" },
@@ -71,40 +60,25 @@ const defaultSiteContent: SiteContent = {
   aboutImages: { familyPhoto: "/placeholder.svg", originalFoodTruck: "/placeholder.svg", firstRescueDog: "/placeholder.svg", restaurantOpensImage: "/placeholder.svg" },
   siteImages: { dogRescuePlaceholderImage: "/placeholder.svg" },
   siteTexts: {
-    siteName: "Kingaroos",
-    footerTagline: "Content loading...",
-    contactMondayThursday: "Monday - Thursday",
-    contactHoursMondayThursday: "11:00 AM - 9:00 PM",
-    contactFridaySaturday: "Friday - Saturday",
-    contactHoursFridaySaturday: "11:00 AM - 10:00 PM",
-    contactSunday: "Sunday",
-    contactHoursSunday: "10:00 AM - 8:00 PM",
-    footerMondayThursday: "Mon - Thu: 11am - 9pm",
-    footerFridaySaturday: "Fri - Sat: 11am - 10pm",
-    footerSunday: "Sun: 10am - 8pm",
-    menuReadyToDineTitle: "Ready to Dine With Us?",
-    menuReadyToDineText: "Book your table today and help us make a difference for rescue dogs!",
-    menuCallText: "Call us at",
-    menuAddressText: "123 Outback Lane, Sydney, NSW 2000",
-    eventsDontMissTitle: "Don't Miss Out!",
-    eventsDontMissText: "Follow us on social media or call ahead to secure your spot at our special events. Some events may have limited seating!",
-    eventsCallText: "Call for reservations:",
-    eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant",
-    eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
-    homePhone: "(02) 1234 5678",
-    homeEmail: "hello@kingaroos.com",
-    homeAddress: "123 Outback Lane, Sydney, NSW 2000",
+    siteName: "Kingaroos", footerTagline: "Content loading...",
+    contactMondayThursday: "Monday - Thursday", contactHoursMondayThursday: "11:00 AM - 9:00 PM",
+    contactFridaySaturday: "Friday - Saturday", contactHoursFridaySaturday: "11:00 AM - 10:00 PM",
+    contactSunday: "Sunday", contactHoursSunday: "10:00 AM - 8:00 PM",
+    footerMondayThursday: "Mon - Thu: 11am - 9pm", footerFridaySaturday: "Fri - Sat: 11am - 10pm", footerSunday: "Sun: 10am - 8pm",
+    menuReadyToDineTitle: "Ready to Dine With Us?", menuReadyToDineText: "Book your table today and help us make a difference for rescue dogs!",
+    menuCallText: "Call us at", menuAddressText: "123 Outback Lane, Sydney, NSW 2000",
+    eventsDontMissTitle: "Don't Miss Out!", eventsDontMissText: "Follow us on social media or call ahead to secure your spot at our special events. Some events may have limited seating!",
+    eventsCallText: "Call for reservations:", eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant", eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
+    homePhone: "(02) 1234 5678", homeEmail: "hello@kingaroos.com", homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
-  dogs: [],
-  menuItems: [],
-  physicalMenuImages: [],
-  events: [],
-  promotions: [],
+  dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [],
 };
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  login: () => Promise<boolean>;
+  justLoggedIn: boolean;
+  clearJustLoggedIn: () => void;
+  login: () => Promise<void>;
   logout: () => void;
   siteContent: SiteContent;
   loading: boolean;
@@ -126,9 +100,11 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 const siteContentRef = doc(db, "content", "main");
 const MAX_SNAPSHOT_RETRIES = 3;
+const LOGIN_PENDING_KEY = "adminLoginPending";
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
   const [authReady, setAuthReady] = useState(false);
   const [dataReady, setDataReady] = useState(false);
@@ -136,6 +112,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<User | null>(null);
 
   // --- Auth listener ---
+  // If sessionStorage has loginPending, a redirect just completed — signal navigation
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       const allowed =
@@ -148,6 +125,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       setUser(allowed);
       userRef.current = allowed;
       setAuthReady(true);
+
+      // If we stored a pending-login flag before the redirect, now fire navigation
+      if (allowed && sessionStorage.getItem(LOGIN_PENDING_KEY)) {
+        sessionStorage.removeItem(LOGIN_PENDING_KEY);
+        setJustLoggedIn(true);
+      }
     });
     return () => unsubscribeAuth();
   }, []);
@@ -166,8 +149,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           if (snapshot.exists()) {
             const serverContent = snapshot.data() as Partial<SiteContent>;
             const mergedContent: SiteContent = {
-              ...defaultSiteContent,
-              ...serverContent,
+              ...defaultSiteContent, ...serverContent,
               socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
               heroImages: serverContent.heroImages && serverContent.heroImages.length > 0 ? serverContent.heroImages : defaultSiteContent.heroImages,
               welcomeImages: serverContent.welcomeImages && serverContent.welcomeImages.length > 0 ? serverContent.welcomeImages : defaultSiteContent.welcomeImages,
@@ -206,22 +188,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Google Sign-In ---
-  const login = async (): Promise<boolean> => {
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user.email ?? "";
-      if (!ALLOWED_EMAILS.includes(email)) {
-        await signOut(auth);
-        return false;
-      }
-      return true;
-    } catch (error: any) {
-      console.error("Google sign-in error:", error?.code, error?.message);
-      throw error;
-    }
+  // --- Google Sign-In via redirect ---
+  const login = async (): Promise<void> => {
+    sessionStorage.setItem(LOGIN_PENDING_KEY, "1");
+    await signInWithRedirect(auth, googleProvider);
   };
 
+  const clearJustLoggedIn = () => setJustLoggedIn(false);
   const logout = async () => { await signOut(auth); };
 
   const updateSiteContent = async (updates: Partial<SiteContent>) => {
@@ -255,23 +228,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     <AdminContext.Provider
       value={{
         isLoggedIn: !!user,
+        justLoggedIn,
+        clearJustLoggedIn,
         login,
         logout,
         siteContent,
         loading,
         updateSiteContent,
-        addDog: dogOps.add,
-        updateDog: dogOps.update,
-        deleteDog: dogOps.remove,
-        addMenuItem: menuItemOps.add,
-        updateMenuItem: menuItemOps.update,
-        deleteMenuItem: menuItemOps.remove,
-        addEvent: eventOps.add,
-        updateEvent: eventOps.update,
-        deleteEvent: eventOps.remove,
-        addPromotion: promotionOps.add,
-        updatePromotion: promotionOps.update,
-        deletePromotion: promotionOps.remove,
+        addDog: dogOps.add, updateDog: dogOps.update, deleteDog: dogOps.remove,
+        addMenuItem: menuItemOps.add, updateMenuItem: menuItemOps.update, deleteMenuItem: menuItemOps.remove,
+        addEvent: eventOps.add, updateEvent: eventOps.update, deleteEvent: eventOps.remove,
+        addPromotion: promotionOps.add, updatePromotion: promotionOps.update, deletePromotion: promotionOps.remove,
       }}
     >
       {children}
