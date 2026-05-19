@@ -309,22 +309,6 @@ function MerchSectionEditor({
   onChange: (s: MerchSection) => void;
   onDelete: () => void;
 }) {
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploading(true);
-    try {
-      const base64 = await handleFileAndCompress(file);
-      onChange({ ...section, imageUrl: base64 });
-    } catch {
-      alert("Image upload failed.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   return (
     <div className="border border-sand-200 rounded-lg bg-cream-50 p-4 space-y-3">
       <div className="flex items-center justify-between mb-1">
@@ -351,44 +335,6 @@ function MerchSectionEditor({
           placeholder="Describe this section..."
           onChange={(e) => onChange({ ...section, description: e.target.value })}
         />
-      </div>
-      <div>
-        <Label>Photo URL or Upload</Label>
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleImageFile}
-          disabled={isUploading}
-        />
-        <Input
-          className="mt-1"
-          placeholder="Or paste image URL"
-          value={section.imageUrl?.startsWith("http") ? section.imageUrl : ""}
-          onChange={(e) => onChange({ ...section, imageUrl: e.target.value })}
-        />
-        {isUploading && (
-          <div className="flex items-center gap-2 text-xs text-blue-600 mt-1">
-            <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
-          </div>
-        )}
-        {section.imageUrl && (
-          <div className="relative mt-2">
-            <img
-              src={section.imageUrl}
-              alt="preview"
-              className="w-full h-28 object-cover rounded-md"
-              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-            />
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-1 right-1 h-6 w-6"
-              onClick={() => onChange({ ...section, imageUrl: "" })}
-            >
-              <Trash2 className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -435,6 +381,21 @@ function MerchItemForm({
     sections: [],
     ...item,
   });
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const base64 = await handleFileAndCompress(file);
+      setFormData((prev) => ({ ...prev, imageUrl: base64 }));
+    } catch {
+      alert("Image upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const updateSection = (idx: number, s: MerchSection) =>
     setFormData((prev) => ({
@@ -456,6 +417,45 @@ function MerchItemForm({
 
   return (
     <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+      {/* Product Image */}
+      <div>
+        <Label>Product Image *</Label>
+        <Input
+          type="file"
+          accept="image/*"
+          onChange={handleImageFile}
+          disabled={isUploading}
+        />
+        <Input
+          className="mt-1"
+          placeholder="Or paste image URL"
+          value={(formData as any).imageUrl?.startsWith("http") ? (formData as any).imageUrl : ""}
+          onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
+        />
+        {isUploading && (
+          <div className="flex items-center gap-2 text-xs text-blue-600 mt-1">
+            <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+          </div>
+        )}
+        {(formData as any).imageUrl && (
+          <div className="relative mt-2">
+            <img
+              src={(formData as any).imageUrl}
+              alt="preview"
+              className="w-full h-40 object-cover rounded-lg border border-sand-200"
+              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => setFormData((prev) => ({ ...prev, imageUrl: "" }))}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Product Name *</Label>
