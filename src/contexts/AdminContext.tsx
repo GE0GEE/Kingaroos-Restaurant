@@ -62,7 +62,7 @@ export interface SiteContent {
   aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
   siteImages: { dogRescuePlaceholderImage: string; };
   siteTexts: { [key: string]: any; };
-  dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[]; merch: MerchItem[];
+  dogs: Dog[]; menuItems: MenuItem[]; physicalMenuImages: PhysicalMenuImage[]; events: Event[]; promotions: Promotion[]; merch: MerchItem[]; holidayStatuses: Record<string, boolean>; eventTypeImages: Record<string, string>;
 }
 
 const defaultSiteContent: SiteContent = {
@@ -91,7 +91,7 @@ const defaultSiteContent: SiteContent = {
     eventsCallText: "Call for reservations:", eventsFacebookText: "Follow us on Facebook: @KingaroosRestaurant", eventsInstagramText: "Follow us on Instagram: @kingaroos_sydney",
     homePhone: "(02) 1234 5678", homeEmail: "hello@kingaroos.com", homeAddress: "123 Outback Lane, Sydney, NSW 2000",
   },
-  dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [], merch: [],
+  dogs: [], menuItems: [], physicalMenuImages: [], events: [], promotions: [], merch: [], holidayStatuses: {}, eventTypeImages: {},
 };
 
 interface AdminContextType {
