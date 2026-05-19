@@ -2,6 +2,14 @@ export interface Theme {
   id: string;
   name: string;
   month: number; // 0-11 (January = 0, December = 11)
+  /**
+   * For dated holidays (Christmas Dec 25, Valentine's Feb 14, etc.) we store
+   * the actual holiday date. The banner can then be configured to show only
+   * within a window around this date (e.g. 1 week before/after).
+   * For themes without a specific date (Spring, Summer, etc.) leave undefined
+   * and the banner falls back to "show whole month".
+   */
+  holidayDate?: { month: number; day: number };
   colors: {
     primary: string;
     secondary: string;
@@ -16,6 +24,15 @@ export interface Theme {
     pattern?: string;
   };
 }
+
+export type BannerDuration = "month" | "weeks" | "week" | "days";
+
+export const BANNER_DURATION_OPTIONS: { value: BannerDuration; label: string; days: number }[] = [
+  { value: "month", label: "Whole month", days: 31 },
+  { value: "weeks", label: "2-3 weeks (±10 days)", days: 10 },
+  { value: "week", label: "Whole week (±3 days)", days: 3 },
+  { value: "days", label: "2-3 days from holiday", days: 2 },
+];
 
 export const THEMES: Theme[] = [
   {
@@ -36,6 +53,7 @@ export const THEMES: Theme[] = [
     id: "new-year",
     name: "New Year",
     month: 0, // January
+    holidayDate: { month: 0, day: 1 },
     colors: {
       primary: "rgb(234, 179, 8)", // yellow-500 - gold
       secondary: "rgb(192, 132, 252)", // purple-400
@@ -54,6 +72,7 @@ export const THEMES: Theme[] = [
     id: "valentines",
     name: "Valentine's Day",
     month: 1, // February
+    holidayDate: { month: 1, day: 14 },
     colors: {
       primary: "rgb(244, 63, 94)", // rose-500
       secondary: "rgb(236, 72, 153)", // pink-500
@@ -90,6 +109,7 @@ export const THEMES: Theme[] = [
     id: "easter",
     name: "Easter",
     month: 3, // April
+    holidayDate: { month: 3, day: 12 },
     colors: {
       primary: "rgb(168, 85, 247)", // purple-500
       secondary: "rgb(236, 72, 153)", // pink-500
@@ -144,6 +164,7 @@ export const THEMES: Theme[] = [
     id: "independence",
     name: "Independence Day",
     month: 6, // July
+    holidayDate: { month: 6, day: 4 },
     colors: {
       primary: "rgb(239, 68, 68)", // red-500
       secondary: "rgb(59, 130, 246)", // blue-500
@@ -198,6 +219,7 @@ export const THEMES: Theme[] = [
     id: "halloween",
     name: "Halloween",
     month: 9, // October
+    holidayDate: { month: 9, day: 31 },
     colors: {
       primary: "rgb(249, 115, 22)", // orange-500
       secondary: "rgb(139, 92, 246)", // violet-500
@@ -216,6 +238,7 @@ export const THEMES: Theme[] = [
     id: "thanksgiving",
     name: "Thanksgiving",
     month: 10, // November
+    holidayDate: { month: 10, day: 27 },
     colors: {
       primary: "rgb(217, 119, 6)", // amber-600
       secondary: "rgb(185, 28, 28)", // red-700
@@ -234,6 +257,7 @@ export const THEMES: Theme[] = [
     id: "christmas",
     name: "Christmas",
     month: 11, // December
+    holidayDate: { month: 11, day: 25 },
     colors: {
       primary: "rgb(220, 38, 38)", // red-600
       secondary: "rgb(22, 163, 74)", // green-600
@@ -261,3 +285,35 @@ export const getThemeByMonth = (month: number): Theme => {
 export const getThemeById = (id: string): Theme => {
   return THEMES.find((t) => t.id === id) || getDefaultTheme();
 };
+
+/**
+ * Determine if a banner for the given theme should be visible right now,
+ * based on the theme's holiday date and the configured duration window.
+ *
+ * - Themes without a `holidayDate` (Spring, Summer, etc.) use the simple
+ *   "is the current month equal to the theme's month?" check.
+ * - Themes with a `holidayDate` use a window of N days around that date,
+ *   where N depends on the duration choice.
+ */
+export function isBannerInDurationWindow(theme: Theme, duration: BannerDuration | undefined): boolean {
+  const now = new Date();
+
+  // For themes without a specific holiday date, fall back to month-based.
+  if (!theme.holidayDate) {
+    return now.getMonth() === theme.month;
+  }
+
+  // Whole month duration: just check the month matches.
+  if (!duration || duration === "month") {
+    return now.getMonth() === theme.holidayDate.month;
+  }
+
+  // Compute the holiday date for the current year.
+  const holiday = new Date(now.getFullYear(), theme.holidayDate.month, theme.holidayDate.day);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diffDays = Math.abs((now.getTime() - holiday.getTime()) / msPerDay);
+
+  const opt = BANNER_DURATION_OPTIONS.find((o) => o.value === duration);
+  const window = opt?.days ?? 31;
+  return diffDays <= window;
+}
