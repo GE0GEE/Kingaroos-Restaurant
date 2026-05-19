@@ -250,36 +250,6 @@ export default function Events() {
         </div>
       </section>
 
-      {/* Event Types Legend */}
-      <section className="py-12 bg-sand-100">
-        <div className="max-w-6xl mx-auto px-4">
-          <h3 className="font-heading text-2xl font-bold text-center text-brown-800 mb-8">Event Types</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            {[
-              { key: "music",   color: "bg-aussie-orange",     label: "Live Music"     },
-              { key: "dogs",    color: "bg-aussie-eucalyptus", label: "Dog Events"     },
-              { key: "family",  color: "bg-brown-600",         label: "Family Fun"     },
-              { key: "special", color: "bg-aussie-burnt-red",  label: "Special Events" },
-              { key: "food",    color: "bg-sand-600",          label: "Food Events"    },
-            ].map(({ key, color, label }) => {
-              const img = eventTypeImages[key];
-              return (
-                <div key={key} className="flex flex-col items-center gap-2 text-center">
-                  {img ? (
-                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow">
-                      <img src={img} alt={label} className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <div className={`w-16 h-16 ${color} rounded-full`} />
-                  )}
-                  <span className="font-body text-brown-600 text-sm">{label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="bg-brown-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
