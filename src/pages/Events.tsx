@@ -1,8 +1,39 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Music, Users, Heart, Coffee } from "lucide-react";
+import { Calendar, Music, Users, Heart, Coffee, Store } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
+
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const ALL_HOLIDAYS: { key: string; name: string; month: number; day: number; }[] = [
+  { key: "ph-newyear",            name: "New Year's Day",               month: 0,  day: 1  },
+  { key: "ph-edsa",               name: "EDSA People Power Revolution",  month: 1,  day: 25 },
+  { key: "valentines",            name: "Valentine's Day",              month: 1,  day: 14 },
+  { key: "ph-chineseny",          name: "Chinese New Year",             month: 1,  day: 10 },
+  { key: "ph-araw-ng-kagitingan", name: "Araw ng Kagitingan (Day of Valor)", month: 3, day: 9 },
+  { key: "ph-maundy",             name: "Maundy Thursday",              month: 3,  day: 17 },
+  { key: "ph-goodfriday",         name: "Good Friday",                  month: 3,  day: 18 },
+  { key: "ph-blacksaturday",      name: "Black Saturday",               month: 3,  day: 19 },
+  { key: "ph-eidalfitr",          name: "Eid'l Fitr",                   month: 3,  day: 10 },
+  { key: "ph-labor",              name: "Labor Day",                    month: 4,  day: 1  },
+  { key: "mothers-day",           name: "Mother's Day",                 month: 4,  day: 11 },
+  { key: "ph-independence",       name: "Independence Day",             month: 5,  day: 12 },
+  { key: "ph-eidaladha",          name: "Eid'l Adha",                   month: 5,  day: 28 },
+  { key: "fathers-day",           name: "Father's Day",                 month: 5,  day: 15 },
+  { key: "ph-ninoy",              name: "Ninoy Aquino Day",             month: 7,  day: 21 },
+  { key: "ph-nationalheroes",     name: "National Heroes Day",          month: 7,  day: 25 },
+  { key: "ph-eidalmawlid",        name: "Mawlid (Prophet's Birthday)",  month: 8,  day: 15 },
+  { key: "halloween",             name: "Halloween",                    month: 9,  day: 31 },
+  { key: "ph-allsaints",          name: "All Saints' Day",              month: 10, day: 1  },
+  { key: "ph-allsouls",           name: "All Souls' Day",               month: 10, day: 2  },
+  { key: "ph-bonifacio",          name: "Bonifacio Day",                month: 10, day: 30 },
+  { key: "thanksgiving",          name: "Thanksgiving",                 month: 10, day: 28 },
+  { key: "ph-rizal",              name: "Rizal Day",                    month: 11, day: 30 },
+  { key: "ph-christmas-eve",      name: "Christmas Eve",                month: 11, day: 24 },
+  { key: "ph-christmas",          name: "Christmas Day",                month: 11, day: 25 },
+  { key: "ph-newyeareve",         name: "New Year's Eve",               month: 11, day: 31 },
+];
 
 const getEventIcon = (type: string) => {
   switch (type) {
@@ -26,16 +57,8 @@ const getEventColor = (type: string) => {
   }
 };
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  music: "Live Music",
-  dogs: "Dog Events",
-  family: "Family Fun",
-  special: "Special Events",
-  food: "Food Events",
-};
-
-function EventTypeBadge({ type, images, size = "sm" }: { type: string; images: Record<string, string>; size?: "sm" | "lg" }) {
-  const img = images[type];
+function EventTypeBadge({ type, typeImages, size = "sm" }: { type: string; typeImages: Record<string, string>; size?: "sm" | "lg" }) {
+  const img = typeImages[type];
   const Icon = getEventIcon(type);
   const color = getEventColor(type);
   const dim = size === "lg" ? "w-16 h-16" : "w-12 h-12";
@@ -57,6 +80,11 @@ function EventTypeBadge({ type, images, size = "sm" }: { type: string; images: R
 export default function Events() {
   const { siteContent, loading } = useAdmin();
   const eventTypeImages: Record<string, string> = (siteContent as any).eventTypeImages ?? {};
+  const holidayStatuses: Record<string, boolean> = (siteContent as any).holidayStatuses ?? {};
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
 
   if (loading) {
     return (
@@ -73,6 +101,7 @@ export default function Events() {
 
   const thisWeekEvents = siteContent.events.filter((e) => e.category === "thisWeek");
   const comingSoonEvents = siteContent.events.filter((e) => e.category === "comingSoon");
+  const thisMonthHolidays = ALL_HOLIDAYS.filter((h) => h.month === currentMonth);
 
   return (
     <Layout>
@@ -93,6 +122,46 @@ export default function Events() {
         </p>
       </div>
 
+      {/* Holiday Hours — this month only */}
+      {thisMonthHolidays.length > 0 && (
+        <section className="py-10 px-4 bg-amber-50 border-b border-amber-100">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <Store className="h-6 w-6 text-aussie-orange" />
+              <h2 className="font-heading text-2xl font-bold text-brown-800">
+                Holiday Hours — {MONTH_NAMES[currentMonth]}
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {thisMonthHolidays.map((holiday) => {
+                const statusKey = `${currentYear}-${holiday.key}`;
+                const isOpen = holidayStatuses[statusKey] !== false;
+                return (
+                  <div
+                    key={holiday.key}
+                    className={`flex items-center justify-between px-4 py-3 rounded-lg border ${
+                      isOpen ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div>
+                      <p className="font-body font-semibold text-brown-800 text-sm">{holiday.name}</p>
+                      <p className="font-body text-xs text-brown-500">
+                        {new Date(currentYear, holiday.month, holiday.day).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                      </p>
+                    </div>
+                    <span className={`font-body text-xs font-bold px-2.5 py-1 rounded-full ${
+                      isOpen ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                    }`}>
+                      {isOpen ? "Open" : "Closed"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* This Week */}
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
@@ -107,26 +176,29 @@ export default function Events() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {thisWeekEvents.map((event) => {
-                return (
-                  <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between">
-                        <EventTypeBadge type={event.type} images={eventTypeImages} size="sm" />
-                        <Badge className="bg-aussie-orange text-white font-body">This Week</Badge>
-                      </div>
-                      <CardTitle className="font-heading text-xl text-brown-800">{event.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-1">
-                        <p className="font-body font-semibold text-brown-700">{event.date}</p>
-                        <p className="font-body text-brown-600">{event.time}</p>
-                      </div>
-                      <p className="font-body text-brown-600 leading-relaxed">{event.description}</p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {thisWeekEvents.map((event) => (
+                <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                  {event.imageUrl && (
+                    <img src={event.imageUrl} alt={event.title} className="w-full h-44 object-cover" />
+                  )}
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      {!event.imageUrl && (
+                        <EventTypeBadge type={event.type} typeImages={eventTypeImages} size="sm" />
+                      )}
+                      <Badge className="bg-aussie-orange text-white font-body ml-auto">This Week</Badge>
+                    </div>
+                    <CardTitle className="font-heading text-xl text-brown-800">{event.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="space-y-1">
+                      <p className="font-body font-semibold text-brown-700">{event.date}</p>
+                      <p className="font-body text-brown-600">{event.time}</p>
+                    </div>
+                    <p className="font-body text-brown-600 leading-relaxed">{event.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>
@@ -146,30 +218,33 @@ export default function Events() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {comingSoonEvents.map((event) => {
-                return (
-                  <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex space-x-4">
-                        <EventTypeBadge type={event.type} images={eventTypeImages} size="lg" />
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-start justify-between">
-                            <h3 className="font-heading text-xl font-bold text-brown-800">{event.title}</h3>
-                            {event.type === "special" && (
-                              <Badge className="bg-aussie-burnt-red text-white font-body text-xs">Special Event</Badge>
-                            )}
-                          </div>
-                          <div className="space-y-1">
-                            <p className="font-body font-semibold text-brown-700">{event.date}</p>
-                            <p className="font-body text-brown-600">{event.time}</p>
-                          </div>
-                          <p className="font-body text-brown-600 leading-relaxed">{event.description}</p>
+              {comingSoonEvents.map((event) => (
+                <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                  {event.imageUrl && (
+                    <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
+                  )}
+                  <CardContent className="p-6">
+                    <div className="flex space-x-4">
+                      {!event.imageUrl && (
+                        <EventTypeBadge type={event.type} typeImages={eventTypeImages} size="lg" />
+                      )}
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-heading text-xl font-bold text-brown-800">{event.title}</h3>
+                          {event.type === "special" && (
+                            <Badge className="bg-aussie-burnt-red text-white font-body text-xs">Special Event</Badge>
+                          )}
                         </div>
+                        <div className="space-y-1">
+                          <p className="font-body font-semibold text-brown-700">{event.date}</p>
+                          <p className="font-body text-brown-600">{event.time}</p>
+                        </div>
+                        <p className="font-body text-brown-600 leading-relaxed">{event.description}</p>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </div>
@@ -179,7 +254,7 @@ export default function Events() {
       <section className="py-12 bg-sand-100">
         <div className="max-w-6xl mx-auto px-4">
           <h3 className="font-heading text-2xl font-bold text-center text-brown-800 mb-8">Event Types</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             {[
               { key: "music",   color: "bg-aussie-orange",     label: "Live Music"     },
               { key: "dogs",    color: "bg-aussie-eucalyptus", label: "Dog Events"     },
