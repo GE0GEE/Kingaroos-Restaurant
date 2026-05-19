@@ -18,7 +18,7 @@ import { db, auth, googleProvider } from "../firebase-config";
 // ─── ALLOWED ADMIN ACCOUNTS ────────────────────────────────────────────────────
 // Add or remove Google account emails here. Only these accounts can log in.
 const ALLOWED_EMAILS: string[] = [
-  "youremail@gmail.com",
+  "gorhamgeorge70@gmail.com",
   // "anotherperson@gmail.com",
 ];
 
