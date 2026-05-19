@@ -19,7 +19,7 @@ export function Header() {
     headerNavAbout: "About",
     headerNavDogRescue: "Rescue",
     headerNavContact: "Contact",
-    headerNavMerch: "Shop",
+    headerNavMerch: "Merch",
     siteName: "KINGAROOS",
     ...siteContent.siteTexts,
   };
