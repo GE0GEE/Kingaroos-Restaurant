@@ -373,54 +373,123 @@ const ALL_HOLIDAYS: { key: string; name: string; month: number; day: number; }[]
   { key: "thanksgiving",     name: "Thanksgiving",                month: 10, day: 28 }, // 4th Thursday of November (approx)
 ];
 
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 function HolidayHoursPanel({ statuses, onToggle }: { statuses: Record<string, boolean>; onToggle: (key: string, value: boolean) => void; }) {
   const now = new Date();
-  const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
 
-  const thisMonthHolidays = ALL_HOLIDAYS.filter((h) => h.month === currentMonth);
-
-  if (thisMonthHolidays.length === 0) {
-    return (
-      <div className="text-center py-8 text-brown-400 font-body text-sm">
-        No holidays this month.
-      </div>
-    );
-  }
+  const monthHolidays = ALL_HOLIDAYS.filter((h) => h.month === selectedMonth);
 
   return (
-    <div className="space-y-3">
-      {thisMonthHolidays.map((holiday) => {
-        const statusKey = `${currentYear}-${holiday.key}`;
-        const isOpen = statuses[statusKey] !== false; // default open
-        return (
-          <div key={holiday.key} className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
-            <div>
-              <p className="font-body font-semibold text-brown-800 text-sm">{holiday.name}</p>
-              <p className="font-body text-xs text-brown-500">
-                {new Date(currentYear, holiday.month, holiday.day).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={`font-body text-xs font-semibold ${isOpen ? "text-green-600" : "text-red-500"}`}>
-                {isOpen ? "Open" : "Closed"}
-              </span>
-              <Switch
-                checked={isOpen}
-                onCheckedChange={(val) => onToggle(statusKey, val)}
-              />
-            </div>
-          </div>
-        );
-      })}
+    <div className="space-y-4">
+      {/* Month selector */}
+      <div className="flex flex-wrap gap-1.5">
+        {MONTH_NAMES.map((name, idx) => (
+          <button
+            key={idx}
+            onClick={() => setSelectedMonth(idx)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold font-body transition-colors ${
+              selectedMonth === idx
+                ? "bg-aussie-orange text-white"
+                : "bg-cream-100 border border-sand-300 text-brown-600 hover:border-aussie-orange hover:text-aussie-orange"
+            } ${idx === now.getMonth() ? "ring-1 ring-aussie-orange ring-offset-1" : ""}`}
+          >
+            {name.slice(0, 3)}
+            {idx === now.getMonth() && <span className="ml-1 text-[10px] opacity-70">●</span>}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-xs text-brown-400 font-body">{MONTH_NAMES[selectedMonth]} {currentYear} — {monthHolidays.length} holiday{monthHolidays.length !== 1 ? "s" : ""}</p>
+
+      {monthHolidays.length === 0 ? (
+        <div className="text-center py-6 text-brown-400 font-body text-sm border border-dashed border-sand-300 rounded-lg">
+          No holidays in {MONTH_NAMES[selectedMonth]}.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {monthHolidays.map((holiday) => {
+            const statusKey = `${currentYear}-${holiday.key}`;
+            const isOpen = statuses[statusKey] !== false;
+            return (
+              <div key={holiday.key} className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
+                <div>
+                  <p className="font-body font-semibold text-brown-800 text-sm">{holiday.name}</p>
+                  <p className="font-body text-xs text-brown-500">
+                    {new Date(currentYear, holiday.month, holiday.day).toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`font-body text-xs font-semibold ${isOpen ? "text-green-600" : "text-red-500"}`}>
+                    {isOpen ? "Open" : "Closed"}
+                  </span>
+                  <Switch checked={isOpen} onCheckedChange={(val) => onToggle(statusKey, val)} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
 function EventForm({ event, onSubmit }: { event: Partial<Event>; onSubmit: (event: Partial<Event>) => void; }) {
   const [formData, setFormData] = useState(event);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const base64 = await handleFileAndCompress(file);
+      setFormData((prev) => ({ ...prev, imageUrl: base64 }));
+    } catch {
+      alert("Image upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+      {/* Event Image */}
+      <div>
+        <Label>Event Image</Label>
+        <Input type="file" accept="image/*" onChange={handleImageFile} disabled={isUploading} />
+        <Input
+          className="mt-1"
+          placeholder="Or paste image URL"
+          value={formData.imageUrl?.startsWith("http") ? formData.imageUrl : ""}
+          onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
+        />
+        {isUploading && (
+          <div className="flex items-center gap-2 text-xs text-blue-600 mt-1">
+            <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+          </div>
+        )}
+        {formData.imageUrl && (
+          <div className="relative mt-2">
+            <img
+              src={formData.imageUrl}
+              alt="preview"
+              className="w-full h-36 object-cover rounded-lg border border-sand-200"
+              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => setFormData((prev) => ({ ...prev, imageUrl: "" }))}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
       <div><Label>Title</Label><Input value={formData.title || ""} onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))} /></div>
       <div className="grid grid-cols-2 gap-4">
         <div><Label>Date</Label><Input value={formData.date || ""} onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))} /></div>
@@ -428,7 +497,7 @@ function EventForm({ event, onSubmit }: { event: Partial<Event>; onSubmit: (even
       </div>
       <div><Label>Description</Label><Textarea value={formData.description || ""} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} /></div>
       <div className="grid grid-cols-2 gap-4">
-        <div><Label>Type</Label><Select value={formData.type || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value as Event["type"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="music">Music</SelectItem><SelectItem value="dogs">Dogs</SelectItem><SelectItem value="family">Family</SelectItem><SelectItem value="special">Special</SelectItem><SelectItem value="food">Food</SelectItem></SelectContent></Select></div>
+        <div><Label>Type</Label><Select value={formData.type || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value as Event["type"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="music">Live Music</SelectItem><SelectItem value="dogs">Dog Events</SelectItem><SelectItem value="family">Family Fun</SelectItem><SelectItem value="special">Special Events</SelectItem><SelectItem value="food">Food Events</SelectItem></SelectContent></Select></div>
         <div><Label>Category</Label><Select value={formData.category || ""} onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as Event["category"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="thisWeek">This Week</SelectItem><SelectItem value="comingSoon">Coming Soon</SelectItem></SelectContent></Select></div>
       </div>
       <Button onClick={() => onSubmit(formData)} className="w-full">Save Event</Button>
@@ -1295,8 +1364,8 @@ export default function Admin() {
                 {/* Holiday Hours */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Holiday Hours — {new Date().toLocaleString("en-US", { month: "long", year: "numeric" })}</CardTitle>
-                    <p className="text-sm text-brown-500">Toggle open/closed for each holiday this month. Defaults to open.</p>
+                    <CardTitle className="text-base">Holiday Hours</CardTitle>
+                    <p className="text-sm text-brown-500">Browse all holidays by month. Toggle open/closed for each one. Defaults to open.</p>
                   </CardHeader>
                   <CardContent>
                     <HolidayHoursPanel
