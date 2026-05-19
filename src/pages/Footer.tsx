@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
 import {
   Dialog,
@@ -15,6 +15,7 @@ export function Footer() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const isContactPage = location.pathname === "/contact";
 
@@ -29,10 +30,16 @@ export function Footer() {
     setLoading(true);
     setError("");
     try {
-      await login();
-      // Page redirects away — nothing below executes in the normal case
-    } catch {
-      setError("Sign-in failed. Please try again.");
+      const success = await login();
+      if (success) {
+        setShowLoginDialog(false);
+        navigate("/admin");
+      } else {
+        // Redirect flow kicked in — page navigating away, keep loading
+      }
+    } catch (err: any) {
+      setError(err?.message ?? "Sign-in failed. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
