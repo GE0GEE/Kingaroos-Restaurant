@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
 import {
   Dialog,
@@ -15,7 +15,6 @@ export function Footer() {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
   const isContactPage = location.pathname === "/contact";
 
@@ -27,23 +26,13 @@ export function Footer() {
   };
 
   const handleGoogleLogin = async () => {
-    // Close the dialog FIRST — keeping it open while the Google popup fires
-    // causes the dialog to steal focus and immediately kill the popup.
-    setShowLoginDialog(false);
     setLoading(true);
     setError("");
     try {
-      const success = await login();
-      if (success) {
-        navigate("/admin");
-      } else {
-        setError("Access denied. Your Google account is not authorised for this admin panel.");
-        setShowLoginDialog(true);
-      }
+      await login();
+      // Page redirects away — nothing below executes in the normal case
     } catch {
       setError("Sign-in failed. Please try again.");
-      setShowLoginDialog(true);
-    } finally {
       setLoading(false);
     }
   };
