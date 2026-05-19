@@ -27,18 +27,22 @@ export function Footer() {
   };
 
   const handleGoogleLogin = async () => {
+    // Close the dialog FIRST — keeping it open while the Google popup fires
+    // causes the dialog to steal focus and immediately kill the popup.
+    setShowLoginDialog(false);
     setLoading(true);
     setError("");
     try {
       const success = await login();
       if (success) {
-        setShowLoginDialog(false);
         navigate("/admin");
       } else {
         setError("Access denied. Your Google account is not authorised for this admin panel.");
+        setShowLoginDialog(true);
       }
     } catch {
       setError("Sign-in failed. Please try again.");
+      setShowLoginDialog(true);
     } finally {
       setLoading(false);
     }
