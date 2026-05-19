@@ -9,8 +9,6 @@ import {
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import {
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   onAuthStateChanged,
   signOut,
   User,
@@ -18,39 +16,17 @@ import {
 import { db, auth, googleProvider } from "../firebase-config";
 
 // ─── ALLOWED ADMIN ACCOUNTS ────────────────────────────────────────────────────
-// Add or remove Google account emails here. Only these accounts can log in.
 const ALLOWED_EMAILS: string[] = [
   "gorhamgeorge70@gmail.com",
-  // "anotherperson@gmail.com",
 ];
 
 // --- PROMOTION CATEGORIES ---
 export const promotionCategories = {
-  happyHour: {
-    name: "Happy Hour",
-    badge: "Limited Time",
-    colorClasses: "from-aussie-orange to-aussie-burnt-red",
-  },
-  dogSpecial: {
-    name: "Dog Special",
-    badge: "Pawsome Deal",
-    colorClasses: "from-aussie-eucalyptus to-green-700",
-  },
-  familyDeal: {
-    name: "Family Deal",
-    badge: "Family Fun",
-    colorClasses: "from-brown-600 to-brown-800",
-  },
-  loyalty: {
-    name: "Loyalty Offer",
-    badge: "Member's Gift",
-    colorClasses: "from-sand-600 to-aussie-orange",
-  },
-  general: {
-    name: "Special Offer",
-    badge: "Special",
-    colorClasses: "from-gray-500 to-gray-700",
-  },
+  happyHour: { name: "Happy Hour", badge: "Limited Time", colorClasses: "from-aussie-orange to-aussie-burnt-red" },
+  dogSpecial: { name: "Dog Special", badge: "Pawsome Deal", colorClasses: "from-aussie-eucalyptus to-green-700" },
+  familyDeal: { name: "Family Deal", badge: "Family Fun", colorClasses: "from-brown-600 to-brown-800" },
+  loyalty: { name: "Loyalty Offer", badge: "Member's Gift", colorClasses: "from-sand-600 to-aussie-orange" },
+  general: { name: "Special Offer", badge: "Special", colorClasses: "from-gray-500 to-gray-700" },
 };
 export type PromotionCategoryKey = keyof typeof promotionCategories;
 
@@ -92,15 +68,8 @@ const defaultSiteContent: SiteContent = {
     { url: "/placeholder.svg", alt: "Happy customers" },
     { url: "/placeholder.svg", alt: "Delicious food" },
   ],
-  aboutImages: {
-    familyPhoto: "/placeholder.svg",
-    originalFoodTruck: "/placeholder.svg",
-    firstRescueDog: "/placeholder.svg",
-    restaurantOpensImage: "/placeholder.svg",
-  },
-  siteImages: {
-    dogRescuePlaceholderImage: "/placeholder.svg",
-  },
+  aboutImages: { familyPhoto: "/placeholder.svg", originalFoodTruck: "/placeholder.svg", firstRescueDog: "/placeholder.svg", restaurantOpensImage: "/placeholder.svg" },
+  siteImages: { dogRescuePlaceholderImage: "/placeholder.svg" },
   siteTexts: {
     siteName: "Kingaroos",
     footerTagline: "Content loading...",
@@ -135,8 +104,6 @@ const defaultSiteContent: SiteContent = {
 
 interface AdminContextType {
   isLoggedIn: boolean;
-  justLoggedIn: boolean;
-  clearJustLoggedIn: () => void;
   login: () => Promise<boolean>;
   logout: () => void;
   siteContent: SiteContent;
@@ -158,46 +125,24 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 const siteContentRef = doc(db, "content", "main");
-
 const MAX_SNAPSHOT_RETRIES = 3;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [justLoggedIn, setJustLoggedIn] = useState(false);
   const [siteContent, setSiteContent] = useState<SiteContent>(defaultSiteContent);
   const [authReady, setAuthReady] = useState(false);
   const [dataReady, setDataReady] = useState(false);
   const loading = !authReady || !dataReady;
   const userRef = useRef<User | null>(null);
 
-  // --- Handle redirect result from signInWithRedirect ---
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          const email = result.user.email ?? "";
-          if (!ALLOWED_EMAILS.includes(email)) {
-            signOut(auth);
-          } else {
-            setJustLoggedIn(true);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Redirect result error:", error);
-      });
-  }, []);
-
   // --- Auth listener ---
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
-      // Only treat the user as logged in if their email is on the allowlist
       const allowed =
         currentUser && ALLOWED_EMAILS.includes(currentUser.email ?? "")
           ? currentUser
           : null;
       if (currentUser && !allowed) {
-        // Signed in but not allowed — sign them back out silently
         signOut(auth);
       }
       setUser(allowed);
@@ -224,14 +169,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               ...defaultSiteContent,
               ...serverContent,
               socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
-              heroImages:
-                serverContent.heroImages && serverContent.heroImages.length > 0
-                  ? serverContent.heroImages
-                  : defaultSiteContent.heroImages,
-              welcomeImages:
-                serverContent.welcomeImages && serverContent.welcomeImages.length > 0
-                  ? serverContent.welcomeImages
-                  : defaultSiteContent.welcomeImages,
+              heroImages: serverContent.heroImages && serverContent.heroImages.length > 0 ? serverContent.heroImages : defaultSiteContent.heroImages,
+              welcomeImages: serverContent.welcomeImages && serverContent.welcomeImages.length > 0 ? serverContent.welcomeImages : defaultSiteContent.welcomeImages,
               faviconImage: serverContent.faviconImage ?? defaultSiteContent.faviconImage,
               aboutImages: { ...defaultSiteContent.aboutImages, ...(serverContent.aboutImages || {}) },
               siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
@@ -251,11 +190,9 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           console.error("Firebase Snapshot Error:", error);
           if (retryCount < MAX_SNAPSHOT_RETRIES) {
             const delayMs = Math.pow(2, retryCount) * 1000;
-            console.warn(`Firestore snapshot failed — retrying in ${delayMs}ms (attempt ${retryCount + 1}/${MAX_SNAPSHOT_RETRIES})`);
             retryCount += 1;
             retryTimer = setTimeout(subscribe, delayMs);
           } else {
-            console.error("Firestore snapshot failed after maximum retries — showing cached/default content.");
             setDataReady(true);
           }
         }
@@ -269,7 +206,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // --- Google Sign-In (popup first, redirect fallback) ---
+  // --- Google Sign-In ---
   const login = async (): Promise<boolean> => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -280,22 +217,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       }
       return true;
     } catch (error: any) {
-      // Popup was blocked or closed — fall back to redirect
-      const popupErrors = [
-        "auth/popup-blocked",
-        "auth/popup-closed-by-user",
-        "auth/cancelled-popup-request",
-      ];
-      if (popupErrors.includes(error?.code)) {
-        await signInWithRedirect(auth, googleProvider);
-        return false; // page navigates away
-      }
-      // Surface the real Firebase error to the caller
-      throw new Error(error?.message ?? "Google sign-in failed");
+      console.error("Google sign-in error:", error?.code, error?.message);
+      throw error;
     }
   };
-
-  const clearJustLoggedIn = () => setJustLoggedIn(false);
 
   const logout = async () => { await signOut(auth); };
 
@@ -321,17 +246,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return { add, update, remove };
   };
 
-  const dogOps        = createCrudOperations<Dog>("dogs");
-  const menuItemOps   = createCrudOperations<MenuItem>("menuItems");
-  const eventOps      = createCrudOperations<Event>("events");
-  const promotionOps  = createCrudOperations<Promotion>("promotions");
+  const dogOps       = createCrudOperations<Dog>("dogs");
+  const menuItemOps  = createCrudOperations<MenuItem>("menuItems");
+  const eventOps     = createCrudOperations<Event>("events");
+  const promotionOps = createCrudOperations<Promotion>("promotions");
 
   return (
     <AdminContext.Provider
       value={{
         isLoggedIn: !!user,
-        justLoggedIn,
-        clearJustLoggedIn,
         login,
         logout,
         siteContent,
