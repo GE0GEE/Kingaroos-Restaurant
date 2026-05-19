@@ -119,7 +119,7 @@ interface AdminContextType {
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
-const siteContentRef = doc(db, "content", "main");
+const firestoreDocRef = doc(db, "content", "main");
 const MAX_SNAPSHOT_RETRIES = 3;
 
 export function AdminProvider({ children }: { children: ReactNode }) {
@@ -130,6 +130,11 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [dataReady, setDataReady] = useState(false);
   const loading = !authReady || !dataReady;
   const userRef = useRef<User | null>(null);
+
+  // Keeps a always-fresh copy of siteContent for use inside async CRUD closures,
+  // avoiding the stale-closure bug where createCrudOperations captured an outdated
+  // snapshot of the array and silently overwrote newer data.
+  const liveContentRef = useRef<SiteContent>(defaultSiteContent);
 
   // --- Auth listener ---
   useEffect(() => {
@@ -156,7 +161,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
     const subscribe = () => {
       unsubscribeSnapshot = onSnapshot(
-        siteContentRef,
+        firestoreDocRef,
         (snapshot) => {
           retryCount = 0;
           if (snapshot.exists()) {
@@ -173,11 +178,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               physicalMenuImages: serverContent.physicalMenuImages ?? [],
               merch: serverContent.merch ?? [],
             };
+            liveContentRef.current = mergedContent;
             setSiteContent(mergedContent);
           } else {
             if (userRef.current) {
-              setDoc(siteContentRef, defaultSiteContent, { merge: true });
+              setDoc(firestoreDocRef, defaultSiteContent, { merge: true });
             }
+            liveContentRef.current = defaultSiteContent;
             setSiteContent(defaultSiteContent);
           }
           setDataReady(true);
@@ -220,20 +227,26 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const updateSiteContent = async (updates: Partial<SiteContent>) => {
     if (!user) throw new Error("Not authenticated to make changes.");
-    await setDoc(siteContentRef, updates, { merge: true });
+    await setDoc(firestoreDocRef, updates, { merge: true });
   };
 
+  // FIX: reads from liveContentRef.current inside each async operation instead of
+  // capturing `data` at call-site creation time. This prevents stale closures from
+  // overwriting the array with an outdated snapshot (e.g. adding a second merch item
+  // used to replace the first because `data` was still the empty initial array).
   const createCrudOperations = <T extends { id: string }>(stateKey: keyof SiteContent) => {
-    const data = (siteContent[stateKey] as T[] | undefined) ?? [];
     const add = async (item: Omit<T, "id">) => {
+      const data = (liveContentRef.current[stateKey] as T[] | undefined) ?? [];
       const newItem = { ...item, id: `id-${Date.now()}` } as T;
       await updateSiteContent({ [stateKey]: [...data, newItem] } as any);
     };
     const update = async (id: string, updates: Partial<T>) => {
+      const data = (liveContentRef.current[stateKey] as T[] | undefined) ?? [];
       const newData = data.map((item) => (item.id === id ? { ...item, ...updates } : item));
       await updateSiteContent({ [stateKey]: newData } as any);
     };
     const remove = async (id: string) => {
+      const data = (liveContentRef.current[stateKey] as T[] | undefined) ?? [];
       const newData = data.filter((item) => item.id !== id);
       await updateSiteContent({ [stateKey]: newData } as any);
     };
