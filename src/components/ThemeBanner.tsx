@@ -1,5 +1,5 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
 
 const THEME_MESSAGES: Record<string, { title: string; subtitle: string }> = {
@@ -55,12 +55,26 @@ const THEME_MESSAGES: Record<string, { title: string; subtitle: string }> = {
 
 export function ThemeBanner() {
   const { currentTheme } = useTheme();
-  const [dismissed, setDismissed] = useState(false);
 
-  // Reset dismissed state when theme changes
-  useEffect(() => {
-    setDismissed(false);
-  }, [currentTheme.id]);
+  // Use sessionStorage so dismiss persists across page navigation
+  // but resets when the user refreshes the browser
+  const storageKey = `theme-banner-dismissed-${currentTheme.id}`;
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem(storageKey) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    try {
+      sessionStorage.setItem(storageKey, "true");
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   const message = THEME_MESSAGES[currentTheme.id];
 
@@ -91,7 +105,7 @@ export function ThemeBanner() {
       </div>
 
       <button
-        onClick={() => setDismissed(true)}
+        onClick={handleDismiss}
         className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/20 transition-colors"
         aria-label="Dismiss banner"
       >
