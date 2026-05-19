@@ -112,7 +112,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<User | null>(null);
 
   // --- Auth listener ---
-  // If sessionStorage has loginPending, a redirect just completed — signal navigation
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       const allowed =
@@ -126,7 +125,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       userRef.current = allowed;
       setAuthReady(true);
 
-      // If we stored a pending-login flag before the redirect, now fire navigation
+      // If we set a pending flag before the redirect, navigate to /admin on return
       if (allowed && sessionStorage.getItem(LOGIN_PENDING_KEY)) {
         sessionStorage.removeItem(LOGIN_PENDING_KEY);
         setJustLoggedIn(true);
@@ -191,7 +190,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   // --- Google Sign-In via redirect ---
   const login = async (): Promise<void> => {
     sessionStorage.setItem(LOGIN_PENDING_KEY, "1");
-    await signInWithRedirect(auth, googleProvider);
+    try {
+      await signInWithRedirect(auth, googleProvider);
+    } catch (err: any) {
+      sessionStorage.removeItem(LOGIN_PENDING_KEY);
+      console.error("LOGIN ERROR:", err?.code, err?.message, err);
+      throw err;
+    }
   };
 
   const clearJustLoggedIn = () => setJustLoggedIn(false);
