@@ -69,7 +69,7 @@ function PhysicalMenuGallery() {
           <p className="text-amber-400 text-xs font-bold uppercase tracking-[0.25em] mb-2">
             Peruse at Your Leisure
           </p>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-white tracking-tight">
             Our Curated Menus
           </h2>
           <p className="mt-3 text-stone-400 max-w-lg mx-auto text-sm leading-relaxed">
@@ -210,7 +210,7 @@ export default function MenuPage() {
         <p className="relative text-amber-400 text-xs font-bold uppercase tracking-[0.25em] mb-3">
           Kingaroos Restaurant
         </p>
-        <h1 className="relative text-4xl md:text-6xl font-extrabold tracking-tight mb-3">Our Menu</h1>
+        <h1 className="relative font-heading text-4xl md:text-6xl font-extrabold tracking-tight mb-3">Our Menu</h1>
         <p className="relative text-stone-400 text-base md:text-lg max-w-md mx-auto leading-relaxed">
           Every dish crafted with care. Every sip worth savouring.
         </p>
@@ -298,7 +298,7 @@ export default function MenuPage() {
           <section key={cat} className="mb-14">
             {showSectionHeaders && (
               <div className="flex items-center gap-3 mb-5">
-                <h2 className="text-xl font-extrabold text-stone-800 tracking-tight">
+                <h2 className="font-heading text-xl font-extrabold text-stone-800 tracking-tight">
                   {CATEGORY_LABELS[cat] ?? cat}
                 </h2>
                 <span className="text-[12px] font-semibold text-stone-400 bg-stone-100 px-2.5 py-0.5 rounded-full">
