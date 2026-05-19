@@ -353,14 +353,6 @@ function MerchSectionEditor({
         />
       </div>
       <div>
-        <Label>Price (optional)</Label>
-        <Input
-          value={section.price}
-          placeholder="e.g. $12.00"
-          onChange={(e) => onChange({ ...section, price: e.target.value })}
-        />
-      </div>
-      <div>
         <Label>Photo URL or Upload</Label>
         <Input
           type="file"
@@ -481,6 +473,14 @@ function MerchItemForm({
             onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
           />
         </div>
+      </div>
+      <div>
+        <Label>Price *</Label>
+        <Input
+          value={(formData as any).price || ""}
+          placeholder="e.g. $12.00"
+          onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+        />
       </div>
       <div>
         <Label>Tagline (optional)</Label>
