@@ -49,49 +49,22 @@ import {
 } from "lucide-react";
 import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection, AnnouncementType, CustomSocial, SocialIconKey } from "@/contexts/AdminContext";
 import { SocialIcon, SOCIAL_ICON_OPTIONS } from "@/components/SocialIcon";
-import imageCompression from "browser-image-compression";
 import { uploadToCloudinary, isCloudinaryConfigured } from "@/lib/cloudinary";
 
 // --- IMAGE UPLOAD HELPER ---
-// If Cloudinary is configured (VITE_CLOUDINARY_CLOUD_NAME + VITE_CLOUDINARY_UPLOAD_PRESET),
-// uploads the file directly to Cloudinary and returns the secure_url.
-// Otherwise falls back to local compression + base64 for backwards compatibility.
+// ALL image uploads go through Cloudinary. No local base64 fallback.
+// If Cloudinary is not configured, the upload will fail with a clear error
+// telling the admin to set up the env vars.
 const handleFileAndCompress = async (file: File): Promise<string> => {
-  // ── Cloudinary path (preferred) ──
-  if (isCloudinaryConfigured()) {
-    try {
-      const result = await uploadToCloudinary(file, { folder: "kingaroos" });
-      console.log(`[Cloudinary] Uploaded ${(result.bytes / 1024).toFixed(1)} KB → ${result.url}`);
-      return result.url;
-    } catch (err) {
-      console.error("[Cloudinary] Upload failed, falling back to local compression:", err);
-      // fall through to local compression
-    }
+  if (!isCloudinaryConfigured()) {
+    throw new Error(
+      "Image uploads require Cloudinary. Please set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in your .env file and redeploy."
+    );
   }
 
-  // ── Local compression fallback ──
-  console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-  const options = {
-    maxSizeMB: 0.9,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
-    initialQuality: 0.9,
-  };
-
-  try {
-    const compressedFile = await imageCompression(file, options);
-    console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(compressedFile);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  } catch (error) {
-    console.error("Image compression failed:", error);
-    throw error;
-  }
+  const result = await uploadToCloudinary(file, { folder: "kingaroos" });
+  console.log(`[Cloudinary] Uploaded ${(result.bytes / 1024).toFixed(1)} KB → ${result.url}`);
+  return result.url;
 };
 
 // --- REUSABLE IMAGE INPUT COMPONENT ---
