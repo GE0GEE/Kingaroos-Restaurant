@@ -310,20 +310,7 @@ export default function Events() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-brown-800 py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-cream-50 mb-6">
-            {siteContent.siteTexts.eventsDontMissTitle}
-          </h2>
-          <p className="font-body text-xl text-cream-200 mb-8">{siteContent.siteTexts.eventsDontMissText}</p>
-          <div className="space-y-4 text-cream-200">
-            <p className="font-body">📞 {siteContent.siteTexts.eventsCallText} <span className="font-semibold">{siteContent.siteTexts.homePhone}</span></p>
-            <p className="font-body">📘 {siteContent.siteTexts.eventsFacebookText}</p>
-            <p className="font-body">📷 {siteContent.siteTexts.eventsInstagramText}</p>
-          </div>
-        </div>
-      </section>
+
     </Layout>
   );
 }
