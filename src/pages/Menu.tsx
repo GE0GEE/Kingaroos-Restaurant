@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { useAdmin } from "@/contexts/AdminContext";
 
@@ -54,63 +54,193 @@ const CATEGORY_LABELS: Record<string, string> = {
   "hot-drinks":    "Hot & Cold Drinks",
 };
 
-// ─── Physical Menu Gallery ─────────────────────────────────────────────────────
+// ─── Physical Menu Flipbook ────────────────────────────────────────────────────
 function PhysicalMenuGallery() {
   const { siteContent } = useAdmin();
   const images = siteContent.physicalMenuImages ?? [];
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(-1); // -1 = cover page
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [flipDirection, setFlipDirection] = useState<"left" | "right">("right");
 
   if (images.length === 0) return null;
 
-  return (
-    <section className="bg-stone-900 py-16 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
-          <p className="text-amber-400 text-xs font-bold uppercase tracking-[0.25em] mb-2">
-            Peruse at Your Leisure
-          </p>
-          <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-            Our Curated Menus
-          </h2>
-          <p className="mt-3 text-stone-400 max-w-lg mx-auto text-sm leading-relaxed">
-            Prefer to browse in the traditional manner? Every page of our handcrafted menu is presented here — a full portrait of each culinary delight we have to offer.
-          </p>
-        </div>
+  const totalPages = images.length; // 0-indexed pages, -1 is cover
+  const isOnCover = currentPage === -1;
+  const isOnLastPage = currentPage === totalPages - 1;
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((img) => (
-            <button
-              key={img.id}
-              onClick={() => setLightbox(img.url)}
-              className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-white/10 hover:border-amber-400/50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400"
+  const goNext = () => {
+    if (isOnLastPage || isFlipping) return;
+    setFlipDirection("right");
+    setIsFlipping(true);
+    setTimeout(() => {
+      setCurrentPage((p) => p + 1);
+      setIsFlipping(false);
+    }, 300);
+  };
+
+  const goPrev = () => {
+    if (isOnCover || isFlipping) return;
+    setFlipDirection("left");
+    setIsFlipping(true);
+    setTimeout(() => {
+      setCurrentPage((p) => p - 1);
+      setIsFlipping(false);
+    }, 300);
+  };
+
+  return (
+    <section className="bg-gradient-to-b from-stone-900 via-stone-800 to-stone-900 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Flipbook Container */}
+        <div className="relative flex flex-col items-center">
+          {/* The Book */}
+          <div className="relative w-full max-w-[480px] aspect-[3/4] select-none">
+            {/* Book shadow/base */}
+            <div className="absolute inset-0 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
+
+            {/* Page content with flip animation */}
+            <div
+              className={`relative w-full h-full rounded-lg overflow-hidden border border-amber-900/30 transition-transform duration-300 ease-in-out ${
+                isFlipping
+                  ? flipDirection === "right"
+                    ? "animate-[flipRight_0.3s_ease-in-out]"
+                    : "animate-[flipLeft_0.3s_ease-in-out]"
+                  : ""
+              }`}
+              style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
             >
-              <img
-                src={img.url}
-                alt={img.caption || "Menu page"}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
-                <span className="text-white text-xs font-medium">{img.caption || "Tap to enlarge"}</span>
-              </div>
-              <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              {isOnCover ? (
+                /* ── Cover Page ── */
+                <div className="w-full h-full bg-gradient-to-br from-amber-900 via-stone-900 to-amber-950 flex flex-col items-center justify-center p-8 relative">
+                  {/* Decorative border */}
+                  <div className="absolute inset-3 border-2 border-amber-400/30 rounded-lg pointer-events-none" />
+                  <div className="absolute inset-5 border border-amber-400/15 rounded-lg pointer-events-none" />
+
+                  {/* Logo/Branding */}
+                  <div className="text-center space-y-4 relative z-10">
+                    <div className="text-5xl mb-2">🦘</div>
+                    <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-amber-400 tracking-tight">
+                      Kingaroos
+                    </h2>
+                    <p className="text-amber-200/80 text-sm font-semibold uppercase tracking-[0.3em]">
+                      Menu
+                    </p>
+                    <div className="w-16 h-px bg-amber-400/40 mx-auto my-4" />
+                    <p className="text-stone-400 text-xs italic max-w-[200px] mx-auto leading-relaxed">
+                      Seaview Resto Bar
+                    </p>
+                  </div>
+
+                  {/* Corner ornaments */}
+                  <div className="absolute top-6 left-6 w-6 h-6 border-t-2 border-l-2 border-amber-400/40 rounded-tl" />
+                  <div className="absolute top-6 right-6 w-6 h-6 border-t-2 border-r-2 border-amber-400/40 rounded-tr" />
+                  <div className="absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 border-amber-400/40 rounded-bl" />
+                  <div className="absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 border-amber-400/40 rounded-br" />
+
+                  {/* Open prompt */}
+                  <button
+                    onClick={goNext}
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-amber-400/70 hover:text-amber-400 transition-colors text-xs font-medium"
+                  >
+                    <span>Open Menu</span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                /* ── Menu Pages ── */
+                <div className="w-full h-full bg-white relative">
+                  <img
+                    src={images[currentPage].url}
+                    alt={images[currentPage].caption || `Menu page ${currentPage + 1}`}
+                    className="w-full h-full object-contain bg-stone-50"
+                    loading="lazy"
+                  />
+                  {/* Page number */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2.5 py-0.5 rounded-full">
+                    {currentPage + 1} / {totalPages}
+                  </div>
+                  {/* Caption overlay */}
+                  {images[currentPage].caption && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[11px] px-3 py-1 rounded-full">
+                      {images[currentPage].caption}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Navigation arrows */}
+            {!isOnCover && (
+              <button
+                onClick={goPrev}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-2 md:-translate-x-[calc(100%+12px)] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110"
+                aria-label="Previous page"
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M15 18l-6-6 6-6" />
                 </svg>
-              </div>
-            </button>
-          ))}
+              </button>
+            )}
+            {!isOnLastPage && (
+              <button
+                onClick={goNext}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full ml-2 md:translate-x-[calc(100%+12px)] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110"
+                aria-label="Next page"
+              >
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Page dots / thumbnails */}
+          <div className="flex items-center gap-1.5 mt-6 flex-wrap justify-center max-w-[400px]">
+            <button
+              onClick={() => { setCurrentPage(-1); }}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                isOnCover ? "bg-amber-400 scale-125" : "bg-white/20 hover:bg-white/40"
+              }`}
+              aria-label="Cover"
+            />
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentPage(idx)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  currentPage === idx ? "bg-amber-400 scale-125" : "bg-white/20 hover:bg-white/40"
+                }`}
+                aria-label={`Page ${idx + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Keyboard hint */}
+          <p className="text-stone-500 text-[11px] mt-3 hidden md:block">
+            Use ← → arrow keys or click to flip pages
+          </p>
         </div>
       </div>
 
-      {lightbox && (
-        <div className="fixed inset-0 z-50 bg-black/92 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-          <button className="absolute top-5 right-5 text-white/60 hover:text-white text-4xl font-thin" onClick={() => setLightbox(null)}>✕</button>
-          <img src={lightbox} alt="Menu enlarged" className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
+      {/* Keyboard navigation */}
+      <FlipbookKeyboardNav onNext={goNext} onPrev={goPrev} />
     </section>
   );
+}
+
+// Keyboard support for the flipbook
+function FlipbookKeyboardNav({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") onNext();
+      if (e.key === "ArrowLeft") onPrev();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onNext, onPrev]);
+  return null;
 }
 
 // ─── Menu Item Card ───────────────────────────────────────────────────────────
