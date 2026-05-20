@@ -53,22 +53,22 @@ export default function Promotions() {
       {/* Tabbed content */}
       <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
-          <Tabs defaultValue="offers" className="w-full">
+          <Tabs defaultValue="facebook" className="w-full">
             <div className="flex justify-center mb-10">
               <TabsList className="bg-cream-100 border border-sand-200 h-auto p-1.5">
-                <TabsTrigger
-                  value="offers"
-                  className="font-body data-[state=active]:bg-aussie-orange data-[state=active]:text-white px-5 py-2.5 gap-2"
-                >
-                  <Tag className="h-4 w-4" />
-                  Current Offers
-                </TabsTrigger>
                 <TabsTrigger
                   value="facebook"
                   className="font-body data-[state=active]:bg-[#1877F2] data-[state=active]:text-white px-5 py-2.5 gap-2"
                 >
                   <Facebook className="h-4 w-4" />
-                  Facebook Posts
+                  {siteContent.siteTexts.promotionsFacebookTabLabel || "Facebook Posts"}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="offers"
+                  className="font-body data-[state=active]:bg-aussie-orange data-[state=active]:text-white px-5 py-2.5 gap-2"
+                >
+                  <Tag className="h-4 w-4" />
+                  {siteContent.siteTexts.promotionsOffersTabLabel || "Current Offers"}
                 </TabsTrigger>
               </TabsList>
             </div>

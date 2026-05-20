@@ -105,11 +105,11 @@ export function FacebookPostsSection() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full max-w-6xl mx-auto space-y-6 overflow-hidden">
       {/* Branded header card — full width */}
       <Card className="border-0 shadow-lg overflow-hidden">
         <div
-          className="relative px-6 py-5 sm:px-8 sm:py-6 text-white"
+          className="relative px-4 py-4 sm:px-8 sm:py-6 text-white"
           style={{
             background: `linear-gradient(135deg, ${FB_BLUE} 0%, ${FB_BLUE_DARK} 100%)`,
           }}
@@ -118,16 +118,16 @@ export function FacebookPostsSection() {
           <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none" />
           <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none" />
 
-          <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 ring-1 ring-white/30">
-              <Facebook className="h-6 w-6 text-white" fill="currentColor" />
+          <div className="relative flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 ring-1 ring-white/30">
+              <Facebook className="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="currentColor" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-heading text-lg sm:text-xl font-bold leading-tight flex items-center gap-1.5">
+              <p className="font-heading text-base sm:text-xl font-bold leading-tight flex items-center gap-1.5">
                 Latest from Facebook
-                <Sparkles className="h-4 w-4 opacity-80" />
+                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-80" />
               </p>
-              <p className="font-body text-xs sm:text-sm text-white/80 mt-0.5">
+              <p className="font-body text-[11px] sm:text-sm text-white/80 mt-0.5">
                 Live timeline straight from our page
               </p>
             </div>
@@ -143,18 +143,29 @@ export function FacebookPostsSection() {
         </div>
       </Card>
 
-      {/* Desktop: 2-column with embed + sidebar. Mobile: stack. */}
-      <div className="grid lg:grid-cols-[500px_minmax(0,1fr)] gap-6 items-start justify-center">
-        {/* Embed column — fixed 500px on desktop, flexible on mobile */}
-        <div ref={measureRef} className="w-full justify-self-center lg:justify-self-end">
-          <Card className="border-sand-200 shadow-md overflow-hidden mx-auto" style={{ maxWidth: 500 }}>
-            <CardContent className="p-0 bg-white relative" style={{ minHeight: iframeError ? "auto" : 700 }}>
+      {/* Mobile: visit page link */}
+      <a
+        href={fbUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="sm:hidden flex items-center justify-center gap-2 text-sm font-semibold text-[#1877F2]"
+      >
+        <Facebook className="h-4 w-4" fill="currentColor" />
+        Open on Facebook <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+
+      {/* Desktop: 2-column with embed + sidebar. Mobile: single column stack. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,500px)_minmax(0,1fr)] gap-6 items-start">
+        {/* Embed column — max 500px on desktop, full-width on mobile */}
+        <div ref={measureRef} className="w-full max-w-full overflow-hidden justify-self-center lg:justify-self-end">
+          <Card className="border-sand-200 shadow-md overflow-hidden w-full" style={{ maxWidth: 500 }}>
+            <CardContent className="p-0 bg-white relative" style={{ minHeight: iframeError ? "auto" : Math.min(700, embedWidth * 1.4) }}>
               {iframeError ? (
-                <div className="p-10 text-center space-y-4">
+                <div className="p-6 sm:p-10 text-center space-y-4">
                   <div className="inline-flex w-12 h-12 rounded-full bg-red-50 items-center justify-center">
                     <AlertCircle className="h-6 w-6 text-aussie-burnt-red" />
                   </div>
-                  <p className="font-body text-brown-700 leading-relaxed max-w-sm mx-auto">
+                  <p className="font-body text-brown-700 leading-relaxed max-w-sm mx-auto text-sm">
                     We couldn't load the Facebook timeline. The page may be private,
                     or the URL may not point to a public Facebook <em>Page</em>.
                   </p>
@@ -185,12 +196,13 @@ export function FacebookPostsSection() {
                     title="Facebook Page Timeline"
                     src={pluginSrc}
                     width={embedWidth}
-                    height={700}
+                    height={Math.min(700, embedWidth * 1.4)}
                     style={{
                       border: "none",
                       overflow: "hidden",
                       display: "block",
                       margin: "0 auto",
+                      maxWidth: "100%",
                     }}
                     scrolling="no"
                     allowFullScreen
@@ -206,27 +218,27 @@ export function FacebookPostsSection() {
         </div>
 
         {/* Sidebar — desktop column-2 / mobile below the embed */}
-        <aside className="space-y-4 lg:sticky lg:top-24 w-full max-w-md mx-auto lg:max-w-none lg:mx-0">
+        <aside className="space-y-4 lg:sticky lg:top-24 w-full">
           {/* Big visit-page CTA */}
           <Card className="border-0 shadow-md overflow-hidden">
             <a
               href={fbUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-5 text-white transition-transform hover:scale-[1.01]"
+              className="block p-4 sm:p-5 text-white transition-transform hover:scale-[1.01]"
               style={{
                 background: `linear-gradient(135deg, ${FB_BLUE} 0%, ${FB_BLUE_DARK} 100%)`,
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-white/20 ring-1 ring-white/30 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/20 ring-1 ring-white/30 flex items-center justify-center shrink-0">
                   <Facebook className="h-5 w-5 text-white" fill="currentColor" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading text-base font-bold leading-tight">
+                  <p className="font-heading text-sm sm:text-base font-bold leading-tight">
                     Follow us on Facebook
                   </p>
-                  <p className="font-body text-xs text-white/85 mt-0.5">
+                  <p className="font-body text-[11px] sm:text-xs text-white/85 mt-0.5">
                     Like the page to never miss a post
                   </p>
                 </div>
@@ -237,21 +249,21 @@ export function FacebookPostsSection() {
 
           {/* Why follow us */}
           <Card className="border-sand-200 shadow-sm">
-            <CardContent className="p-5 space-y-3">
-              <p className="font-heading text-sm font-bold text-brown-800 uppercase tracking-wider">
+            <CardContent className="p-4 sm:p-5 space-y-3">
+              <p className="font-heading text-xs sm:text-sm font-bold text-brown-800 uppercase tracking-wider">
                 What you'll see
               </p>
-              <ul className="space-y-3">
+              <ul className="space-y-2.5 sm:space-y-3">
                 {followBenefits.map(({ icon: Icon, label, text }) => (
-                  <li key={label} className="flex gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-aussie-orange/10 text-aussie-orange flex items-center justify-center shrink-0">
-                      <Icon className="h-4 w-4" />
+                  <li key={label} className="flex gap-2.5 sm:gap-3">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-aussie-orange/10 text-aussie-orange flex items-center justify-center shrink-0">
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-body text-sm font-semibold text-brown-800 leading-tight">
+                      <p className="font-body text-xs sm:text-sm font-semibold text-brown-800 leading-tight">
                         {label}
                       </p>
-                      <p className="font-body text-xs text-brown-500 leading-snug mt-0.5">
+                      <p className="font-body text-[11px] sm:text-xs text-brown-500 leading-snug mt-0.5">
                         {text}
                       </p>
                     </div>
@@ -264,8 +276,8 @@ export function FacebookPostsSection() {
           {/* Other socials */}
           {otherSocials.length > 0 && (
             <Card className="border-sand-200 shadow-sm">
-              <CardContent className="p-5 space-y-3">
-                <p className="font-heading text-sm font-bold text-brown-800 uppercase tracking-wider">
+              <CardContent className="p-4 sm:p-5 space-y-3">
+                <p className="font-heading text-xs sm:text-sm font-bold text-brown-800 uppercase tracking-wider">
                   Find us elsewhere
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -276,10 +288,10 @@ export function FacebookPostsSection() {
                       target="_blank"
                       rel="noopener noreferrer"
                       title={s.name}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-cream-100 hover:bg-aussie-orange hover:text-white text-brown-700 text-sm font-medium transition-colors border border-sand-200"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full bg-cream-100 hover:bg-aussie-orange hover:text-white text-brown-700 text-xs sm:text-sm font-medium transition-colors border border-sand-200"
                     >
-                      <SocialIcon iconKey={s.iconKey} size={16} />
-                      <span className="text-xs">{s.name}</span>
+                      <SocialIcon iconKey={s.iconKey} size={14} />
+                      <span className="text-[11px] sm:text-xs">{s.name}</span>
                     </a>
                   ))}
                 </div>
@@ -288,7 +300,7 @@ export function FacebookPostsSection() {
           )}
 
           {/* Footnote */}
-          <p className="text-xs text-brown-400 leading-relaxed text-center lg:text-left">
+          <p className="text-[11px] sm:text-xs text-brown-400 leading-relaxed text-center lg:text-left px-2">
             Posts loaded directly from Facebook. Only public Facebook{" "}
             <em>Pages</em> (not personal profiles) can be embedded.
           </p>
