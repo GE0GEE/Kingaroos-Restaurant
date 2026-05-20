@@ -209,19 +209,7 @@ export default function Contact() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-aussie-orange py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-white mb-6">{siteContent.siteTexts.contactCantWaitTitle}</h2>
-          <p className="font-body text-xl text-cream-100 mb-8">{siteContent.siteTexts.contactCantWaitText}</p>
-          <div className="space-y-4 text-cream-100">
-            <p className="font-body text-lg font-semibold">
-              📞 {siteContent.siteTexts.homePhone} | 📍 {siteContent.siteTexts.homeAddress}
-            </p>
-            <p className="font-body">{siteContent.siteTexts.contactSeeYouText}</p>
-          </div>
-        </div>
-      </section>
+
     </Layout>
   );
 }
