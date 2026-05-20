@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Music, Users, Heart, Coffee, Store } from "lucide-react";
+import { Calendar, Music, Users, Heart, Coffee, Store, X } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -77,10 +78,40 @@ function EventTypeBadge({ type, typeImages, size = "sm" }: { type: string; typeI
   );
 }
 
+/* Lightbox Modal for event images */
+function ImageLightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-[110] bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+        aria-label="Close"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      <div
+        className="relative max-h-[90vh] max-w-[90vw]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="rounded-lg shadow-2xl object-cover"
+          style={{ aspectRatio: "2/3", maxHeight: "85vh", width: "auto" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function Events() {
   const { siteContent, loading } = useAdmin();
   const eventTypeImages: Record<string, string> = (siteContent as any).eventTypeImages ?? {};
   const holidayStatuses: Record<string, boolean> = (siteContent as any).holidayStatuses ?? {};
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -105,6 +136,15 @@ export default function Events() {
 
   return (
     <Layout>
+      {/* Lightbox */}
+      {lightboxImage && (
+        <ImageLightbox
+          src={lightboxImage.src}
+          alt={lightboxImage.alt}
+          onClose={() => setLightboxImage(null)}
+        />
+      )}
+
       {/* Hero */}
       <div className="relative bg-stone-900 text-white py-20 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 opacity-10 pointer-events-none select-none">
@@ -179,7 +219,17 @@ export default function Events() {
               {thisWeekEvents.map((event) => (
                 <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
                   {event.imageUrl && (
-                    <img src={event.imageUrl} alt={event.title} className="w-full h-44 object-cover" />
+                    <div
+                      className="cursor-pointer overflow-hidden"
+                      onClick={() => setLightboxImage({ src: event.imageUrl!, alt: event.title })}
+                    >
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="w-full object-cover hover:scale-105 transition-transform duration-300"
+                        style={{ aspectRatio: "2/3" }}
+                      />
+                    </div>
                   )}
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
@@ -221,7 +271,17 @@ export default function Events() {
               {comingSoonEvents.map((event) => (
                 <Card key={event.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
                   {event.imageUrl && (
-                    <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
+                    <div
+                      className="cursor-pointer overflow-hidden"
+                      onClick={() => setLightboxImage({ src: event.imageUrl!, alt: event.title })}
+                    >
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="w-full object-cover hover:scale-105 transition-transform duration-300"
+                        style={{ aspectRatio: "2/3" }}
+                      />
+                    </div>
                   )}
                   <CardContent className="p-6">
                     <div className="flex space-x-4">
