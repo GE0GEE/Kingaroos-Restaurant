@@ -1250,15 +1250,18 @@ const newSection = (): MerchSection => ({
 function MerchItemForm({
   item,
   onSubmit,
+  existingCategories = [],
 }: {
   item: Partial<MerchItem>;
   onSubmit: (item: Partial<MerchItem>) => void;
+  existingCategories?: string[];
 }) {
   const [formData, setFormData] = useState<Partial<MerchItem>>({
     sections: [],
     ...item,
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1344,11 +1347,48 @@ function MerchItemForm({
         </div>
         <div>
           <Label>Category *</Label>
-          <Input
-            value={formData.category || ""}
-            placeholder="e.g. Food, Apparel, Drinkware"
-            onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value }))}
-          />
+          <div className="relative">
+            <Input
+              value={formData.category || ""}
+              placeholder="e.g. Food, Apparel, Drinkware"
+              onChange={(e) => {
+                setFormData((prev) => ({ ...prev, category: e.target.value }));
+                setShowCategoryDropdown(true);
+              }}
+              onFocus={() => setShowCategoryDropdown(true)}
+              onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 150)}
+            />
+            {showCategoryDropdown && existingCategories.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-sand-200 rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
+                {existingCategories
+                  .filter((cat) =>
+                    !formData.category || cat.toLowerCase().includes((formData.category || "").toLowerCase())
+                  )
+                  .map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm text-brown-700 hover:bg-cream-100 transition-colors"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => {
+                        setFormData((prev) => ({ ...prev, category: cat }));
+                        setShowCategoryDropdown(false);
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                {formData.category &&
+                  !existingCategories.some(
+                    (cat) => cat.toLowerCase() === (formData.category || "").toLowerCase()
+                  ) && (
+                    <div className="px-3 py-2 text-xs text-brown-400 border-t border-sand-100">
+                      ↵ Press enter or click away to create "<span className="font-semibold text-aussie-orange">{formData.category}</span>"
+                    </div>
+                  )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div>
@@ -2063,6 +2103,7 @@ export default function Admin() {
                       </DialogHeader>
                       <MerchItemForm
                         item={{}}
+                        existingCategories={Array.from(new Set(((siteContent as any).merch as MerchItem[] ?? []).map((m) => m.category).filter(Boolean)))}
                         onSubmit={async (item) => {
                           await addMerchItem(item as Omit<MerchItem, "id">);
                           alert("Merch item added!");
@@ -2118,6 +2159,7 @@ export default function Admin() {
                                   </DialogHeader>
                                   <MerchItemForm
                                     item={item}
+                                    existingCategories={Array.from(new Set(((siteContent as any).merch as MerchItem[] ?? []).map((m) => m.category).filter(Boolean)))}
                                     onSubmit={async (updates) => {
                                       await updateMerchItem(item.id, updates);
                                       alert("Merch item updated!");
