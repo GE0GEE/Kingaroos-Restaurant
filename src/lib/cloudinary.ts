@@ -2,6 +2,14 @@
 // Uploads images directly from the browser to Cloudinary using an unsigned
 // upload preset (no API secret in client code — best practice).
 // On success, returns the secure_url which can be saved to Firestore.
+//
+// Mobile-friendly:
+//   • Accepts iPhone HEIC/HEIF photos (Cloudinary auto-converts on upload)
+//   • Pre-compresses files > 4 MB to keep mobile uploads fast on slow networks
+//   • Generous timeout (3 min) for slow cellular connections
+//   • Tolerates intermittent connectivity with descriptive error messages
+
+import imageCompression from "browser-image-compression";
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined;
@@ -21,10 +29,53 @@ export interface CloudinaryUploadResult {
 export interface UploadOptions {
   folder?: string;
   onProgress?: (percent: number) => void;
+  /** Skip client-side compression even for very large files. Default: false. */
+  skipPreCompress?: boolean;
 }
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
-const ALLOWED_PREFIX = "image/";
+// Modern phone photos (iPhone, Pixel, Samsung) range from 3–15 MB; 200 MP cameras
+// can hit ~30 MB. We accept up to 30 MB to comfortably cover all phones.
+const MAX_BYTES = 30 * 1024 * 1024;
+// Files larger than this get pre-compressed in the browser before upload.
+// Keeps mobile uploads under 5–10 s on a 4G connection.
+const PRE_COMPRESS_THRESHOLD_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Returns true for any browser-recognised image (image/jpeg, image/png, image/webp,
+ * image/heic, image/heif, image/gif, etc.). Some mobile browsers leave file.type
+ * empty for HEIC — we then fall back to the filename extension.
+ */
+function isImageFile(file: File): boolean {
+  if (file.type && file.type.startsWith("image/")) return true;
+  const name = file.name.toLowerCase();
+  return /\.(jpe?g|png|webp|gif|heic|heif|avif|bmp|tiff?)$/.test(name);
+}
+
+/**
+ * Pre-compress a large image in the browser (off-main-thread via web worker).
+ * Returns the original file unchanged if compression fails or isn't needed.
+ * HEIC files are skipped — the browser-image-compression library can't decode
+ * them, but Cloudinary handles HEIC natively on the server.
+ */
+async function maybePreCompress(file: File): Promise<File> {
+  if (file.size <= PRE_COMPRESS_THRESHOLD_BYTES) return file;
+  const lower = file.name.toLowerCase();
+  if (lower.endsWith(".heic") || lower.endsWith(".heif")) return file;
+  try {
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 2,
+      maxWidthOrHeight: 2400,
+      useWebWorker: true,
+      initialQuality: 0.85,
+    });
+    return compressed instanceof File
+      ? compressed
+      : new File([compressed], file.name, { type: compressed.type || file.type });
+  } catch (err) {
+    console.warn("[Cloudinary] Pre-compression failed, uploading original:", err);
+    return file;
+  }
+}
 
 /**
  * Upload a single image file to Cloudinary. Returns the secure URL plus metadata.
@@ -41,7 +92,7 @@ export async function uploadToCloudinary(
   }
 
   // Client-side validation
-  if (!file.type.startsWith(ALLOWED_PREFIX)) {
+  if (!isImageFile(file)) {
     throw new Error("Only image files are allowed.");
   }
   if (file.size > MAX_BYTES) {
@@ -50,8 +101,11 @@ export async function uploadToCloudinary(
     );
   }
 
+  // Pre-compress big phone photos so the upload completes quickly on cellular.
+  const fileToUpload = options.skipPreCompress ? file : await maybePreCompress(file);
+
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", fileToUpload);
   formData.append("upload_preset", UPLOAD_PRESET!);
   formData.append("folder", options.folder ?? DEFAULT_FOLDER);
 
@@ -59,7 +113,8 @@ export async function uploadToCloudinary(
   return new Promise<CloudinaryUploadResult>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
-    xhr.timeout = 60_000; // 60 s
+    // Mobile networks can be slow — give the upload up to 3 minutes before timing out.
+    xhr.timeout = 180_000;
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable && options.onProgress) {
@@ -100,7 +155,7 @@ export async function uploadToCloudinary(
       reject(new Error("Network error during upload. Please check your connection."));
     });
     xhr.addEventListener("timeout", () => {
-      reject(new Error("Upload timed out. Please try again."));
+      reject(new Error("Upload timed out. Try again on a stronger network."));
     });
     xhr.addEventListener("abort", () => {
       reject(new Error("Upload aborted."));
