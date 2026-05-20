@@ -70,9 +70,30 @@ export interface MerchItem {
   sections: MerchSection[];
 }
 
+export type SocialIconKey =
+  | "facebook"
+  | "instagram"
+  | "twitter"
+  | "youtube"
+  | "tiktok"
+  | "linkedin"
+  | "pinterest"
+  | "threads"
+  | "snapchat"
+  | "link";
+
+export interface CustomSocial {
+  id: string;
+  name: string;
+  url: string;
+  iconKey: SocialIconKey;
+}
+
 export interface SiteContent {
   logoImage: string; faviconImage: string; theme: "light" | "dark";
   socialLinks: { facebook: string; instagram: string; twitter: string; };
+  /** Admin-managed extra social profile links (YouTube, TikTok, etc.) */
+  customSocials?: CustomSocial[];
   heroImages: Array<{ url: string; alt: string; }>;
   welcomeImages: Array<{ url: string; alt: string; }>;
   aboutImages: { familyPhoto: string; originalFoodTruck: string; firstRescueDog: string; restaurantOpensImage: string; };
@@ -103,6 +124,7 @@ export interface SiteContent {
 const defaultSiteContent: SiteContent = {
   logoImage: "/placeholder.svg", faviconImage: "", theme: "light",
   socialLinks: { facebook: "#", instagram: "#", twitter: "#" },
+  customSocials: [],
   heroImages: [
     { url: "/placeholder.svg", alt: "Kingaroos food hero 1" },
     { url: "/placeholder.svg", alt: "Kingaroos atmosphere hero 2" },
@@ -223,6 +245,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             const mergedContent: SiteContent = {
               ...defaultSiteContent, ...serverContent,
               socialLinks: { ...defaultSiteContent.socialLinks, ...(serverContent.socialLinks || {}) },
+              customSocials: serverContent.customSocials ?? [],
               heroImages: serverContent.heroImages && serverContent.heroImages.length > 0 ? serverContent.heroImages : defaultSiteContent.heroImages,
               welcomeImages: serverContent.welcomeImages && serverContent.welcomeImages.length > 0 ? serverContent.welcomeImages : defaultSiteContent.welcomeImages,
               faviconImage: serverContent.faviconImage ?? defaultSiteContent.faviconImage,

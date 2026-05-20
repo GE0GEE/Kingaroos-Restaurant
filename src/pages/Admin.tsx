@@ -47,7 +47,8 @@ import {
   Megaphone,
   Pin,
 } from "lucide-react";
-import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection, AnnouncementType } from "@/contexts/AdminContext";
+import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection, AnnouncementType, CustomSocial, SocialIconKey } from "@/contexts/AdminContext";
+import { SocialIcon, SOCIAL_ICON_OPTIONS } from "@/components/SocialIcon";
 import imageCompression from "browser-image-compression";
 
 // --- HELPER FUNCTION FOR IMAGE COMPRESSION AND CONVERSION ---
@@ -1640,11 +1641,13 @@ export default function Admin() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [importing, setImporting] = useState(false);
   const [editingSettings, setEditingSettings] = useState(siteContent.socialLinks);
+  const [editingCustomSocials, setEditingCustomSocials] = useState<CustomSocial[]>(siteContent.customSocials ?? []);
 
   useEffect(() => {
     setEditingTexts(siteContent.siteTexts);
     setEditingImages(siteContent.aboutImages);
     setEditingSettings(siteContent.socialLinks);
+    setEditingCustomSocials(siteContent.customSocials ?? []);
   }, [siteContent]);
 
   const handleLogout = () => { logout(); navigate("/"); };
@@ -1669,11 +1672,31 @@ export default function Admin() {
 
   const handleSaveSettings = async () => {
     try {
-      await updateSiteContent({ socialLinks: editingSettings });
+      await updateSiteContent({
+        socialLinks: editingSettings,
+        customSocials: editingCustomSocials,
+      });
       alert("Settings saved successfully!");
     } catch (error: any) {
       alert(`Error saving settings: ${error.message}`);
     }
+  };
+
+  const addCustomSocial = () => {
+    setEditingCustomSocials((prev) => [
+      ...prev,
+      { id: `social-${Date.now()}`, name: "", url: "", iconKey: "link" as SocialIconKey },
+    ]);
+  };
+
+  const updateCustomSocial = (id: string, patch: Partial<CustomSocial>) => {
+    setEditingCustomSocials((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...patch } : s))
+    );
+  };
+
+  const removeCustomSocial = (id: string) => {
+    setEditingCustomSocials((prev) => prev.filter((s) => s.id !== id));
   };
 
   const handleGenericImageUpload = (updateFunction: (value: string) => Promise<void>) => async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1859,6 +1882,97 @@ export default function Admin() {
                       onChange={(e) => setEditingSettings((prev) => ({ ...prev, twitter: e.target.value }))}
                     />
                   </div>
+
+                  {/* Custom / extra social networks */}
+                  <div className="pt-4 border-t border-sand-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <Label className="text-base font-semibold">Other Social Networks</Label>
+                        <p className="text-xs text-brown-500 mt-1">
+                          Add YouTube, TikTok, LinkedIn, Pinterest, Threads, or any other link.
+                          They appear in the footer alongside Facebook / Instagram / Twitter.
+                        </p>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={addCustomSocial}>
+                        <Plus className="mr-1 h-4 w-4" /> Add
+                      </Button>
+                    </div>
+
+                    {editingCustomSocials.length === 0 ? (
+                      <p className="text-sm text-brown-400 italic py-3">
+                        No extra networks yet. Click <strong>Add</strong> to add one.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {editingCustomSocials.map((social) => (
+                          <div
+                            key={social.id}
+                            className="grid grid-cols-1 md:grid-cols-[140px_1fr_1.5fr_auto] gap-2 items-end p-3 rounded-md border border-sand-200 bg-cream-50/50"
+                          >
+                            <div>
+                              <Label className="text-xs">Platform</Label>
+                              <Select
+                                value={social.iconKey}
+                                onValueChange={(v) =>
+                                  updateCustomSocial(social.id, { iconKey: v as SocialIconKey })
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue>
+                                    <span className="inline-flex items-center gap-2">
+                                      <SocialIcon iconKey={social.iconKey} size={14} />
+                                      <span className="capitalize">{social.iconKey}</span>
+                                    </span>
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SOCIAL_ICON_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      <span className="inline-flex items-center gap-2">
+                                        <SocialIcon iconKey={opt.value} size={14} />
+                                        {opt.label}
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-xs">Label</Label>
+                              <Input
+                                placeholder="e.g. YouTube"
+                                value={social.name}
+                                onChange={(e) =>
+                                  updateCustomSocial(social.id, { name: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs">URL</Label>
+                              <Input
+                                placeholder="https://..."
+                                value={social.url}
+                                onChange={(e) =>
+                                  updateCustomSocial(social.id, { url: e.target.value })
+                                }
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                              onClick={() => removeCustomSocial(social.id)}
+                              aria-label={`Remove ${social.name || "social link"}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex justify-start pt-2">
                     <Button onClick={handleSaveSettings}>
                       <Save className="mr-2 h-4 w-4" />Save Settings
