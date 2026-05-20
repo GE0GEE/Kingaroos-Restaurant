@@ -161,7 +161,7 @@ export default function Contact() {
                       <div className="flex items-center space-x-3 p-3 rounded-lg bg-sand-100 hover:bg-sand-200 transition-colors">
                         <Facebook className="h-6 w-6 text-aussie-orange" />
                         <div>
-                          <p className="font-body font-semibold text-brown-800">@KingaroosRestaurant</p>
+                          <p className="font-body font-semibold text-brown-800">{siteContent.siteTexts.contactFacebookHandle || "@KingaroosRestaurant"}</p>
                           <p className="font-body text-brown-600 text-sm">{siteContent.siteTexts.contactFacebookDescription}</p>
                         </div>
                       </div>
