@@ -2293,6 +2293,54 @@ export default function Admin() {
                       </div>
                     )}
                   </div>
+
+                  {/* Add Link (paste image URL) */}
+                  <div className="border border-gray-200 rounded-xl p-6 space-y-3">
+                    <p className="text-sm font-semibold text-gray-600">Add Link</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Paste one or more image URLs to add to the gallery.</p>
+                    <div className="flex gap-2">
+                      <Input
+                        id="physicalMenuLinkInput"
+                        type="text"
+                        placeholder="Paste image URL here"
+                        className="flex-1"
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            const input = e.currentTarget;
+                            const url = input.value.trim();
+                            if (!url) return;
+                            const newImage = {
+                              id: `pmenu-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                              url,
+                              caption: "",
+                            };
+                            const existing = siteContent.physicalMenuImages ?? [];
+                            await updateSiteContent({ physicalMenuImages: [...existing, newImage] });
+                            input.value = "";
+                            alert("✅ Image link added to gallery.");
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={async () => {
+                          const input = document.getElementById("physicalMenuLinkInput") as HTMLInputElement;
+                          const url = input?.value.trim();
+                          if (!url) return;
+                          const newImage = {
+                            id: `pmenu-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                            url,
+                            caption: "",
+                          };
+                          const existing = siteContent.physicalMenuImages ?? [];
+                          await updateSiteContent({ physicalMenuImages: [...existing, newImage] });
+                          input.value = "";
+                          alert("✅ Image link added to gallery.");
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-1" /> Add Link
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
