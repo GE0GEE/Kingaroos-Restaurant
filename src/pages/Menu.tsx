@@ -54,193 +54,203 @@ const CATEGORY_LABELS: Record<string, string> = {
   "hot-drinks":    "Hot & Cold Drinks",
 };
 
-// ─── Physical Menu Flipbook ────────────────────────────────────────────────────
+// ─── Physical Menu Flipbook (3D page-turn) ─────────────────────────────────────
 function PhysicalMenuGallery() {
   const { siteContent } = useAdmin();
   const images = siteContent.physicalMenuImages ?? [];
-  const [currentPage, setCurrentPage] = useState(-1); // -1 = cover page
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [flipDirection, setFlipDirection] = useState<"left" | "right">("right");
+  // pages array: index 0 = cover, 1..N = menu images
+  const totalPages = images.length + 1; // +1 for cover
+  const [flippedPages, setFlippedPages] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") flipNext();
+      if (e.key === "ArrowLeft") flipPrev();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  });
 
   if (images.length === 0) return null;
 
-  const totalPages = images.length; // 0-indexed pages, -1 is cover
-  const isOnCover = currentPage === -1;
-  const isOnLastPage = currentPage === totalPages - 1;
+  const currentVisiblePage = flippedPages.size; // how many pages have been flipped
 
-  const goNext = () => {
-    if (isOnLastPage || isFlipping) return;
-    setFlipDirection("right");
-    setIsFlipping(true);
-    setTimeout(() => {
-      setCurrentPage((p) => p + 1);
-      setIsFlipping(false);
-    }, 300);
+  const flipNext = () => {
+    if (currentVisiblePage >= totalPages) return;
+    setFlippedPages((prev) => new Set([...prev, currentVisiblePage]));
   };
 
-  const goPrev = () => {
-    if (isOnCover || isFlipping) return;
-    setFlipDirection("left");
-    setIsFlipping(true);
-    setTimeout(() => {
-      setCurrentPage((p) => p - 1);
-      setIsFlipping(false);
-    }, 300);
+  const flipPrev = () => {
+    if (currentVisiblePage <= 0) return;
+    setFlippedPages((prev) => {
+      const next = new Set(prev);
+      next.delete(currentVisiblePage - 1);
+      return next;
+    });
   };
 
   return (
     <section className="bg-gradient-to-b from-stone-900 via-stone-800 to-stone-900 py-12 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Flipbook Container */}
         <div className="relative flex flex-col items-center">
-          {/* The Book */}
-          <div className="relative w-full max-w-[480px] aspect-[3/4] select-none">
-            {/* Book shadow/base */}
-            <div className="absolute inset-0 rounded-lg shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
+          {/* Book wrapper */}
+          <div
+            className="relative select-none"
+            style={{ width: "min(480px, 85vw)", aspectRatio: "3/4", perspective: "1800px" }}
+          >
+            {/* Book shadow */}
+            <div className="absolute inset-0 rounded-lg shadow-[0_25px_80px_rgba(0,0,0,0.6)]" />
 
-            {/* Page content with flip animation */}
-            <div
-              className={`relative w-full h-full rounded-lg overflow-hidden border border-amber-900/30 transition-transform duration-300 ease-in-out ${
-                isFlipping
-                  ? flipDirection === "right"
-                    ? "animate-[flipRight_0.3s_ease-in-out]"
-                    : "animate-[flipLeft_0.3s_ease-in-out]"
-                  : ""
-              }`}
-              style={{ perspective: "1200px", transformStyle: "preserve-3d" }}
-            >
-              {isOnCover ? (
-                /* ── Cover Page ── */
-                <div className="w-full h-full bg-gradient-to-br from-amber-900 via-stone-900 to-amber-950 flex flex-col items-center justify-center p-8 relative">
-                  {/* Decorative border */}
-                  <div className="absolute inset-3 border-2 border-amber-400/30 rounded-lg pointer-events-none" />
-                  <div className="absolute inset-5 border border-amber-400/15 rounded-lg pointer-events-none" />
+            {/* Pages - rendered back to front so first page is on top */}
+            {Array.from({ length: totalPages }, (_, i) => totalPages - 1 - i).map((pageIndex) => {
+              const isFlipped = flippedPages.has(pageIndex);
+              const isCover = pageIndex === 0;
+              const imageIndex = pageIndex - 1; // -1 for cover
 
-                  {/* Logo/Branding */}
-                  <div className="text-center space-y-4 relative z-10">
-                    <div className="text-5xl mb-2">🦘</div>
-                    <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-amber-400 tracking-tight">
-                      Kingaroos
-                    </h2>
-                    <p className="text-amber-200/80 text-sm font-semibold uppercase tracking-[0.3em]">
-                      Menu
-                    </p>
-                    <div className="w-16 h-px bg-amber-400/40 mx-auto my-4" />
-                    <p className="text-stone-400 text-xs italic max-w-[200px] mx-auto leading-relaxed">
-                      Seaview Resto Bar
-                    </p>
-                  </div>
-
-                  {/* Corner ornaments */}
-                  <div className="absolute top-6 left-6 w-6 h-6 border-t-2 border-l-2 border-amber-400/40 rounded-tl" />
-                  <div className="absolute top-6 right-6 w-6 h-6 border-t-2 border-r-2 border-amber-400/40 rounded-tr" />
-                  <div className="absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 border-amber-400/40 rounded-bl" />
-                  <div className="absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 border-amber-400/40 rounded-br" />
-
-                  {/* Open prompt */}
-                  <button
-                    onClick={goNext}
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-amber-400/70 hover:text-amber-400 transition-colors text-xs font-medium"
+              return (
+                <div
+                  key={pageIndex}
+                  className="absolute inset-0 rounded-lg cursor-pointer"
+                  style={{
+                    transformOrigin: "left center",
+                    transition: "transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1.000)",
+                    transform: isFlipped ? "rotateY(-180deg)" : "rotateY(0deg)",
+                    transformStyle: "preserve-3d",
+                    zIndex: isFlipped ? pageIndex : totalPages - pageIndex,
+                  }}
+                  onClick={() => {
+                    if (!isFlipped) {
+                      // Flip this page
+                      setFlippedPages((prev) => new Set([...prev, pageIndex]));
+                    } else {
+                      // Unflip this page
+                      setFlippedPages((prev) => {
+                        const next = new Set(prev);
+                        next.delete(pageIndex);
+                        return next;
+                      });
+                    }
+                  }}
+                >
+                  {/* Front face */}
+                  <div
+                    className="absolute inset-0 rounded-lg overflow-hidden border border-amber-900/20"
+                    style={{ backfaceVisibility: "hidden" }}
                   >
-                    <span>Open Menu</span>
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-              ) : (
-                /* ── Menu Pages ── */
-                <div className="w-full h-full bg-white relative">
-                  <img
-                    src={images[currentPage].url}
-                    alt={images[currentPage].caption || `Menu page ${currentPage + 1}`}
-                    className="w-full h-full object-contain bg-stone-50"
-                    loading="lazy"
-                  />
-                  {/* Page number */}
-                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2.5 py-0.5 rounded-full">
-                    {currentPage + 1} / {totalPages}
+                    {isCover ? (
+                      /* ── Cover ── */
+                      <div className="w-full h-full bg-gradient-to-br from-amber-900 via-stone-900 to-amber-950 flex flex-col items-center justify-center p-8 relative">
+                        <div className="absolute inset-3 border-2 border-amber-400/30 rounded-lg pointer-events-none" />
+                        <div className="absolute inset-5 border border-amber-400/15 rounded-lg pointer-events-none" />
+                        <div className="text-center space-y-4 relative z-10">
+                          <div className="text-5xl mb-2">🦘</div>
+                          <h2 className="font-heading text-3xl md:text-4xl font-extrabold text-amber-400 tracking-tight">
+                            Kingaroos
+                          </h2>
+                          <p className="text-amber-200/80 text-sm font-semibold uppercase tracking-[0.3em]">
+                            Menu
+                          </p>
+                          <div className="w-16 h-px bg-amber-400/40 mx-auto my-4" />
+                          <p className="text-stone-400 text-xs italic">Seaview Resto Bar</p>
+                        </div>
+                        <div className="absolute top-6 left-6 w-6 h-6 border-t-2 border-l-2 border-amber-400/40 rounded-tl" />
+                        <div className="absolute top-6 right-6 w-6 h-6 border-t-2 border-r-2 border-amber-400/40 rounded-tr" />
+                        <div className="absolute bottom-6 left-6 w-6 h-6 border-b-2 border-l-2 border-amber-400/40 rounded-bl" />
+                        <div className="absolute bottom-6 right-6 w-6 h-6 border-b-2 border-r-2 border-amber-400/40 rounded-br" />
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 text-amber-400/60 text-xs font-medium">
+                          <span>Click to open</span>
+                          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                        </div>
+                      </div>
+                    ) : (
+                      /* ── Menu page front ── */
+                      <div className="w-full h-full bg-white relative">
+                        <img
+                          src={images[imageIndex]?.url}
+                          alt={images[imageIndex]?.caption || `Menu page ${imageIndex + 1}`}
+                          className="w-full h-full object-contain bg-stone-50"
+                          loading="lazy"
+                        />
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2.5 py-0.5 rounded-full">
+                          {imageIndex + 1} / {images.length}
+                        </div>
+                        {images[imageIndex]?.caption && (
+                          <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[11px] px-3 py-1 rounded-full max-w-[80%] truncate">
+                            {images[imageIndex].caption}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {/* Caption overlay */}
-                  {images[currentPage].caption && (
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white text-[11px] px-3 py-1 rounded-full">
-                      {images[currentPage].caption}
+
+                  {/* Back face (shown when page is flipped) */}
+                  <div
+                    className="absolute inset-0 rounded-lg overflow-hidden bg-stone-100 border border-stone-200"
+                    style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                  >
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-stone-50 to-stone-100">
+                      <p className="text-stone-300 text-xs font-body italic">
+                        {isCover ? "Inside cover" : `Back of page ${imageIndex + 1}`}
+                      </p>
                     </div>
-                  )}
+                  </div>
                 </div>
-              )}
+              );
+            })}
+          </div>
+
+          {/* Navigation arrows */}
+          <div className="flex items-center gap-6 mt-8">
+            <button
+              onClick={flipPrev}
+              disabled={currentVisiblePage <= 0}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 disabled:opacity-30 disabled:hover:scale-100"
+              aria-label="Previous page"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+
+            {/* Page dots */}
+            <div className="flex items-center gap-1.5 flex-wrap justify-center max-w-[300px]">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    // Set flipped state to show this page on top
+                    const newFlipped = new Set<number>();
+                    for (let j = 0; j < i; j++) newFlipped.add(j);
+                    setFlippedPages(newFlipped);
+                  }}
+                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                    currentVisiblePage === i ? "bg-amber-400 scale-150" : "bg-white/25 hover:bg-white/50"
+                  }`}
+                  aria-label={i === 0 ? "Cover" : `Page ${i}`}
+                />
+              ))}
             </div>
 
-            {/* Navigation arrows */}
-            {!isOnCover && (
-              <button
-                onClick={goPrev}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full mr-2 md:-translate-x-[calc(100%+12px)] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110"
-                aria-label="Previous page"
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-            )}
-            {!isOnLastPage && (
-              <button
-                onClick={goNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full ml-2 md:translate-x-[calc(100%+12px)] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110"
-                aria-label="Next page"
-              >
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Page dots / thumbnails */}
-          <div className="flex items-center gap-1.5 mt-6 flex-wrap justify-center max-w-[400px]">
             <button
-              onClick={() => { setCurrentPage(-1); }}
-              className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                isOnCover ? "bg-amber-400 scale-125" : "bg-white/20 hover:bg-white/40"
-              }`}
-              aria-label="Cover"
-            />
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentPage(idx)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  currentPage === idx ? "bg-amber-400 scale-125" : "bg-white/20 hover:bg-white/40"
-                }`}
-                aria-label={`Page ${idx + 1}`}
-              />
-            ))}
+              onClick={flipNext}
+              disabled={currentVisiblePage >= totalPages}
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white transition-all hover:scale-110 disabled:opacity-30 disabled:hover:scale-100"
+              aria-label="Next page"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
           </div>
 
-          {/* Keyboard hint */}
+          {/* Hint */}
           <p className="text-stone-500 text-[11px] mt-3 hidden md:block">
-            Use ← → arrow keys or click to flip pages
+            Click pages to flip &middot; Use ← → arrow keys
           </p>
         </div>
       </div>
-
-      {/* Keyboard navigation */}
-      <FlipbookKeyboardNav onNext={goNext} onPrev={goPrev} />
     </section>
   );
-}
-
-// Keyboard support for the flipbook
-function FlipbookKeyboardNav({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") onNext();
-      if (e.key === "ArrowLeft") onPrev();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onNext, onPrev]);
-  return null;
 }
 
 // ─── Menu Item Card ───────────────────────────────────────────────────────────
