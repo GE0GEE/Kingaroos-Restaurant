@@ -1,8 +1,10 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Heart, Utensils, Gift, Star } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Heart, Utensils, Gift, Star, Tag, Facebook } from "lucide-react";
 import { useAdmin, promotionCategories } from "@/contexts/AdminContext";
+import { FacebookPostsSection } from "@/components/FacebookPostsSection";
 
 const getPromotionIcon = (title: string) => {
   const t = title.toLowerCase();
@@ -48,49 +50,78 @@ export default function Promotions() {
         </p>
       </div>
 
-      {/* Promotions Grid */}
-      <section className="py-16 px-4">
+      {/* Tabbed content */}
+      <section className="py-12 px-4">
         <div className="max-w-7xl mx-auto">
-          {siteContent.promotions.length === 0 ? (
-            <div className="text-center py-12">
-              <Gift className="h-16 w-16 text-brown-400 mx-auto mb-4" />
-              <p className="font-body text-brown-600">{siteContent.siteTexts.promotionsNoOffersText}</p>
+          <Tabs defaultValue="offers" className="w-full">
+            <div className="flex justify-center mb-10">
+              <TabsList className="bg-cream-100 border border-sand-200 h-auto p-1.5">
+                <TabsTrigger
+                  value="offers"
+                  className="font-body data-[state=active]:bg-aussie-orange data-[state=active]:text-white px-5 py-2.5 gap-2"
+                >
+                  <Tag className="h-4 w-4" />
+                  Current Offers
+                </TabsTrigger>
+                <TabsTrigger
+                  value="facebook"
+                  className="font-body data-[state=active]:bg-[#1877F2] data-[state=active]:text-white px-5 py-2.5 gap-2"
+                >
+                  <Facebook className="h-4 w-4" />
+                  Facebook Posts
+                </TabsTrigger>
+              </TabsList>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {siteContent.promotions.map((promo) => {
-                const IconComponent = getPromotionIcon(promo.title);
-                const categoryKey = promo.category && promotionCategories[promo.category] ? promo.category : "general";
-                const categoryDetails = promotionCategories[categoryKey];
-                return (
-                  <Card key={promo.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <div className={`bg-gradient-to-r ${categoryDetails.colorClasses} p-6 text-white relative`}>
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-white/20 text-white border-white/30 font-body text-xs">
-                          {categoryDetails.badge}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                          <IconComponent className="h-6 w-6" />
+
+            {/* Current Offers Tab */}
+            <TabsContent value="offers" className="mt-0">
+              {siteContent.promotions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Gift className="h-16 w-16 text-brown-400 mx-auto mb-4" />
+                  <p className="font-body text-brown-600">{siteContent.siteTexts.promotionsNoOffersText}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {siteContent.promotions.map((promo) => {
+                    const IconComponent = getPromotionIcon(promo.title);
+                    const categoryKey = promo.category && promotionCategories[promo.category] ? promo.category : "general";
+                    const categoryDetails = promotionCategories[categoryKey];
+                    return (
+                      <Card key={promo.id} className="border-sand-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                        <div className={`bg-gradient-to-r ${categoryDetails.colorClasses} p-6 text-white relative`}>
+                          <div className="absolute top-4 right-4">
+                            <Badge className="bg-white/20 text-white border-white/30 font-body text-xs">
+                              {categoryDetails.badge}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                              <IconComponent className="h-6 w-6" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-heading text-xl font-bold mb-1">{promo.title}</h3>
+                              <p className="font-body text-white/90 text-sm">{promo.subtitle}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-heading text-xl font-bold mb-1">{promo.title}</h3>
-                          <p className="font-body text-white/90 text-sm">{promo.subtitle}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <CardContent className="p-6 space-y-4">
-                      <div className="text-center">
-                        <p className="font-heading text-2xl font-bold text-aussie-orange mb-2">{promo.details}</p>
-                        <p className="font-body text-brown-600 leading-relaxed">{promo.description}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+                        <CardContent className="p-6 space-y-4">
+                          <div className="text-center">
+                            <p className="font-heading text-2xl font-bold text-aussie-orange mb-2">{promo.details}</p>
+                            <p className="font-body text-brown-600 leading-relaxed">{promo.description}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Facebook Posts Tab */}
+            <TabsContent value="facebook" className="mt-0">
+              <FacebookPostsSection />
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
 

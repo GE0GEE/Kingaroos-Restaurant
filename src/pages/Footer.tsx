@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Heart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
+import { SocialIcon } from "@/components/SocialIcon";
 import {
   Dialog,
   DialogContent,
@@ -138,6 +139,24 @@ export function Footer() {
                   <Twitter className="h-6 w-6 text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors" />
                 </a>
               )}
+              {(siteContent.customSocials ?? [])
+                .filter((s) => s.url && s.url.trim() !== "" && s.url.trim() !== "#")
+                .map((social) => (
+                  <a
+                    key={social.id}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.name || social.iconKey}
+                    title={social.name || social.iconKey}
+                  >
+                    <SocialIcon
+                      iconKey={social.iconKey}
+                      className="text-cream-200 hover:text-aussie-orange cursor-pointer transition-colors"
+                      size={24}
+                    />
+                  </a>
+                ))}
             </div>
           </div>
         </div>
