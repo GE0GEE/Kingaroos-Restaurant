@@ -194,7 +194,11 @@ function PhysicalMenuGallery() {
                     transformStyle: "preserve-3d",
                     transition: "transform 1s cubic-bezier(0.55, 0.085, 0.255, 1)",
                     transform: isFlipped ? "rotateY(-180deg)" : "rotateY(0deg)",
-                    zIndex: isFlipped ? pageIndex : totalPages - pageIndex,
+                    // While a page is animating, lift it above all other pages so it
+                    // never gets occluded by unflipped pages above it (fix for early-page flips).
+                    zIndex: isAnimating
+                      ? totalPages * 2 + 50
+                      : isFlipped ? pageIndex : totalPages - pageIndex,
                   }}
                 >
                   {/* ── Front face ── */}

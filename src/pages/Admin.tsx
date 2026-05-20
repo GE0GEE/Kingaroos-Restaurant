@@ -50,11 +50,27 @@ import {
 import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection, AnnouncementType, CustomSocial, SocialIconKey } from "@/contexts/AdminContext";
 import { SocialIcon, SOCIAL_ICON_OPTIONS } from "@/components/SocialIcon";
 import imageCompression from "browser-image-compression";
+import { uploadToCloudinary, isCloudinaryConfigured } from "@/lib/cloudinary";
 
-// --- HELPER FUNCTION FOR IMAGE COMPRESSION AND CONVERSION ---
+// --- IMAGE UPLOAD HELPER ---
+// If Cloudinary is configured (VITE_CLOUDINARY_CLOUD_NAME + VITE_CLOUDINARY_UPLOAD_PRESET),
+// uploads the file directly to Cloudinary and returns the secure_url.
+// Otherwise falls back to local compression + base64 for backwards compatibility.
 const handleFileAndCompress = async (file: File): Promise<string> => {
-  console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+  // ── Cloudinary path (preferred) ──
+  if (isCloudinaryConfigured()) {
+    try {
+      const result = await uploadToCloudinary(file, { folder: "kingaroos" });
+      console.log(`[Cloudinary] Uploaded ${(result.bytes / 1024).toFixed(1)} KB → ${result.url}`);
+      return result.url;
+    } catch (err) {
+      console.error("[Cloudinary] Upload failed, falling back to local compression:", err);
+      // fall through to local compression
+    }
+  }
 
+  // ── Local compression fallback ──
+  console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
   const options = {
     maxSizeMB: 0.9,
     maxWidthOrHeight: 1920,
