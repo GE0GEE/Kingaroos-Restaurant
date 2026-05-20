@@ -44,8 +44,10 @@ import {
   Upload,
   ShoppingBag,
   GripVertical,
+  Megaphone,
+  Pin,
 } from "lucide-react";
-import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection } from "@/contexts/AdminContext";
+import type { Dog, MenuItem, Event, Promotion, PromotionCategoryKey, MerchItem, MerchSection, AnnouncementType } from "@/contexts/AdminContext";
 import imageCompression from "browser-image-compression";
 
 // --- HELPER FUNCTION FOR IMAGE COMPRESSION AND CONVERSION ---
@@ -505,29 +507,208 @@ function EventForm({ event, onSubmit }: { event: Partial<Event>; onSubmit: (even
   );
 }
 
+// --- ANNOUNCEMENT TYPES (used by the new announcement form) ---
+const ANNOUNCEMENT_TYPES: { value: AnnouncementType; label: string; emoji: string; }[] = [
+  { value: "general",      label: "General News",     emoji: "📢" },
+  { value: "promo",        label: "Promo / Deal",     emoji: "🎉" },
+  { value: "event",        label: "Event",            emoji: "🎶" },
+  { value: "newItem",      label: "New Menu Item",    emoji: "🍽️" },
+  { value: "closure",      label: "Closure",          emoji: "🚫" },
+  { value: "holidayHours", label: "Holiday Hours",    emoji: "🕒" },
+  { value: "news",         label: "News",             emoji: "📰" },
+];
+
 function PromotionForm({ promotion, onSubmit }: { promotion: Partial<Promotion>; onSubmit: (promotion: Partial<Promotion>) => void; }) {
-  const [formData, setFormData] = useState(promotion);
+  const [formData, setFormData] = useState<Partial<Promotion>>(promotion);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const base64 = await handleFileAndCompress(file);
+      setFormData((prev) => ({ ...prev, imageUrl: base64 }));
+    } catch {
+      alert("Image upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <div><Label>Title</Label><Input value={formData.title || ""} onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))} /></div>
-      <div><Label>Subtitle</Label><Input value={formData.subtitle || ""} onChange={(e) => setFormData((prev) => ({ ...prev, subtitle: e.target.value }))} /></div>
-      <div><Label>Details</Label><Input value={formData.details || ""} onChange={(e) => setFormData((prev) => ({ ...prev, details: e.target.value }))} /></div>
-      <div><Label>Description</Label><Textarea value={formData.description || ""} onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))} /></div>
+    <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+      {/* Type */}
       <div>
-        <Label>Category</Label>
+        <Label>Type *</Label>
+        <Select
+          value={formData.type || "general"}
+          onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value as AnnouncementType }))}
+        >
+          <SelectTrigger><SelectValue placeholder="Pick an announcement type" /></SelectTrigger>
+          <SelectContent>
+            {ANNOUNCEMENT_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>{t.emoji} {t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Pinned */}
+      <div className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
+        <div className="flex items-center gap-2">
+          <Pin className="h-4 w-4 text-aussie-orange" />
+          <div>
+            <p className="font-body font-semibold text-brown-800 text-sm">Pin to top</p>
+            <p className="font-body text-xs text-brown-500">Show this announcement first</p>
+          </div>
+        </div>
+        <Switch
+          checked={formData.pinned || false}
+          onCheckedChange={(val) => setFormData((prev) => ({ ...prev, pinned: val }))}
+        />
+      </div>
+
+      {/* Title + Subtitle */}
+      <div>
+        <Label>Title *</Label>
+        <Input
+          value={formData.title || ""}
+          placeholder="e.g. Closed Christmas Day"
+          onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+        />
+      </div>
+      <div>
+        <Label>Subtitle (short tagline)</Label>
+        <Input
+          value={formData.subtitle || ""}
+          placeholder="e.g. We'll be back Boxing Day!"
+          onChange={(e) => setFormData((prev) => ({ ...prev, subtitle: e.target.value }))}
+        />
+      </div>
+
+      {/* Headline / details */}
+      <div>
+        <Label>Headline / Highlight (optional)</Label>
+        <Input
+          value={formData.details || ""}
+          placeholder="e.g. 20% OFF, Free Drink, Sat 7pm"
+          onChange={(e) => setFormData((prev) => ({ ...prev, details: e.target.value }))}
+        />
+        <p className="text-xs text-brown-400 mt-0.5">Big, bold text shown on the card (e.g. discount %, time, date).</p>
+      </div>
+
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={formData.description || ""}
+          rows={3}
+          placeholder="Full details — what, when, conditions, etc."
+          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+        />
+      </div>
+
+      {/* Image */}
+      <div>
+        <Label>Image (optional)</Label>
+        <Input type="file" accept="image/*" onChange={handleImageFile} disabled={isUploading} />
+        <Input
+          className="mt-1"
+          placeholder="Or paste image URL"
+          value={formData.imageUrl?.startsWith("http") ? formData.imageUrl : ""}
+          onChange={(e) => setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))}
+        />
+        {isUploading && (
+          <div className="flex items-center gap-2 text-xs text-blue-600 mt-1">
+            <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+          </div>
+        )}
+        {formData.imageUrl && (
+          <div className="relative mt-2">
+            <img
+              src={formData.imageUrl}
+              alt="preview"
+              className="w-full h-36 object-cover rounded-lg border border-sand-200"
+              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+            />
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-1 right-1 h-6 w-6"
+              onClick={() => setFormData((prev) => ({ ...prev, imageUrl: "" }))}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Schedule */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Show from (optional)</Label>
+          <Input
+            type="date"
+            value={formData.startDate || ""}
+            onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
+          />
+          <p className="text-xs text-brown-400 mt-0.5">Empty = show now</p>
+        </div>
+        <div>
+          <Label>Show until (optional)</Label>
+          <Input
+            type="date"
+            value={formData.endDate || ""}
+            onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
+          />
+          <p className="text-xs text-brown-400 mt-0.5">Empty = no expiry</p>
+        </div>
+      </div>
+
+      {/* Call-to-action */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label>Button Label (optional)</Label>
+          <Input
+            value={formData.ctaLabel || ""}
+            placeholder="e.g. Reserve Now"
+            onChange={(e) => setFormData((prev) => ({ ...prev, ctaLabel: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label>Button Link</Label>
+          <Input
+            value={formData.ctaLink || ""}
+            placeholder="https://... or tel:+63..."
+            onChange={(e) => setFormData((prev) => ({ ...prev, ctaLink: e.target.value }))}
+          />
+        </div>
+      </div>
+
+      {/* Visual style category — kept for backwards compat with the public Promotions page */}
+      <div>
+        <Label>Visual style (color theme)</Label>
         <Select
           value={formData.category || ""}
           onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value as PromotionCategoryKey }))}
         >
-          <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Default" /></SelectTrigger>
           <SelectContent>
             {Object.entries(promotionCategories).map(([key, { name }]) => (
               <SelectItem key={key} value={key}>{name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-brown-400 mt-0.5">Controls the card's color accent on the public page.</p>
       </div>
-      <Button onClick={() => onSubmit(formData)} className="w-full">Save Promotion</Button>
+
+      <Button
+        onClick={() => onSubmit(formData)}
+        className="w-full bg-aussie-orange hover:bg-aussie-burnt-red text-white"
+        disabled={isUploading}
+      >
+        <Save className="h-4 w-4 mr-2" /> Save Announcement
+      </Button>
     </div>
   );
 }
@@ -1568,7 +1749,7 @@ export default function Admin() {
               <TabsTrigger value="menu" className="shrink-0">Menu</TabsTrigger>
               <TabsTrigger value="events" className="shrink-0">Events</TabsTrigger>
               <TabsTrigger value="merch" className="shrink-0">Merch</TabsTrigger>
-              <TabsTrigger value="promotions" className="shrink-0">Promos</TabsTrigger>
+              <TabsTrigger value="promotions" className="shrink-0">Announcements</TabsTrigger>
             </TabsList>
 
             <TabsContent value="texts">
@@ -2146,9 +2327,133 @@ export default function Admin() {
 
             <TabsContent value="promotions">
               <Card>
-                <CardHeader className="flex justify-between items-center"><CardTitle>Manage Promotions</CardTitle><Dialog><DialogTrigger asChild><Button><Plus /> Add Promotion</Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Add Promotion</DialogTitle><DialogDescription className="sr-only">Fill in the form to add a new promotion.</DialogDescription></DialogHeader><PromotionForm promotion={{}} onSubmit={async (promo) => { await addPromotion(promo as Omit<Promotion, "id">); alert("Promotion added!"); }} /></DialogContent></Dialog></CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-4">
-                  {(siteContent.promotions ?? []).map((promo) => (<Card key={promo.id} className="p-4"><h3 className="font-bold">{promo.title}</h3><p>{promo.subtitle}</p><div className="flex gap-2 mt-2"><Dialog><DialogTrigger asChild><Button variant="outline" size="sm"><Edit /></Button></DialogTrigger><DialogContent><DialogHeader><DialogTitle>Edit {promo.title}</DialogTitle><DialogDescription className="sr-only">Update the details for this promotion.</DialogDescription></DialogHeader><PromotionForm promotion={promo} onSubmit={async (updates) => { await updatePromotion(promo.id, updates); alert("Promotion updated!"); }} /></DialogContent></Dialog><Button variant="destructive" size="sm" onClick={async () => { if (confirm("Delete?")) await deletePromotion(promo.id); }}><Trash2 /></Button></div></Card>))}
+                <CardHeader className="flex flex-row justify-between items-center">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Megaphone className="h-5 w-5 text-aussie-orange" />
+                      Manage Announcements
+                    </CardTitle>
+                    <p className="text-sm text-brown-500 mt-1">
+                      Promos, events, closures, new menu items — everything guests should know about.
+                    </p>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="bg-aussie-orange hover:bg-aussie-burnt-red text-white shrink-0">
+                        <Plus className="h-4 w-4 mr-1" /> Add Announcement
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add Announcement</DialogTitle>
+                        <DialogDescription>
+                          Share a promo, event, closure, or any news with your guests.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <PromotionForm
+                        promotion={{}}
+                        onSubmit={async (promo) => {
+                          await addPromotion(promo as Omit<Promotion, "id">);
+                          alert("Announcement added!");
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent>
+                  {(siteContent.promotions ?? []).length === 0 ? (
+                    <div className="text-center py-16 border-2 border-dashed border-sand-200 rounded-xl">
+                      <Megaphone className="h-12 w-12 text-brown-300 mx-auto mb-3" />
+                      <p className="font-body text-brown-400">No announcements yet.</p>
+                      <p className="text-sm text-brown-300">Click "Add Announcement" to create one.</p>
+                    </div>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[...(siteContent.promotions ?? [])]
+                        .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0))
+                        .map((promo) => {
+                          const typeMeta = ANNOUNCEMENT_TYPES.find((t) => t.value === promo.type) || ANNOUNCEMENT_TYPES[0];
+                          const now = new Date();
+                          const isExpired = promo.endDate && new Date(promo.endDate) < now;
+                          const isScheduled = promo.startDate && new Date(promo.startDate) > now;
+                          return (
+                            <Card key={promo.id} className={`border-sand-200 overflow-hidden ${promo.pinned ? "ring-2 ring-aussie-orange" : ""}`}>
+                              {promo.imageUrl && (
+                                <img
+                                  src={promo.imageUrl}
+                                  alt={promo.title}
+                                  className="w-full h-32 object-cover"
+                                  onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                                />
+                              )}
+                              <CardContent className="p-4 space-y-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs font-semibold bg-cream-100 text-brown-700 px-2 py-0.5 rounded-full">
+                                    {typeMeta.emoji} {typeMeta.label}
+                                  </span>
+                                  {promo.pinned && (
+                                    <span className="text-xs font-semibold bg-aussie-orange text-white px-2 py-0.5 rounded-full flex items-center gap-1">
+                                      <Pin className="h-3 w-3" /> Pinned
+                                    </span>
+                                  )}
+                                  {isExpired && (
+                                    <span className="text-xs font-semibold bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Expired</span>
+                                  )}
+                                  {isScheduled && (
+                                    <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">Scheduled</span>
+                                  )}
+                                </div>
+                                <h3 className="font-heading font-bold text-brown-800 leading-tight">{promo.title}</h3>
+                                {promo.subtitle && (
+                                  <p className="text-xs text-brown-500">{promo.subtitle}</p>
+                                )}
+                                {promo.details && (
+                                  <p className="text-sm font-bold text-aussie-orange">{promo.details}</p>
+                                )}
+                                {(promo.startDate || promo.endDate) && (
+                                  <p className="text-xs text-brown-400">
+                                    {promo.startDate && <>From {new Date(promo.startDate).toLocaleDateString()}</>}
+                                    {promo.startDate && promo.endDate && " · "}
+                                    {promo.endDate && <>Until {new Date(promo.endDate).toLocaleDateString()}</>}
+                                  </p>
+                                )}
+                                <div className="flex gap-2 pt-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" className="flex-1">
+                                        <Edit className="h-3 w-3 mr-1" /> Edit
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl">
+                                      <DialogHeader>
+                                        <DialogTitle>Edit {promo.title}</DialogTitle>
+                                        <DialogDescription className="sr-only">Update this announcement.</DialogDescription>
+                                      </DialogHeader>
+                                      <PromotionForm
+                                        promotion={promo}
+                                        onSubmit={async (updates) => {
+                                          await updatePromotion(promo.id, updates);
+                                          alert("Announcement updated!");
+                                        }}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={async () => {
+                                      if (confirm(`Delete "${promo.title}"?`)) await deletePromotion(promo.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
