@@ -33,6 +33,19 @@ body {
   50% { background-position: 100% 50%; }
 }
 
+/* Flipbook page turn animations */
+@keyframes flipRight {
+  0% { transform: perspective(1200px) rotateY(0deg); }
+  50% { transform: perspective(1200px) rotateY(-8deg); }
+  100% { transform: perspective(1200px) rotateY(0deg); }
+}
+
+@keyframes flipLeft {
+  0% { transform: perspective(1200px) rotateY(0deg); }
+  50% { transform: perspective(1200px) rotateY(8deg); }
+  100% { transform: perspective(1200px) rotateY(0deg); }
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
