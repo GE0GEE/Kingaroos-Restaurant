@@ -63,16 +63,24 @@ function PhysicalMenuGallery() {
   const images = siteContent.physicalMenuImages ?? [];
   const totalPages = images.length + 1; // +1 for cover
   const [flippedPages, setFlippedPages] = useState<Set<number>>(new Set());
-  const [flippingPage, setFlippingPage] = useState<number | null>(null);
-  const flipDuration = 950;
+  // Track pages currently in transition (for visual FX only, NOT for rate limiting)
+  const [animatingPages, setAnimatingPages] = useState<Set<number>>(new Set());
 
   const currentVisiblePage = flippedPages.size;
   const isOnLastPage = currentVisiblePage === totalPages - 1 && images.length > 0;
 
+  // Toggle a single page. No rate limiting — clicks always work.
   const togglePage = (pageIndex: number) => {
-    if (flippingPage !== null) return;
-    setFlippingPage(pageIndex);
-    setTimeout(() => setFlippingPage(null), flipDuration);
+    // Mark as animating for visual FX (shadow pulse)
+    setAnimatingPages((prev) => new Set([...prev, pageIndex]));
+    setTimeout(() => {
+      setAnimatingPages((prev) => {
+        const next = new Set(prev);
+        next.delete(pageIndex);
+        return next;
+      });
+    }, 1100);
+
     setFlippedPages((prev) => {
       const next = new Set(prev);
       if (next.has(pageIndex)) next.delete(pageIndex);
@@ -82,29 +90,32 @@ function PhysicalMenuGallery() {
   };
 
   const flipNext = () => {
-    if (currentVisiblePage >= totalPages || flippingPage !== null) return;
-    togglePage(currentVisiblePage);
+    if (currentVisiblePage < totalPages) togglePage(currentVisiblePage);
   };
 
   const flipPrev = () => {
-    if (currentVisiblePage <= 0 || flippingPage !== null) return;
-    togglePage(currentVisiblePage - 1);
+    if (currentVisiblePage > 0) togglePage(currentVisiblePage - 1);
   };
 
   const returnToCover = () => {
-    if (flippingPage !== null) return;
     // Cascade-flip all pages back to cover
     const pages = Array.from(flippedPages).sort((a, b) => b - a); // flip back in reverse
     pages.forEach((pageIdx, i) => {
       setTimeout(() => {
-        setFlippingPage(pageIdx);
-        setTimeout(() => setFlippingPage(null), flipDuration);
+        setAnimatingPages((prev) => new Set([...prev, pageIdx]));
+        setTimeout(() => {
+          setAnimatingPages((prev) => {
+            const next = new Set(prev);
+            next.delete(pageIdx);
+            return next;
+          });
+        }, 1100);
         setFlippedPages((prev) => {
           const next = new Set(prev);
           next.delete(pageIdx);
           return next;
         });
-      }, i * 180);
+      }, i * 220);
     });
   };
 
@@ -115,7 +126,7 @@ function PhysicalMenuGallery() {
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [currentVisiblePage, flippingPage]);
+  }, [currentVisiblePage]);
 
   if (images.length === 0) return (
     <div className="text-center py-20 text-stone-400">
@@ -142,56 +153,58 @@ function PhysicalMenuGallery() {
           {/* Book wrapper — responsive sizing */}
           <div
             className="relative select-none w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px]"
-            style={{ aspectRatio: "3/4", perspective: "2200px" }}
+            style={{ aspectRatio: "3/4", perspective: "1600px" }}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            {/* Book base shadow (table) */}
-            <div className="absolute -inset-x-2 -bottom-2 h-6 rounded-full bg-black/40 blur-xl" />
-            {/* Subtle book spine */}
-            <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-amber-950/40 via-amber-900/60 to-amber-950/40 rounded-l-lg z-[1] pointer-events-none" />
+            {/* Book table drop shadow */}
+            <div className="absolute -inset-x-4 -bottom-3 h-7 rounded-full bg-black/55 blur-2xl" />
+
+            {/* Book spine binding */}
+            <div
+              className="absolute inset-y-0 left-0 w-2 rounded-l-md z-[1] pointer-events-none"
+              style={{
+                background: "linear-gradient(to right, #3a2511 0%, #5d3a1a 40%, #7a4d23 100%)",
+                boxShadow: "inset -2px 0 4px rgba(0,0,0,0.4)",
+              }}
+            />
 
             {/* Pages */}
             {Array.from({ length: totalPages }, (_, i) => totalPages - 1 - i).map((pageIndex) => {
               const isFlipped = flippedPages.has(pageIndex);
-              const isFlipping = flippingPage === pageIndex;
+              const isAnimating = animatingPages.has(pageIndex);
               const isCover = pageIndex === 0;
               const imageIndex = pageIndex - 1;
 
-              // Use animation during flip for the lift effect, otherwise a smooth transition
-              const animationName = isFlipping
-                ? (isFlipped ? "kingFlipForward" : "kingFlipBackward")
-                : "none";
+              // Heavy shadow during flip simulates the page lifting off the surface
+              const pageShadow = isAnimating
+                ? "0 35px 70px -10px rgba(0,0,0,0.6), 0 0 30px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(0,0,0,0.05)"
+                : "0 8px 20px -4px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(0,0,0,0.05)";
 
               return (
                 <div
                   key={pageIndex}
-                  className="absolute inset-0 rounded-lg cursor-pointer page-flip"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePage(pageIndex);
+                  }}
+                  className="absolute inset-0 rounded-r-lg cursor-pointer"
                   style={{
                     transformOrigin: "left center",
                     transformStyle: "preserve-3d",
+                    transition: "transform 1s cubic-bezier(0.55, 0.085, 0.255, 1)",
+                    transform: isFlipped ? "rotateY(-180deg)" : "rotateY(0deg)",
                     zIndex: isFlipped ? pageIndex : totalPages - pageIndex,
-                    ...(isFlipping
-                      ? {
-                          animation: `${animationName} ${flipDuration}ms cubic-bezier(0.55, 0.05, 0.25, 1) forwards`,
-                        }
-                      : {
-                          transition: "transform 0.6s cubic-bezier(0.65, 0.05, 0.35, 1)",
-                          transform: isFlipped ? "rotateY(-180deg)" : "rotateY(0deg)",
-                        }),
                   }}
-                  onClick={() => togglePage(pageIndex)}
                 >
                   {/* ── Front face ── */}
                   <div
-                    className="absolute inset-0 rounded-lg overflow-hidden"
+                    className="absolute inset-0 rounded-r-lg overflow-hidden"
                     style={{
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
-                      boxShadow: isFlipping
-                        ? "0 30px 60px -15px rgba(0,0,0,0.55), 0 0 25px rgba(0,0,0,0.25)"
-                        : "0 4px 14px rgba(0,0,0,0.18)",
-                      transition: "box-shadow 0.45s ease",
+                      boxShadow: pageShadow,
+                      transition: "box-shadow 0.5s ease",
                     }}
                   >
                     {isCover ? (
@@ -236,56 +249,56 @@ function PhysicalMenuGallery() {
                         )}
                       </div>
                     )}
-                    {/* Spine shadow on left edge */}
+                    {/* Spine binding shadow on left edge — strong, always visible */}
                     <div
-                      className="absolute inset-y-0 left-0 w-6 pointer-events-none"
-                      style={{ background: "linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.06) 40%, transparent 100%)" }}
+                      className="absolute inset-y-0 left-0 w-10 pointer-events-none"
+                      style={{ background: "linear-gradient(to right, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.18) 25%, rgba(0,0,0,0.05) 55%, transparent 100%)" }}
                     />
-                    {/* Curl shadow on right edge (the edge that lifts when flipping) */}
+                    {/* Right edge curl shadow — pulses brighter when flipping */}
                     <div
-                      className="absolute inset-y-0 right-0 w-12 pointer-events-none transition-opacity duration-500"
+                      className="absolute inset-y-0 right-0 w-16 pointer-events-none"
                       style={{
-                        background: "linear-gradient(to left, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)",
-                        opacity: isFlipping ? 1 : 0.4,
+                        background: "linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.08) 30%, transparent 100%)",
+                        opacity: isAnimating ? 1 : 0.5,
+                        transition: "opacity 0.5s ease",
                       }}
                     />
                   </div>
 
                   {/* ── Back face (paper texture) ── */}
                   <div
-                    className="absolute inset-0 rounded-lg overflow-hidden"
+                    className="absolute inset-0 rounded-r-lg overflow-hidden"
                     style={{
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                       background:
                         "linear-gradient(135deg, #f5efe2 0%, #ece4d2 50%, #e0d7c1 100%)",
-                      boxShadow: isFlipping
-                        ? "0 30px 60px -15px rgba(0,0,0,0.55), 0 0 25px rgba(0,0,0,0.25)"
-                        : "0 4px 14px rgba(0,0,0,0.18)",
-                      transition: "box-shadow 0.45s ease",
+                      boxShadow: pageShadow,
+                      transition: "box-shadow 0.5s ease",
                     }}
                   >
                     {/* Subtle paper grain */}
                     <div
-                      className="absolute inset-0 pointer-events-none opacity-40"
+                      className="absolute inset-0 pointer-events-none opacity-50"
                       style={{
                         backgroundImage:
-                          "repeating-linear-gradient(0deg, rgba(139,115,85,0.04) 0px, rgba(139,115,85,0.04) 1px, transparent 1px, transparent 3px)," +
-                          "repeating-linear-gradient(90deg, rgba(139,115,85,0.03) 0px, rgba(139,115,85,0.03) 1px, transparent 1px, transparent 5px)",
+                          "repeating-linear-gradient(0deg, rgba(139,115,85,0.05) 0px, rgba(139,115,85,0.05) 1px, transparent 1px, transparent 3px)," +
+                          "repeating-linear-gradient(90deg, rgba(139,115,85,0.04) 0px, rgba(139,115,85,0.04) 1px, transparent 1px, transparent 5px)",
                       }}
                     />
-                    {/* Spine shadow on right edge (this is the spine when flipped) */}
+                    {/* Spine shadow on right edge (this is the spine when page is flipped) */}
                     <div
-                      className="absolute inset-y-0 right-0 w-6 pointer-events-none"
-                      style={{ background: "linear-gradient(to left, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.06) 40%, transparent 100%)" }}
+                      className="absolute inset-y-0 right-0 w-10 pointer-events-none"
+                      style={{ background: "linear-gradient(to left, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.18) 25%, rgba(0,0,0,0.05) 55%, transparent 100%)" }}
                     />
                     {/* Curl shadow on left edge */}
                     <div
-                      className="absolute inset-y-0 left-0 w-12 pointer-events-none transition-opacity duration-500"
+                      className="absolute inset-y-0 left-0 w-16 pointer-events-none"
                       style={{
-                        background: "linear-gradient(to right, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 50%, transparent 100%)",
-                        opacity: isFlipping ? 1 : 0.4,
+                        background: "linear-gradient(to right, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.08) 30%, transparent 100%)",
+                        opacity: isAnimating ? 1 : 0.5,
+                        transition: "opacity 0.5s ease",
                       }}
                     />
                   </div>
@@ -311,7 +324,7 @@ function PhysicalMenuGallery() {
           <div className="flex items-center gap-4 sm:gap-6 mt-6 sm:mt-8">
             <button
               onClick={flipPrev}
-              disabled={currentVisiblePage <= 0 || flippingPage !== null}
+              disabled={currentVisiblePage <= 0}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-700 hover:bg-stone-600 flex items-center justify-center text-white transition-all disabled:opacity-30"
               aria-label="Previous page"
             >
@@ -323,7 +336,6 @@ function PhysicalMenuGallery() {
                 <button
                   key={i}
                   onClick={() => {
-                    if (flippingPage !== null) return;
                     const newFlipped = new Set<number>();
                     for (let j = 0; j < i; j++) newFlipped.add(j);
                     setFlippedPages(newFlipped);
@@ -338,7 +350,7 @@ function PhysicalMenuGallery() {
 
             <button
               onClick={flipNext}
-              disabled={currentVisiblePage >= totalPages || flippingPage !== null}
+              disabled={currentVisiblePage >= totalPages}
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-700 hover:bg-stone-600 flex items-center justify-center text-white transition-all disabled:opacity-30"
               aria-label="Next page"
             >
