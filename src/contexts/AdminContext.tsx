@@ -32,7 +32,23 @@ export interface Dog { id: string; name: string; breed: string; age: string; per
 export interface MenuItem { id: string; name: string; description: string; price: string; image: string; featured?: boolean; category: string; }
 export interface PhysicalMenuImage { id: string; url: string; caption: string; }
 export interface Event { id: string; title: string; date: string; time: string; description: string; imageUrl?: string; type: "music" | "dogs" | "family" | "special" | "food"; category: "thisWeek" | "comingSoon"; }
-export interface Promotion { id: string; title: string; subtitle: string; details: string; description: string; category: PromotionCategoryKey; }
+export type AnnouncementType = "general" | "promo" | "event" | "closure" | "newItem" | "holidayHours" | "news";
+export interface Promotion {
+  id: string;
+  title: string;
+  subtitle: string;
+  details: string;
+  description: string;
+  category: PromotionCategoryKey;
+  /** New announcement-specific fields (all optional, backwards-compatible) */
+  type?: AnnouncementType;
+  imageUrl?: string;
+  pinned?: boolean;
+  startDate?: string;
+  endDate?: string;
+  ctaLabel?: string;
+  ctaLink?: string;
+}
 
 export interface MerchSection {
   id: string;
