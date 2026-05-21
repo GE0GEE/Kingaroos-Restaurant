@@ -131,3 +131,55 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+
+/* ===== Kangaroo Loader Animations ===== */
+
+/* Stroke draw-on animation */
+@keyframes kangarooDraw {
+  0% {
+    stroke-dashoffset: 800;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* Gentle bounce */
+@keyframes kangarooBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Eye blink */
+@keyframes kangarooBlink {
+  0%, 90%, 100% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 0;
+  }
+}
+
+.kangaroo-loader-draw .kangaroo-stroke {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: kangarooDraw 2s ease-in-out infinite;
+}
+
+.kangaroo-loader-draw .kangaroo-eye {
+  animation: kangarooBlink 3s ease-in-out infinite;
+}
+
+.kangaroo-loader-bounce {
+  animation: kangarooBounce 1.2s ease-in-out infinite;
+}
