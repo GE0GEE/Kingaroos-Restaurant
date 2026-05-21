@@ -388,7 +388,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               faviconImage: serverContent.faviconImage ?? defaultSiteContent.faviconImage,
               aboutImages: { ...defaultSiteContent.aboutImages, ...(serverContent.aboutImages || {}) },
               siteImages: { ...defaultSiteContent.siteImages, ...(serverContent.siteImages || {}) },
-              siteTexts: { ...defaultSiteContent.siteTexts, ...(serverContent.siteTexts || {}) },
+              siteTexts: { ...defaultSiteContent.siteTexts, ...Object.fromEntries(Object.entries(serverContent.siteTexts || {}).filter(([, v]) => v !== "" && v !== undefined && v !== null)) },
               physicalMenuImages: serverContent.physicalMenuImages ?? [],
               merch: serverContent.merch ?? [],
               themeSettings: { ...defaultSiteContent.themeSettings, ...(serverContent.themeSettings || {}) },
