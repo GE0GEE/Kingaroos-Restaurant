@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Heart, Utensils, Gift, Star, Tag, Facebook } from "lucide-react";
+import { KangarooLoader } from "@/components/KangarooLoader";
 import { useAdmin, promotionCategories } from "@/contexts/AdminContext";
 import { FacebookPostsSection } from "@/components/FacebookPostsSection";
 
@@ -22,10 +23,7 @@ export default function Promotions() {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <Gift className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading promotions...</p>
-          </div>
+          <KangarooLoader className="text-aussie-orange" text="Loading promotions..." />
         </div>
       </Layout>
     );
@@ -125,34 +123,6 @@ export default function Promotions() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-gradient-to-r from-aussie-orange to-aussie-burnt-red py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl font-bold text-white mb-6">
-            {siteContent.siteTexts.promotionsReadyToSaveTitle}
-          </h2>
-          <p className="font-body text-xl text-cream-100 mb-8">{siteContent.siteTexts.promotionsReadyToSaveText}</p>
-          <div className="space-y-6 text-cream-100">
-            <p className="font-body text-lg">📞 {siteContent.siteTexts.promotionsCallAheadText}</p>
-            <p className="font-body">📍 {siteContent.siteTexts.promotionsAddressText}</p>
-            <p className="font-body text-sm">{siteContent.siteTexts.promotionsFollowText}</p>
-            <div className="flex justify-center space-x-4 pt-2">
-              <button
-                onClick={() => (window.location.href = `tel:${siteContent.siteTexts.homePhone}`)}
-                className="bg-white text-aussie-orange hover:bg-cream-100 px-6 py-3 rounded-md font-semibold transition-colors duration-200"
-              >
-                Call Now
-              </button>
-              <button
-                onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(siteContent.siteTexts.homeAddress)}`, "_blank")}
-                className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-3 rounded-md font-semibold transition-colors duration-200"
-              >
-                Get Directions
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
     </Layout>
   );
 }

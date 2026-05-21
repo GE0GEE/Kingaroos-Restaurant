@@ -5,6 +5,7 @@ interface ThemeContextType {
   currentTheme: Theme;
   activeThemeId: string;
   isForced: boolean;
+  isDarkMode: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -14,6 +15,7 @@ interface ThemeProviderProps {
   themeSettings?: {
     forcedThemeId?: string | null;
     monthlyThemeEnabled?: Record<number, boolean>;
+    darkMode?: boolean;
   };
 }
 
@@ -21,6 +23,18 @@ export function ThemeProvider({ children, themeSettings }: ThemeProviderProps) {
   const [currentTheme, setCurrentTheme] = useState<Theme>(getDefaultTheme());
   const [activeThemeId, setActiveThemeId] = useState<string>("default");
   const [isForced, setIsForced] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Apply dark mode class to <html>
+  useEffect(() => {
+    const darkEnabled = themeSettings?.darkMode === true;
+    setIsDarkMode(darkEnabled);
+    if (darkEnabled) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [themeSettings?.darkMode]);
 
   useEffect(() => {
     const currentMonth = new Date().getMonth();
@@ -73,7 +87,7 @@ export function ThemeProvider({ children, themeSettings }: ThemeProviderProps) {
   };
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, activeThemeId, isForced }}>
+    <ThemeContext.Provider value={{ currentTheme, activeThemeId, isForced, isDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );

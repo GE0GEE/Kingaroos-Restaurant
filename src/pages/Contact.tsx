@@ -1,6 +1,7 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Clock, Phone, Mail, Facebook, Instagram, Navigation } from "lucide-react";
+import { Clock, Phone, Mail, Facebook, Instagram, Navigation, MapPin } from "lucide-react";
+import { KangarooLoader } from "@/components/KangarooLoader";
 import { useAdmin } from "@/contexts/AdminContext";
 
 export default function Contact() {
@@ -10,10 +11,7 @@ export default function Contact() {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <MapPin className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading contact info...</p>
-          </div>
+          <KangarooLoader className="text-aussie-orange" text="Loading contact info..." />
         </div>
       </Layout>
     );

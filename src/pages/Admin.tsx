@@ -755,6 +755,43 @@ function ThemesPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Dark Mode Toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🌙 Dark Mode
+          </CardTitle>
+          <p className="text-sm text-brown-500">
+            Force the entire website into dark mode. This inverts backgrounds, text, and card colors site-wide — like "Force Dark Page" in browsers.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 rounded-lg border border-sand-200 bg-cream-50">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${themeSettings.darkMode ? "bg-stone-800" : "bg-stone-200"}`}>
+                <span className="text-lg">{themeSettings.darkMode ? "🌙" : "☀️"}</span>
+              </div>
+              <div>
+                <p className="font-body font-semibold text-brown-800 text-sm">
+                  {themeSettings.darkMode ? "Dark Mode Active" : "Light Mode (Default)"}
+                </p>
+                <p className="font-body text-xs text-brown-500">
+                  {themeSettings.darkMode ? "The whole website is displayed in dark colors" : "Enable to switch the site to a dark color scheme"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={themeSettings.darkMode || false}
+              onCheckedChange={async (val) => {
+                await updateSiteContent({
+                  themeSettings: { ...themeSettings, darkMode: val },
+                });
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Current Theme Status */}
       <Card>
         <CardHeader>
@@ -1758,7 +1795,7 @@ export default function Admin() {
 
   const textGroups = {
     "Header & Navigation": ["siteName", "headerNavHome", "headerNavMenu", "headerNavEvents", "headerNavPromotions", "headerNavAbout", "headerNavDogRescue", "headerNavContact"],
-    "Home Page": ["homeTitle", "homeSubtitle", "homeViewMenuButton", "homeLearnMoreButton", "welcomeTitle", "welcomeText1", "welcomeText2", "welcomeImage1Caption", "welcomeImage2Caption", "homeHighlightsTitle", "dogFriendlyTitle", "dogFriendlyText", "aussieFoodTitle", "aussieFoodText", "rescueHelpTitle", "rescueHelpText", "homeVisitTitle", "homeHoursTitle", "homeLocationTitle", "homeAddress", "homePhone", "homeEmail", "googleMapsUrl"],
+    "Home Page": ["homeTitle", "homeSubtitle", "homeViewMenuButton", "homeLearnMoreButton", "welcomeTitle", "welcomeText1", "welcomeText2", "welcomeImage1Caption", "welcomeImage2Caption", "homeHighlightsTitle", "dogFriendlyTitle", "dogFriendlyText", "aussieFoodTitle", "aussieFoodText", "rescueHelpTitle", "rescueHelpText", "homeVisitTitle", "homeHoursTitle", "hoursWeekday", "hoursWeekend", "hoursSunday", "homeLocationTitle", "homeAddress", "homePhone", "homeEmail", "googleMapsUrl", "homeCTATitle", "homeCTAText", "statDogs", "statDogsLabel", "statYears", "statYearsLabel", "statRating", "statRatingLabel", "statMenuItems", "statMenuItemsLabel"],
     "Menu Page": ["menuPageTitle", "menuPageSubtitle", "menuReadyToDineTitle", "menuReadyToDineText", "menuCallText", "menuAddressText"],
     "Dog Rescue Page": ["dogRescueTitle", "dogRescueSubtitle", "dogRescueEveryMealTitle", "dogRescueEveryMealText", "dogRescueMeetTitle", "dogRescueMeetSubtitle", "dogRescueClickInstruction", "dogRescueNoDogsText", "dogRescueWantToKnowTitle", "dogRescueWantToKnowText", "dogRescueGetInvolvedTitle", "dogRescueGetInvolvedText"],
     "Events Page": ["eventsTitle", "eventsSubtitle", "eventsThisWeekTitle", "eventsComingSoonTitle", "eventsNoThisWeekText", "eventsNoComingSoonText", "eventsTypesTitle", "eventsDontMissTitle", "eventsDontMissText", "eventsCallText", "eventsFacebookText", "eventsInstagramText"],

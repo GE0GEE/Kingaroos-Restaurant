@@ -3,6 +3,7 @@ import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Music, Users, Heart, Coffee, Store, X } from "lucide-react";
+import { KangarooLoader } from "@/components/KangarooLoader";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -121,10 +122,7 @@ export default function Events() {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <Calendar className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading events...</p>
-          </div>
+          <KangarooLoader className="text-aussie-orange" text="Loading events..." />
         </div>
       </Layout>
     );
