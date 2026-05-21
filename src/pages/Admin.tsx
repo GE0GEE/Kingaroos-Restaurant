@@ -755,6 +755,34 @@ function ThemesPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Dark Mode Toggle */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            🌙 Dark Mode
+          </CardTitle>
+          <p className="text-sm text-brown-500">
+            Enable dark mode to switch the entire site to a dark colour scheme.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-3 rounded-lg border border-sand-200 bg-cream-50">
+            <div>
+              <p className="font-body font-semibold text-brown-800 text-sm">Dark Mode</p>
+              <p className="font-body text-xs text-brown-500">Toggle dark colour scheme for the whole site</p>
+            </div>
+            <Switch
+              checked={!!themeSettings.darkMode}
+              onCheckedChange={async (val) => {
+                await updateSiteContent({
+                  themeSettings: { ...themeSettings, darkMode: val },
+                });
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Current Theme Status */}
       <Card>
         <CardHeader>

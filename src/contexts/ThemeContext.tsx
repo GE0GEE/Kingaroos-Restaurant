@@ -5,6 +5,7 @@ interface ThemeContextType {
   currentTheme: Theme;
   activeThemeId: string;
   isForced: boolean;
+  isDarkMode: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -14,6 +15,7 @@ interface ThemeProviderProps {
   themeSettings?: {
     forcedThemeId?: string | null;
     monthlyThemeEnabled?: Record<number, boolean>;
+    darkMode?: boolean;
   };
 }
 
@@ -57,6 +59,15 @@ export function ThemeProvider({ children, themeSettings }: ThemeProviderProps) {
     applyThemeToDOM(defaultTheme);
   }, [themeSettings]);
 
+  // Dark mode class toggle
+  useEffect(() => {
+    if (themeSettings?.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [themeSettings?.darkMode]);
+
   const applyThemeToDOM = (theme: Theme) => {
     const root = document.documentElement;
     root.style.setProperty("--theme-primary", theme.colors.primary);
@@ -73,7 +84,7 @@ export function ThemeProvider({ children, themeSettings }: ThemeProviderProps) {
   };
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, activeThemeId, isForced }}>
+    <ThemeContext.Provider value={{ currentTheme, activeThemeId, isForced, isDarkMode: !!themeSettings?.darkMode }}>
       {children}
     </ThemeContext.Provider>
   );
