@@ -183,3 +183,74 @@ body {
 .kangaroo-loader-bounce {
   animation: kangarooBounce 1.2s ease-in-out infinite;
 }
+
+
+
+/* ===== Dark Mode Overrides ===== */
+.dark {
+  --theme-background: #1a1a1a;
+  --theme-text: #e5e5e5;
+  --theme-card-bg: #262626;
+  --theme-header-bg: #0f0f0f;
+}
+
+.dark body,
+.dark #root {
+  background-color: var(--theme-background);
+  color: var(--theme-text);
+}
+
+/* Card backgrounds */
+.dark .bg-white,
+.dark .bg-cream-50,
+.dark .bg-cream-100,
+.dark .bg-sand-100 {
+  background-color: var(--theme-card-bg) !important;
+}
+
+/* Text overrides */
+.dark .text-brown-800,
+.dark .text-brown-700 {
+  color: #f5f5f5 !important;
+}
+
+.dark .text-brown-600,
+.dark .text-brown-500 {
+  color: #d4d4d4 !important;
+}
+
+.dark .text-brown-400 {
+  color: #a3a3a3 !important;
+}
+
+/* Border overrides */
+.dark .border-sand-200,
+.dark .border-sand-300,
+.dark .border-stone-100 {
+  border-color: #404040 !important;
+}
+
+/* Keep orange brand colours vibrant */
+.dark .text-aussie-orange {
+  color: rgb(234, 138, 30) !important;
+}
+
+.dark .bg-aussie-orange {
+  background-color: rgb(234, 138, 30) !important;
+}
+
+/* Section backgrounds */
+.dark .bg-sand-100,
+.dark .bg-cream-50 {
+  background-color: #1f1f1f !important;
+}
+
+.dark .bg-stone-900 {
+  background-color: #0a0a0a !important;
+}
+
+/* Shadows */
+.dark .shadow-lg,
+.dark .shadow-xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.4);
+}
