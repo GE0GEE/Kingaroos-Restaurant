@@ -308,34 +308,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="bg-gradient-to-r from-aussie-orange to-aussie-burnt-red py-16">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-4">
-            {siteContent.siteTexts?.homeCTATitle ?? "Ready for a taste of Australia?"}
-          </h2>
-          <p className="font-body text-xl text-cream-100 mb-8">
-            {siteContent.siteTexts?.homeCTAText ?? "Drop by for a cold drink, good food, and the best seaview in Bacong. Your fur babies are welcome too!"}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button
-              size="lg"
-              className="bg-white text-aussie-orange hover:bg-cream-100 font-body font-semibold"
-              onClick={() => navigate("/menu")}
-            >
-              See Our Menu
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 font-body font-semibold"
-              onClick={() => navigate("/events")}
-            >
-              Upcoming Events
-            </Button>
-          </div>
-        </div>
-      </section>
+
     </Layout>
   );
 }
