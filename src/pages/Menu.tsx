@@ -508,7 +508,7 @@ export default function MenuPage() {
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                🖥️ Digital Menu
+                Digital Menu
               </button>
               <button
                 onClick={() => setMenuStyle("classic")}
@@ -518,7 +518,7 @@ export default function MenuPage() {
                     : "text-stone-300 hover:text-white"
                 }`}
               >
-                📖 Classic Menu
+                Classic Menu
               </button>
             </div>
           </div>
