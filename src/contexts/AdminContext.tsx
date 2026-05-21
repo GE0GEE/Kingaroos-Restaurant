@@ -103,6 +103,7 @@ export interface SiteContent {
   themeSettings?: {
     forcedThemeId?: string | null;
     monthlyThemeEnabled?: Record<number, boolean>;
+    darkMode?: boolean;
     /** Per-theme banner duration: "month" | "weeks" | "week" | "days" */
     bannerDurations?: Record<string, string>;
     /** Per-theme custom banner title/subtitle override */

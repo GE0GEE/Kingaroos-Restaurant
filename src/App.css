@@ -183,3 +183,62 @@ body {
 .kangaroo-loader-bounce {
   animation: kangarooBounce 1.2s ease-in-out infinite;
 }
+
+
+
+/* ===== Dark Mode Overrides ===== */
+/* When .dark is on <html>, override brand colors for dark backgrounds */
+.dark {
+  --theme-background: rgb(23, 23, 23);
+  --theme-text: rgb(229, 229, 229);
+  --theme-card-bg: rgb(38, 38, 38);
+  --theme-header-bg: rgb(10, 10, 10);
+}
+
+.dark body {
+  background-color: rgb(23, 23, 23);
+  color: rgb(229, 229, 229);
+}
+
+/* Override common brand utility classes in dark mode */
+.dark .bg-cream-50,
+.dark .bg-cream-100 {
+  background-color: rgb(30, 30, 30) !important;
+}
+
+.dark .bg-sand-100,
+.dark .bg-sand-200 {
+  background-color: rgb(38, 38, 38) !important;
+}
+
+.dark .text-brown-800 {
+  color: rgb(229, 229, 229) !important;
+}
+
+.dark .text-brown-700 {
+  color: rgb(209, 209, 209) !important;
+}
+
+.dark .text-brown-600 {
+  color: rgb(180, 180, 180) !important;
+}
+
+.dark .text-brown-500 {
+  color: rgb(160, 160, 160) !important;
+}
+
+.dark .bg-white {
+  background-color: rgb(38, 38, 38) !important;
+}
+
+.dark .border-sand-200 {
+  border-color: rgb(55, 55, 55) !important;
+}
+
+.dark .bg-brown-800 {
+  background-color: rgb(20, 20, 20) !important;
+}
+
+.dark .shadow-lg {
+  --tw-shadow-color: rgba(0, 0, 0, 0.4);
+}
