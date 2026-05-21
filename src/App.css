@@ -186,20 +186,186 @@ body {
 
 
 
-/* ===== Force Dark Mode (filter-based, exactly like Opera) ===== */
-/* Inverts the entire page then corrects hue so colors stay recognizable.
-   Images/videos/iframes are re-inverted so they look normal. */
+/* ===== Force Dark Mode — finds every white/light element and inverts it ===== */
 html.dark {
-  filter: invert(1) hue-rotate(180deg);
-  background-color: #111 !important;
+  color-scheme: dark;
+  --theme-background: #1a1a2e;
+  --theme-text: #e8e8e8;
+  --theme-card-bg: #16213e;
+  --theme-header-bg: #0a0a1a;
+  /* shadcn variables */
+  --background: 230 30% 14%;
+  --foreground: 0 0% 91%;
+  --card: 226 35% 18%;
+  --card-foreground: 0 0% 91%;
+  --popover: 226 35% 18%;
+  --popover-foreground: 0 0% 91%;
+  --muted: 226 25% 22%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 226 25% 22%;
+  --accent-foreground: 0 0% 91%;
+  --border: 226 25% 28%;
+  --input: 226 25% 28%;
 }
 
-/* Re-invert media so images/videos/maps display correctly */
-html.dark img,
-html.dark video,
-html.dark iframe,
-html.dark canvas,
-html.dark svg image,
-html.dark [style*="background-image"] {
-  filter: invert(1) hue-rotate(180deg);
+html.dark,
+html.dark body {
+  background-color: #1a1a2e !important;
+  color: #e8e8e8 !important;
+}
+
+/* ── EVERY WHITE / LIGHT BACKGROUND → DARK ── */
+html.dark .bg-white,
+html.dark .bg-card,
+html.dark .bg-background,
+html.dark .bg-popover,
+html.dark .bg-muted,
+html.dark .bg-accent,
+html.dark .bg-cream-50, html.dark .bg-cream-100, html.dark .bg-cream-200, html.dark .bg-cream-300,
+html.dark .bg-sand-50, html.dark .bg-sand-100, html.dark .bg-sand-200, html.dark .bg-sand-300,
+html.dark .bg-stone-50, html.dark .bg-stone-100, html.dark .bg-stone-200,
+html.dark .bg-gray-50, html.dark .bg-gray-100, html.dark .bg-gray-200,
+html.dark .bg-slate-50, html.dark .bg-slate-100, html.dark .bg-slate-200,
+html.dark .bg-neutral-50, html.dark .bg-neutral-100, html.dark .bg-neutral-200,
+html.dark .bg-zinc-50, html.dark .bg-zinc-100, html.dark .bg-zinc-200,
+html.dark .bg-amber-50, html.dark .bg-amber-100,
+html.dark .bg-orange-50, html.dark .bg-orange-100,
+html.dark .bg-yellow-50, html.dark .bg-yellow-100,
+html.dark .bg-green-50, html.dark .bg-green-100,
+html.dark .bg-emerald-50, html.dark .bg-emerald-100,
+html.dark .bg-red-50, html.dark .bg-red-100,
+html.dark .bg-rose-50, html.dark .bg-rose-100,
+html.dark .bg-pink-50, html.dark .bg-pink-100,
+html.dark .bg-blue-50, html.dark .bg-blue-100,
+html.dark .bg-sky-50, html.dark .bg-sky-100,
+html.dark .bg-indigo-50, html.dark .bg-indigo-100,
+html.dark .bg-purple-50, html.dark .bg-purple-100,
+html.dark .bg-violet-50, html.dark .bg-violet-100,
+html.dark .bg-teal-50, html.dark .bg-teal-100,
+html.dark .bg-cyan-50, html.dark .bg-cyan-100 {
+  background-color: #16213e !important;
+}
+
+/* Cards — covers shadcn Card (uses bg-card) and any element with rounded-lg + shadow */
+html.dark .rounded-lg.border.shadow-sm,
+html.dark [class*="rounded-xl"][class*="shadow"]:not(.bg-aussie-orange):not(.bg-aussie-burnt-red):not([class*="bg-stone-9"]):not([class*="bg-brown-8"]):not([class*="bg-gradient"]) {
+  background-color: #16213e !important;
+}
+
+/* Already-dark sections go even darker */
+html.dark .bg-brown-800,
+html.dark .bg-brown-900,
+html.dark .bg-stone-800,
+html.dark .bg-stone-900 {
+  background-color: #0f0f1a !important;
+}
+
+/* ── EVERY DARK TEXT → LIGHT ── */
+html.dark .text-black,
+html.dark .text-foreground,
+html.dark .text-card-foreground,
+html.dark .text-brown-900, html.dark .text-brown-800,
+html.dark .text-stone-900, html.dark .text-stone-800,
+html.dark .text-gray-900, html.dark .text-gray-800,
+html.dark .text-slate-900, html.dark .text-slate-800,
+html.dark .text-neutral-900, html.dark .text-neutral-800,
+html.dark .text-zinc-900, html.dark .text-zinc-800 {
+  color: #f0f0f0 !important;
+}
+
+html.dark .text-brown-700, html.dark .text-stone-700,
+html.dark .text-gray-700, html.dark .text-slate-700,
+html.dark .text-neutral-700, html.dark .text-zinc-700 {
+  color: #dcdcdc !important;
+}
+
+html.dark .text-brown-600, html.dark .text-stone-600,
+html.dark .text-gray-600, html.dark .text-slate-600,
+html.dark .text-neutral-600, html.dark .text-zinc-600,
+html.dark .text-muted-foreground {
+  color: #b8b8b8 !important;
+}
+
+html.dark .text-brown-500, html.dark .text-stone-500,
+html.dark .text-gray-500, html.dark .text-slate-500,
+html.dark .text-neutral-500, html.dark .text-zinc-500 {
+  color: #a0a0a0 !important;
+}
+
+html.dark .text-brown-400, html.dark .text-stone-400,
+html.dark .text-gray-400, html.dark .text-slate-400 {
+  color: #888888 !important;
+}
+
+html.dark .text-brown-300, html.dark .text-stone-300,
+html.dark .text-gray-300 {
+  color: #707070 !important;
+}
+
+/* Brand orange stays vibrant */
+html.dark .text-aussie-orange { color: #f0923a !important; }
+html.dark .bg-aussie-orange { background-color: #e88520 !important; }
+html.dark .bg-aussie-burnt-red { background-color: #a0302a !important; }
+html.dark .bg-aussie-eucalyptus { background-color: #3ab86e !important; }
+
+/* Borders */
+html.dark .border,
+html.dark .border-sand-100, html.dark .border-sand-200, html.dark .border-sand-300,
+html.dark .border-stone-100, html.dark .border-stone-200,
+html.dark .border-gray-100, html.dark .border-gray-200, html.dark .border-gray-300,
+html.dark .border-cream-100, html.dark .border-cream-200,
+html.dark .border-amber-100, html.dark .border-amber-200,
+html.dark .border-green-100, html.dark .border-green-200,
+html.dark .border-red-100, html.dark .border-red-200,
+html.dark .border-blue-100, html.dark .border-blue-200 {
+  border-color: #2a2a4a !important;
+}
+
+/* Form inputs */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+html.dark textarea,
+html.dark select {
+  background-color: #1a2340 !important;
+  border-color: #2a2a4a !important;
+  color: #e8e8e8 !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #666680 !important;
+}
+
+/* Sticky bars / nav */
+html.dark .sticky.bg-white,
+html.dark .sticky[class*="bg-"]:not([class*="bg-aussie"]):not([class*="bg-brown"]):not([class*="bg-stone-9"]) {
+  background-color: #12182e !important;
+}
+
+/* Tabs / lists */
+html.dark [role="tablist"] {
+  background-color: #16213e !important;
+}
+
+/* White-text utility classes stay white-ish */
+html.dark .text-white { color: #ffffff !important; }
+html.dark .text-cream-50, html.dark .text-cream-100,
+html.dark .text-cream-200, html.dark .text-cream-300 {
+  color: #d8d8d8 !important;
+}
+
+/* Shadows get darker */
+html.dark .shadow-sm, html.dark .shadow, html.dark .shadow-md,
+html.dark .shadow-lg, html.dark .shadow-xl, html.dark .shadow-2xl {
+  --tw-shadow-color: rgba(0, 0, 0, 0.6) !important;
+  --tw-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Hover states for white-ish cards */
+html.dark .hover\:bg-cream-50:hover,
+html.dark .hover\:bg-cream-100:hover,
+html.dark .hover\:bg-sand-100:hover,
+html.dark .hover\:bg-sand-200:hover,
+html.dark .hover\:bg-stone-100:hover,
+html.dark .hover\:bg-gray-100:hover,
+html.dark .hover\:bg-white:hover {
+  background-color: #1f2a4a !important;
 }
