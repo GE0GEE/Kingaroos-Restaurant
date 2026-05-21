@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle } from "lucide-react";
+import { KangarooLoader } from "@/components/KangarooLoader";
 import { useAdmin } from "@/contexts/AdminContext";
 import type { Dog } from "@/contexts/AdminContext";
 
@@ -21,10 +22,7 @@ export default function DogRescue() {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <Heart className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading rescue dogs...</p>
-          </div>
+          <KangarooLoader className="text-aussie-orange" text="Loading rescue dogs..." />
         </div>
       </Layout>
     );

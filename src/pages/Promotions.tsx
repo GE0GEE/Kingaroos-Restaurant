@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Clock, Heart, Utensils, Gift, Star, Tag, Facebook } from "lucide-react";
+import { KangarooLoader } from "@/components/KangarooLoader";
 import { useAdmin, promotionCategories } from "@/contexts/AdminContext";
 import { FacebookPostsSection } from "@/components/FacebookPostsSection";
 
@@ -22,10 +23,7 @@ export default function Promotions() {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center bg-cream-50">
-          <div className="text-center space-y-4">
-            <Gift className="h-12 w-12 text-aussie-orange mx-auto animate-pulse" />
-            <p className="font-body text-brown-600">Loading promotions...</p>
-          </div>
+          <KangarooLoader className="text-aussie-orange" text="Loading promotions..." />
         </div>
       </Layout>
     );
